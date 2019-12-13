@@ -64,7 +64,7 @@ static int luaSafeFunctionWrapper(lua_State *L, void (*f)()) {
 }
 
 template<typename ...ARGS>
-static int luaSafeFunctionWrapper(lua_State *L, func_void_t <ARGS...> f) {
+int luaSafeFunctionWrapper(lua_State *L, func_void_t <ARGS...> f) {
     StackInspector inspector(L);
     if (!inspector.expect<ARGS...>()) {
         errorUnmatchedArguments<ARGS...>(L);
@@ -78,7 +78,7 @@ static int luaSafeFunctionWrapper(lua_State *L, func_void_t <ARGS...> f) {
 }
 
 template<typename R>
-static int luaSafeFunctionWrapper(lua_State *L, func_get_t <R> f) {
+int luaSafeFunctionWrapper(lua_State *L, func_get_t <R> f) {
     int argc = lua_gettop(L);
     if (argc) {
         lua_pushstring(L, ("Zero arguments expected. " + std::to_string(argc) + " give.").c_str());
@@ -92,7 +92,7 @@ static int luaSafeFunctionWrapper(lua_State *L, func_get_t <R> f) {
 }
 
 template<typename R, typename ...ARGS>
-static int luaSafeFunctionWrapper(lua_State *L, func_t<R, ARGS...> f) {
+int luaSafeFunctionWrapper(lua_State *L, func_t<R, ARGS...> f) {
     StackInspector inspector(L);
     if (!inspector.expect<ARGS...>()) {
         errorUnmatchedArguments<ARGS...>(L);

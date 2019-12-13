@@ -6,6 +6,8 @@
 #define SIMPLELUA_STACK_HPP
 
 
+#include "metatable.h"
+
 class StackInspector {
 private:
     lua_State *L;
@@ -121,14 +123,6 @@ public:
         }
         return value;
     }
-
-    void dump() {
-        int n = lua_gettop(L);
-        for (int i = 1; i <= n; ++i) {
-            std::string type = luaL_typename(L, i);
-            std::cout << "Index: " << i << " Type: " << type << std::endl;
-        }
-    }
 };
 
 class StackInserter {
@@ -137,9 +131,49 @@ private:
 public:
     explicit StackInserter(lua_State *L) : L(L) {}
 
+    void insert(Value<Boolean> &val) {
+        lua_pushboolean(L, val.val());
+    }
+
+    void insert(Value<Number> &val) {
+        lua_pushnumber(L, val.val());
+    }
+
+    void insert(Value<String> &val) {
+        lua_pushstring(L, val.val().c_str());
+    }
+
+    void insert(Value<List> &val) {
+        List l = val.val();
+        lua_createtable(L, 0, l.size());
+        for (int i = 0; i < l.size(); ++i) {
+            lua_pushnumber(L, i + 1);
+            insert(*l.at(i));
+            lua_settable(L, -3);
+        }
+    }
+
+    void insert(Value<Table> &val) {
+        for (const auto &kv: val.val()) {
+            insert(*kv.second);
+            lua_setfield(L, -2, kv.first.c_str());
+        }
+    }
+
     template<typename T>
     void insert(Value<T> &val) {
-        insert((AbstractValue &) val);
+        T v = dynamic_cast<T>(val.val());
+        if (v) {
+            if (MetaTable::metatables.count(&typeid(T))) {
+                T *ud = (T *) lua_newuserdata(L, sizeof(T *));
+                *ud = v;
+                luaL_setmetatable(L, MetaTable::metatables[&typeid(T)].c_str());
+            } else {
+                lua_pushlightuserdata(L, (void *) v);
+            }
+        } else {
+            lua_pushnil(L);
+        }
     }
 
     void insert(AbstractValue &val) {
@@ -162,10 +196,19 @@ public:
                 insert(*kv.second);
                 lua_setfield(L, -2, kv.first.c_str());
             }
-        } else if (val.is<Class>()) {
-            // TODO: implement class inserter
         } else {
-            lua_pushnil(L);
+            Class v = val.to<Class>();
+            if (v) {
+                if (MetaTable::metatables.count(&val.getType())) {
+                    Class *ud = (Class *) lua_newuserdata(L, sizeof(Class *));
+                    *ud = v;
+                    luaL_setmetatable(L, MetaTable::metatables[&val.getType()].c_str());
+                } else {
+                    lua_pushlightuserdata(L, (void *) v);
+                }
+            } else {
+                lua_pushnil(L);
+            }
         }
     }
 };

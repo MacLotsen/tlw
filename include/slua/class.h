@@ -57,6 +57,7 @@ public:
 
     ClassPrototypeBuilder &constr(lua_CFunction constr) {
         prototype->constructor = constr;
+        return *this;
     }
 
     ClassPrototypeBuilder &method(const String &n, lua_CFunction f) {
@@ -91,11 +92,13 @@ public:
     }
 };
 
+
+
 static int luaMetaConstructor(lua_State *L) {
     int constructed = 0;
     String metatable = lua_tostring(L, lua_upvalueindex(1));
     lua_CFunction constructor = lua_tocfunction(L, lua_upvalueindex(2));
-    lua_settop(L, 0);
+//    lua_settop(L, 0);
     constructed = constructor(L);
     if (!constructed) {
         lua_pushstring(L, "Constructor did not return an object.");

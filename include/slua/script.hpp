@@ -9,13 +9,13 @@
 
 class Script {
 private:
-    StackFetcher *fetcher;
-    StackInserter *inserter;
+    StackFetcher fetcher;
+    StackInserter inserter;
     lua_State *L;
     int index;
 public:
     Script(lua_State *L, String scriptPath) : Script(L, scriptPath, false) {}
-    Script(lua_State *L, String scriptPath, bool raw) : L(L) {
+    Script(lua_State *L, String scriptPath, bool raw) : Script(L) {
         if (raw ? (luaL_loadstring(L, scriptPath.c_str())) : (luaL_loadfile(L, scriptPath.c_str()))) {
             throw std::runtime_error(lua_tostring(L, -1));
         }
@@ -30,28 +30,19 @@ public:
         index = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 
-    Script(lua_State *L) : L(L) {
-        fetcher = new StackFetcher(L);
-        inserter = new StackInserter(L);
-    }
-
-    ~Script() {
-        delete fetcher;
-        delete inserter;
-        lua_close(L);
-    }
+    Script(lua_State *L) : L(L), fetcher(L), inserter(L) { }
 
     template<typename T>
     Value<T> *get(const std::string &name) {
         lua_getglobal(L, name.c_str());
-        Value<T> *val = fetcher->get<T>(-1);
+        Value<T> *val = fetcher.get<T>(-1);
         lua_pop(L, 1);
         return val;
     }
 
     template<typename T>
     void set(std::string name, Value<T> val) {
-        inserter->insert<T>(val);
+        inserter.insert<T>(val);
         lua_setglobal(L, name.c_str());
     }
 

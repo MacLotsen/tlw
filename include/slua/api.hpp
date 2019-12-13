@@ -16,17 +16,22 @@
 #include "getter.h"
 #include "setter.h"
 #include "property.h"
-
-#define newtable(L) (lua_newtable(L), lua_gettop(L))
+#include "metatable.h"
 
 class Lua {
 private:
     lua_State *L;
     std::unordered_map<std::string, Script *> scripts;
-    std::unordered_map<const std::type_info*, std::string> metatables;
 public:
     Lua() : L(luaL_newstate()) {
         luaL_openlibs(L);
+    }
+
+    ~Lua() {
+        for (auto kv:scripts) {
+            delete kv.second;
+        }
+        lua_close(L);
     }
 
     Lua &file(const std::string &name, const std::string &path) {
@@ -52,7 +57,7 @@ public:
     Lua &set(String name, C* object) {
         C **ud = (C **) lua_newuserdata(L, sizeof(C *));
         *ud = object;
-        luaL_getmetatable(L, metatables[&typeid(C)].c_str());
+        luaL_getmetatable(L, MetaTable::metatables[&typeid(C*)].c_str());
         lua_setmetatable(L, -2);
         lua_setglobal(L, name.c_str());
         return *this;
@@ -67,7 +72,7 @@ public:
         // Target metatable
         luaL_newmetatable(L, klass->name.c_str());
         int metatable = lua_gettop(L);
-        metatables[&typeid(C)] = klass->name;
+        MetaTable::metatables[&typeid(C*)] = klass->name;
 
         // Create anonymous metatable (Deny access for lua)
         lua_pushliteral(L, "__metatable");
@@ -76,11 +81,10 @@ public:
 
         // Set constructor if needed
         if (klass->constructor) {
-            lua_pushliteral(L, "__call");
             lua_pushstring(L, klass->name.c_str());
             lua_pushcfunction(L, klass->constructor);
             lua_pushcclosure(L, luaMetaConstructor, 2);
-            lua_settable(L, metatable);
+            lua_setglobal(L, klass->name.c_str());
         }
 
         // Set all operator overloading

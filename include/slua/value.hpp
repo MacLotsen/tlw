@@ -5,6 +5,8 @@
 #ifndef SIMPLELUA_VALUE_HPP
 #define SIMPLELUA_VALUE_HPP
 
+#define val_eq(val, type) (val.getType() == typeid(type*))
+
 class AbstractValue {
 protected:
     const std::type_info &type;
@@ -19,6 +21,10 @@ public:
     template<typename T>
     bool is() const {
         return type == typeid(T*);
+    }
+
+    const std::type_info &getType() {
+        return type;
     }
 };
 

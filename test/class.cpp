@@ -15,6 +15,7 @@ static const std::string &src =
         "local example2 = Example('example 2')\n"
         "print(example2.name)\n"
         "print(Example)\n"
+        "printEntites(example, example2)\n"
         "example2 = nil\n"
         "";
 
@@ -60,6 +61,16 @@ int luaGc(lua_State *L) {
     return 0;
 }
 
+List printEntities(List entities) {
+    std::cout << "Entities: ";
+    for (AbstractValue *e: entities) {
+        std::cout << " " << (e->to<Example*>()->getName()) << " ";
+    }
+    std::cout << std::endl;
+    return List{};
+}
+
+lua_CFunction f_print_entities = mk_raw_cfunc(printEntities);
 
 TEST(MetaTable, testPrototype) {
     {
@@ -77,6 +88,7 @@ TEST(MetaTable, testPrototype) {
         Example e;
 
         _lua.add<Example>(prototype)
+                .add("printEntites", f_print_entities)
                 .set("example", &e)
                 .src("example", src)
                 .call("example");

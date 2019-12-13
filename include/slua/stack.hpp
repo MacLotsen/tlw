@@ -119,7 +119,7 @@ public:
                 value = new Value<Table>(table);
             }
         } else if (lua_isuserdata(L, index)) {
-            value = new Value<Class>(lua_touserdata(L, index));
+            value = new Value<Class>(*((Class*)lua_touserdata(L, index)));
         }
         return value;
     }

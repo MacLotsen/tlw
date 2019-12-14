@@ -53,11 +53,9 @@ private:
             return lua_istable(L, index);
         } else if (type == typeid(Table)) {
             return lua_istable(L, index);
-        } else if (type == typeid(Class)) {
-            return lua_isuserdata(L, index) || lua_isnil(L, index);
+        } else {
+            return lua_isuserdata(L, index) || lua_islightuserdata(L, index) || lua_isnil(L, index);
         }
-        std::cerr << "Unknown type given: " << type.name() << std::endl;
-        return false;
     }
 };
 

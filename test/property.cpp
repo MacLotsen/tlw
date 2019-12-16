@@ -11,7 +11,7 @@ struct PropertyExample {
 TEST(PropertyTest, testProperty) {
     Lua _lua;
     ClassPrototype *propertyPrototype = ClassPrototypeBuilder("PropertyExample")
-            .property("property", mk_prop(&PropertyExample::property))
+            .property("property", mk_property(&PropertyExample::property))
             .build();
 
     PropertyExample example {"Property"};

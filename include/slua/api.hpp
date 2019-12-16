@@ -10,13 +10,9 @@
 #include "types.hpp"
 #include "value.hpp"
 #include "script.hpp"
-#include "function.hpp"
 #include "class.h"
-#include "method.h"
-#include "getter.h"
-#include "setter.h"
-#include "property.h"
 #include "metatable.h"
+#include "wrapper.h"
 
 class Lua {
 private:

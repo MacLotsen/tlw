@@ -6,24 +6,6 @@
 #define SIMPLELUA_CLASS_H
 
 #include <unordered_map>
-#include "function.hpp"
-
-template<typename C, typename R, typename ...ARGS>
-using method_t = R (C::*)(ARGS...);
-
-template<typename C, typename R>
-using getter_t = R (C::*)();
-
-template<typename C>
-using call_t = void (C::*)();
-
-template<typename C, typename ...ARGS>
-using setter_t = void (C::*)(ARGS...);
-
-
-
-
-// Keep the class methods in light userdata?
 
 struct ClassPrototype {
     const String &name;
@@ -142,6 +124,7 @@ static int luaMetaIndex(lua_State *L) {
 
     lua_pushstring(L, ("No such property " + property).c_str());
     lua_error(L);
+    return 0;
 }
 
 static int luaMetaNewIndex(lua_State *L) {
@@ -163,6 +146,7 @@ static int luaMetaNewIndex(lua_State *L) {
 
     lua_pushstring(L, ("No such property " + property).c_str());
     lua_error(L);
+    return 0;
 }
 
 

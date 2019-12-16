@@ -15,8 +15,8 @@ void noop() {
 }
 
 TEST_F(FunctionsTest, testZeroReturnValues) {
-    lua_CFunction p = mk_cfunc(plus);
-    lua_CFunction n = mk_cfunc(noop);
+    lua_CFunction p = mk_function(plus);
+    lua_CFunction n = mk_function(noop);
     lua.add("plus", p);
     lua.add("noop", n);
 //    lua.call("plus");

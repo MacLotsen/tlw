@@ -50,8 +50,8 @@ public:
     }
 
     template<class C>
-    Lua &set(String name, C* object) {
-        C **ud = (C **) lua_newuserdata(L, sizeof(C *));
+    Lua &set(String name, C *object) {
+        C **ud = (C **) lua_newuserdata(L, sizeof(C **));
         *ud = object;
         luaL_getmetatable(L, MetaTable::metatables[&typeid(C*)].c_str());
         lua_setmetatable(L, -2);
@@ -61,50 +61,10 @@ public:
 
     template<typename C>
     Lua &add(const ClassPrototype *klass) {
-        // First set the value for all closures (indexer e.t.c.)
-        lua_pushlightuserdata(L, (void*) klass);
-        int prototype = lua_gettop(L);
-
-        // Target metatable
-        luaL_newmetatable(L, klass->name.c_str());
-        int metatable = lua_gettop(L);
-        MetaTable::metatables[&typeid(C*)] = klass->name;
-
-        // Create anonymous metatable (Deny access for lua)
-        lua_pushliteral(L, "__metatable");
-        lua_newtable(L);
-        lua_settable(L, metatable);
-
-        // Set constructor if needed
-        if (klass->constructor) {
-            lua_pushstring(L, klass->name.c_str());
-            lua_pushcfunction(L, klass->constructor);
-            lua_pushcclosure(L, luaMetaConstructor, 2);
-            lua_setglobal(L, klass->name.c_str());
+        if (!MetaTable::metatables.count(&typeid(C *))) {
+            MetaTable::metatables[&typeid(C *)] = klass->name;
         }
-
-        // Set all operator overloading
-        for (auto kv: klass->overloading) {
-            lua_pushstring(L, kv.first.c_str());
-            lua_pushcfunction(L, kv.second);
-            lua_settable(L, metatable);
-        }
-
-        if (klass->properties.size() || klass->getters.size() || klass->methods.size()) {
-            lua_pushliteral(L, "__index");
-            lua_pushvalue(L, prototype);
-            lua_pushcclosure(L, luaMetaIndex, 1);
-            lua_settable(L, metatable);
-        }
-
-        if (klass->properties.size() || klass->setters.size()) {
-            lua_pushliteral(L, "__newindex");
-            lua_pushvalue(L, prototype);
-            lua_pushcclosure(L, luaMetaNewIndex, 1);
-            lua_settable(L, metatable);
-        }
-
-        lua_settop(L, 0);
+        luaCreateMetaTable(L, klass);
         return *this;
     }
 };

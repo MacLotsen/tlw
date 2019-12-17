@@ -21,7 +21,7 @@ public:
 
 TEST(DestructorTest, testDestructor) {
     ClassPrototype *propertyPrototype = ClassPrototypeBuilder("Example")
-            .overload("__gc", mk_function(&DestructorExample::destroy))
+            .destructor(mk_function(&DestructorExample::destroy))
             .build();
 
     // Do not use a stack variable, since it will be destroyed

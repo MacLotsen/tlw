@@ -31,19 +31,6 @@ public:
 
     Script(lua_State *L) : L(L), stack(L) { }
 
-    template<typename T>
-    Value<T> *get(const std::string &name) {
-        lua_getglobal(L, name.c_str());
-        Value<T> *val = stack.pop<T>();
-        return val;
-    }
-
-    template<typename T>
-    void set(std::string name, Value<T> val) {
-        stack.push<T>(val);
-        lua_setglobal(L, name.c_str());
-    }
-
     AbstractValue *run() {
         lua_settop(L, 0);
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
@@ -68,14 +55,6 @@ public:
         }
 
         return new Value<List>(l);
-    }
-
-    void dump() {
-        int n = lua_gettop(L);
-        for (int i = 1; i <= n; ++i) {
-            std::string type = luaL_typename(L, i);
-            std::cout << "Index: " << i << " Type: " << type << std::endl;
-        }
     }
 };
 

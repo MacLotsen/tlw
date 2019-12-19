@@ -5,6 +5,8 @@
 #ifndef SIMPLELUA_WRAPPER_H
 #define SIMPLELUA_WRAPPER_H
 
+#include <functional>
+
 using function_none_to_none_t = void (*)();
 
 template<typename R>
@@ -64,14 +66,14 @@ static void expectArguments(lua_State *L) {
 
 template<typename T>
 static T *getClass(lua_State *L) {
-    T *klass = *((T**) lua_touserdata(L, 1));
+    T *klass = *((T **) lua_touserdata(L, 1));
     lua_remove(L, 1);
     return klass;
 }
 
 template<typename T>
 static T *getClassByUpValue(lua_State *L) {
-    return *((T**) lua_touserdata(L, lua_upvalueindex(1)));
+    return *((T **) lua_touserdata(L, lua_upvalueindex(1)));
 }
 
 template<typename T>
@@ -122,7 +124,7 @@ template<typename C>
 static int luaWrapFunction(lua_State *L, class_none_to_none_t<C> f) {
     expectArguments<C>(L);
     LuaStack stack(L);
-    Value<C*> *klassValue = stack.pop<C*>();
+    Value<C *> *klassValue = stack.pop<C *>();
     C *klass = klassValue->val();
     delete klassValue;
     (klass->*f)();
@@ -131,10 +133,10 @@ static int luaWrapFunction(lua_State *L, class_none_to_none_t<C> f) {
 
 template<typename C, typename R>
 static int luaWrapFunction(lua_State *L, class_none_to_one_t<C, R> f) {
-    expectArguments<C*>(L);
+    expectArguments<C *>(L);
     LuaStack stack(L);
-    Value<C*> *klassValue = stack.pop<C*>();
-    C* klass = klassValue->val();
+    Value<C *> *klassValue = stack.pop<C *>();
+    C *klass = klassValue->val();
     delete klassValue;
     Value<R> r((klass->*f)());
     stack.push(r);
@@ -143,9 +145,9 @@ static int luaWrapFunction(lua_State *L, class_none_to_one_t<C, R> f) {
 
 template<typename C, typename ...ARGS>
 static int luaWrapFunction(lua_State *L, class_many_to_none_t<C, ARGS...> f) {
-    expectArguments<C*, ARGS...>(L);
+    expectArguments<C *, ARGS...>(L);
     LuaStack stack(L);
-    C* klass = getClass<C>(L);
+    C *klass = getClass<C>(L);
     auto s = stack.getArgs();
     (klass->*f)(getArg<ARGS>(s)...);
     return 0;
@@ -153,7 +155,7 @@ static int luaWrapFunction(lua_State *L, class_many_to_none_t<C, ARGS...> f) {
 
 template<typename C, typename R, typename ...ARGS>
 static int luaWrapFunction(lua_State *L, class_many_to_one_t<C, R, ARGS...> f) {
-    expectArguments<C*, ARGS...>(L);
+    expectArguments<C *, ARGS...>(L);
     LuaStack stack(L);
     C *klass = getClass<C>(L);
     Value<R> r((klass->*f)(getArg<ARGS>(stack.getArgs())...));
@@ -222,6 +224,25 @@ static int luaWrapMethod(lua_State *L, class_many_to_one_t<C, R, ARGS...> f) {
     Value<R> r((klass->*f)(getArg<ARGS>(s)...));
     stack.push(r);
     return 1;
+}
+
+
+template<typename R, typename ...Args>
+static int luaFunctionExecutioner(lua_State *L) {
+    R (**f)(Args...) = (R (**)(Args...)) lua_touserdata(L, lua_upvalueindex(1));
+    LuaStack stack(L);
+    auto args = stack.getArgs();
+    R r = (*f)(getArg<Args>(args)...);
+    Value<R> ret(r);
+    stack.push(ret);
+    return 1;
+}
+
+template<typename R, typename ...Args>
+void mkfunc(lua_State *L, R (*f)(Args...)) {
+    R (**F)(Args...) = (R(**)(Args...)) lua_newuserdata(L, sizeof(R(**)(Args...)));
+    *F = f;
+    lua_pushcclosure(L, luaFunctionExecutioner<R, Args...>, 1);
 }
 
 #define mk_function(f) ([](lua_State *L) -> int { return luaWrapFunction(L, f); })

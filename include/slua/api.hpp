@@ -40,6 +40,10 @@ public:
         return *this;
     }
 
+    lua_State *getState() {
+        return L;
+    }
+
     AbstractValue *call(const std::string &name) {
         return scripts[name]->run();
     }

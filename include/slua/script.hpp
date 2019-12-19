@@ -31,6 +31,10 @@ public:
 
     Script(lua_State *L) : L(L), stack(L) { }
 
+    ~Script() {
+        luaL_unref(L, LUA_REGISTRYINDEX, index);
+    }
+
     AbstractValue *run() {
         lua_settop(L, 0);
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);

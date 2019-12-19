@@ -29,18 +29,18 @@ public:
 };
 
 TEST(OverloadingTest, testNumber) {
-    Lua _lua;
-
-    ClassPrototype *prototype = ClassPrototypeBuilder("NumberExample")
-            .inverse(mk_function(&NumberExample::inverse))
-            .build();
-
-
-    NumberExample ne{};
-    _lua.add<NumberExample>(prototype)
-            .set("ne", &ne)
-            .file("cn", "scripts/custom_number.lua")
-            .call("cn");
+//    Lua _lua;
+//
+//    ClassPrototype *prototype = ClassPrototypeBuilder("NumberExample")
+//            .inverse(mk_function(&NumberExample::inverse))
+//            .build();
+//
+//
+//    NumberExample ne{};
+//    _lua.add<NumberExample>(prototype)
+//            .set("ne", &ne)
+//            .file("cn", "scripts/custom_number.lua")
+//            .call("cn");
 }
 
 TEST(OverloadingTest, testString) {

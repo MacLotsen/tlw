@@ -13,6 +13,7 @@
 #define luaL_setmetatable(_l, n) (luaL_getmetatable(_l, n), lua_setmetatable(_l, -2))
 #endif
 
+
 static const void *null_ref = nullptr;
 
 
@@ -132,7 +133,7 @@ public:
                 lua_error(L);
                 return nullptr;
             }
-            val = (Value<T>*) new Value<Boolean>(lua_toboolean(L, -1));
+            val = (Value<T> *) new Value<Boolean>(lua_toboolean(L, -1));
         } else if (typeInfo == typeid(Number) || typeInfo == typeid(int) || typeInfo == typeid(float)) {
             if (!lua_isnumber(L, -1)) {
                 lua_pushstring(L, ("Type mismatch. Expected a number type, but " + String(luaL_typename(L, -1)) +
@@ -140,7 +141,7 @@ public:
                 lua_error(L);
                 return nullptr;
             }
-            val = (Value<T>*) new Value<Number>(lua_tonumber(L, -1));
+            val = (Value<T> *) new Value<Number>(lua_tonumber(L, -1));
         } else if (typeInfo == typeid(String)) {
             if (!lua_isstring(L, -1)) {
                 lua_pushstring(L, ("Type mismatch. Expected a string type, but " + String(luaL_typename(L, -1)) +
@@ -149,7 +150,7 @@ public:
                 return nullptr;
             }
             String s = lua_tostring(L, -1);
-            val = (Value<T>*) new Value<String>(s);
+            val = (Value<T> *) new Value<String>(s);
         } else if (typeInfo == typeid(List)) {
             if (!lua_istable(L, -1)) {
                 lua_pushstring(L, ("Type mismatch. Expected a list type, but " + String(luaL_typename(L, -1)) +
@@ -169,7 +170,7 @@ public:
                 l.push_back(pop());
             }
 
-            val = (Value<T>*) new Value<List>(l);
+            val = (Value<T> *) new Value<List>(l);
         } else if (typeInfo == typeid(Table)) {
             if (!lua_istable(L, -1)) {
                 lua_pushstring(L, ("Type mismatch. Expected a list type, but " + String(luaL_typename(L, -1)) +
@@ -190,7 +191,7 @@ public:
                 t[key] = pop();
             }
 
-            val = (Value<T>*) new Value<Table>(t);
+            val = (Value<T> *) new Value<Table>(t);
         } else {
             int type = lua_type(L, -1);
             switch (type) {
@@ -200,7 +201,7 @@ public:
                     break;
                 }
                 case LUA_TLIGHTUSERDATA: {
-                    T v = *((T*) lua_touserdata(L, -1));
+                    T v = *((T *) lua_touserdata(L, -1));
                     val = new Value<T>(v);
                     break;
                 }

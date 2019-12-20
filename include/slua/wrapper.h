@@ -62,9 +62,13 @@ static void expectNoArguments(lua_State *L) {
 
 template<typename ...Args>
 static void expectArguments(lua_State *L) {
+    // TODO reimplement inspector
 //    if (!LuaStack(L).expect<Args...>()) {
 //        errorUnmatchedArguments<Args...>(L);
 //    }
+    if (lua_gettop(L) != sizeof...(Args)) {
+        errorUnmatchedArguments<Args...>(L);
+    }
 }
 
 template<typename T>
@@ -192,13 +196,6 @@ static int luaWrapFunction(lua_State *L, class_none_to_one_t<C, R> f) {
     expectArguments<C *>(L);
     C *klass = getClass<C>(L);
     TypedStack<R>::push(L, (klass->*f)());
-
-//    LuaStack stack(L);
-//    Value<C *> *klassValue = stack.pop<C *>();
-//    C *klass = klassValue->val();
-//    delete klassValue;
-//    Value<R> r((klass->*f)());
-//    stack.push(r);
     return 1;
 }
 
@@ -207,10 +204,6 @@ static int luaWrapFunction(lua_State *L, class_many_to_none_t<C, Args...> f) {
     expectArguments<C *, Args...>(L);
     C *klass = getClass<C>(L);
     LuaCMethodInvoker<C(void(Args...))>::invoke(L, klass, f);
-
-//    LuaStack stack(L);
-//    auto s = stack.getArgs();
-//    (klass->*f)(getArg<Args>(s)...);
     return 0;
 }
 
@@ -218,31 +211,19 @@ template<typename C, typename R, typename ...Args>
 static int luaWrapFunction(lua_State *L, class_many_to_one_t<C, R, Args...> f) {
     expectArguments<C *, Args...>(L);
     C *klass = getClass<C>(L);
-    TypedStack<R>::push(LuaCMethodInvoker<C(R(Args...))>::invoke(L, klass, f));
-//    LuaStack stack(L);
-//    C *klass = getClass<C>(L);
-//    Value<R> r((klass->*f)(getArg<Args>(stack.getArgs())...));
-//    stack.push(r);
+    TypedStack<R>::push(L, LuaCMethodInvoker<C(R(Args...))>::invoke(L, klass, f));
     return 1;
 }
 
 template<class C, typename T>
 static int luaWrapPropertySet(lua_State *L, C *klass, class_property_t<C, T> p) {
     klass->*p = TypedStack<T>::pop(L);
-//    LuaStack stack(L);
-//    Value<T> *val = stack.pop<T>();
-//    klass->*p = val->val();
-//    delete val;
     return 0;
 }
 
 template<class C, typename T>
 static int luaWrapPropertyGet(lua_State *L, C *klass, class_property_t<C, T> p) {
     TypedStack<T>::push(L, klass->*p);
-//    LuaStack stack(L);
-//    T val = klass->*p;
-//    Value<T> v(&val);
-//    stack.push(v);
     return 1;
 }
 

@@ -11,7 +11,15 @@ private:
 public:
     NumberExample() : myNumber(1.0) {}
     explicit NumberExample(double n) : myNumber(n) {}
-    double inverse() {
+
+    /**
+     * For complicated reasons the unary minus provides the userdata twice...
+     * See (http://lua-users.org/lists/lua-l/2016-10/msg00351.html)
+     *
+     * @param self
+     * @return
+     */
+    double inverse(NumberExample *) {
         return -myNumber;
     }
 };
@@ -38,9 +46,11 @@ TEST(OverloadingTest, testNumber) {
 
 
     NumberExample ne{};
-    _lua.add<NumberExample>(prototype)
+    auto r = _lua.add<NumberExample>(prototype)
             .set("ne", &ne)
-            .file<LuaFunction<>>("scripts/custom_number.lua")();
+            .file<LuaFunction<double()>>("scripts/custom_number.lua")();
+
+    ASSERT_EQ(-1, r);
 }
 
 TEST(OverloadingTest, testString) {

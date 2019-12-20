@@ -6,24 +6,6 @@
 #define SIMPLELUA_CLASS_H
 
 #include <unordered_map>
-#include "function.hpp"
-
-template<typename C, typename R, typename ...ARGS>
-using method_t = R (C::*)(ARGS...);
-
-template<typename C, typename R>
-using getter_t = R (C::*)();
-
-template<typename C>
-using call_t = void (C::*)();
-
-template<typename C, typename ...ARGS>
-using setter_t = void (C::*)(ARGS...);
-
-
-
-
-// Keep the class methods in light userdata?
 
 struct ClassPrototype {
     const String &name;
@@ -55,13 +37,17 @@ public:
             delete prototype;
     }
 
-    ClassPrototypeBuilder &constr(lua_CFunction constr) {
+    ClassPrototypeBuilder &constructor(lua_CFunction constr) {
         prototype->constructor = constr;
         return *this;
     }
 
+    ClassPrototypeBuilder &destructor(lua_CFunction f) {
+        prototype->overloading["__gc"] = f;
+        return *this;
+    }
+
     ClassPrototypeBuilder &method(const String &n, lua_CFunction f) {
-//        prototype->methods.insert(std::make_pair<String, lua_CFunction>(n, f));
         prototype->methods[n] = f;
         return *this;
     }
@@ -81,8 +67,98 @@ public:
         return *this;
     }
 
-    ClassPrototypeBuilder &overload(const String &n, lua_CFunction f) {
-        prototype->overloading[n] = f;
+    ClassPrototypeBuilder &inverse(lua_CFunction f) {
+        prototype->overloading["__unm"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &addition(lua_CFunction f) {
+        prototype->overloading["__add"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &subtraction(lua_CFunction f) {
+        prototype->overloading["__sub"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &multiplication(lua_CFunction f) {
+        prototype->overloading["__mul"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &division(lua_CFunction f) {
+        prototype->overloading["__div"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &floorDivision(lua_CFunction f) {
+        prototype->overloading["__idiv"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &modulo(lua_CFunction f) {
+        prototype->overloading["__mod"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &power(lua_CFunction f) {
+        prototype->overloading["__pow"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &concat(lua_CFunction f) {
+        prototype->overloading["__concat"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &equality(lua_CFunction f) {
+        prototype->overloading["__eq"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &lessThan(lua_CFunction f) {
+        prototype->overloading["__lt"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &lessThanOrEqual(lua_CFunction f) {
+        prototype->overloading["__le"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &binaryAnd(lua_CFunction f) {
+        prototype->overloading["__band"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &binaryOr(lua_CFunction f) {
+        prototype->overloading["__bor"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &binaryXor(lua_CFunction f) {
+        prototype->overloading["__bxor"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &binaryInverse(lua_CFunction f) {
+        prototype->overloading["__le"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &leftShift(lua_CFunction f) {
+        prototype->overloading["__le"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &rightShift(lua_CFunction f) {
+        prototype->overloading["__le"] = f;
+        return *this;
+    }
+
+    ClassPrototypeBuilder &toString(lua_CFunction f) {
+        prototype->overloading["__tostring"] = f;
         return *this;
     }
 
@@ -91,79 +167,5 @@ public:
         return prototype;
     }
 };
-
-
-
-static int luaMetaConstructor(lua_State *L) {
-    int constructed = 0;
-    String metatable = lua_tostring(L, lua_upvalueindex(1));
-    lua_CFunction constructor = lua_tocfunction(L, lua_upvalueindex(2));
-//    lua_settop(L, 0);
-    constructed = constructor(L);
-    if (!constructed) {
-        lua_pushstring(L, "Constructor did not return an object.");
-        lua_error(L);
-    }
-    for (int i = 1; i <= constructed; ++i) {
-        luaL_getmetatable(L, metatable.c_str());
-        lua_setmetatable(L, i);
-    }
-    return constructed;
-}
-
-static int luaMetaOperators(lua_State *L) {
-    // TODO operator overloading
-    return 0;
-}
-
-static int luaMetaIndex(lua_State *L) {
-    ClassPrototype *prototype = (ClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
-    String property = lua_tostring(L, 2);
-    lua_pop(L, 1);
-
-    for (auto kv: prototype->properties) {
-        if (property == kv.first) {
-            return kv.second(L);
-        }
-    }
-
-    for (auto kv: prototype->getters) {
-        if (property == kv.first) {
-            return kv.second(L);
-        }
-    }
-
-    for (auto kv: prototype->methods) {
-        if (property == kv.first) {
-            lua_pushcclosure(L, kv.second, 1);
-            return 1;
-        }
-    }
-
-    lua_pushstring(L, ("No such property " + property).c_str());
-    lua_error(L);
-}
-
-static int luaMetaNewIndex(lua_State *L) {
-    ClassPrototype *prototype = (ClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
-    String property = lua_tostring(L, 2);
-    lua_remove(L, 2);
-
-    for (auto kv: prototype->properties) {
-        if (property == kv.first) {
-            return kv.second(L);
-        }
-    }
-
-    for (auto kv: prototype->setters) {
-        if (property == kv.first) {
-            return kv.second(L);
-        }
-    }
-
-    lua_pushstring(L, ("No such property " + property).c_str());
-    lua_error(L);
-}
-
 
 #endif //SIMPLELUA_CLASS_H

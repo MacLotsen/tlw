@@ -9,13 +9,12 @@
 
 class Script {
 private:
-    StackFetcher fetcher;
-    StackInserter inserter;
     lua_State *L;
     int index;
+    LuaStack stack;
 public:
-    Script(lua_State *L, String scriptPath) : Script(L, scriptPath, false) {}
-    Script(lua_State *L, String scriptPath, bool raw) : Script(L) {
+    Script(lua_State *L, const String& scriptPath) : Script(L, scriptPath, false) {}
+    Script(lua_State *L, const String& scriptPath, bool raw) : Script(L) {
         if (raw ? (luaL_loadstring(L, scriptPath.c_str())) : (luaL_loadfile(L, scriptPath.c_str()))) {
             throw std::runtime_error(lua_tostring(L, -1));
         }
@@ -30,20 +29,10 @@ public:
         index = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 
-    Script(lua_State *L) : L(L), fetcher(L), inserter(L) { }
+    Script(lua_State *L) : L(L), stack(L) { }
 
-    template<typename T>
-    Value<T> *get(const std::string &name) {
-        lua_getglobal(L, name.c_str());
-        Value<T> *val = fetcher.get<T>(-1);
-        lua_pop(L, 1);
-        return val;
-    }
-
-    template<typename T>
-    void set(std::string name, Value<T> val) {
-        inserter.insert<T>(val);
-        lua_setglobal(L, name.c_str());
+    ~Script() {
+        luaL_unref(L, LUA_REGISTRYINDEX, index);
     }
 
     AbstractValue *run() {
@@ -53,23 +42,23 @@ public:
             throw std::runtime_error(lua_tostring(L, -1));
         }
 
-        StackFetcher fetcher(L);
         int returnCount = lua_gettop(L);
         if (!returnCount) {
             return nullptr;
         }
         if (returnCount == 1) {
-            return fetcher.get(-1);
+            return stack.pop();
         }
-        return fetcher.get();
-    }
 
-    void dump() {
-        int n = lua_gettop(L);
-        for (int i = 1; i <= n; ++i) {
-            std::string type = luaL_typename(L, i);
-            std::cout << "Index: " << i << " Type: " << type << std::endl;
+        List l;
+        std::stack<AbstractValue *> rargs = stack.getArgs();
+
+        while(!rargs.empty()) {
+            l.push_back(rargs.top());
+            rargs.pop();
         }
+
+        return new Value<List>(l);
     }
 };
 

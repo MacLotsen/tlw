@@ -1,6 +1,6 @@
 find_package(GTest)
 
-set(SOURCE_FILES main.cpp scripts.cpp types.cpp functions.cpp property.cpp getter.cpp setter.cpp constructor.cpp destructor.cpp method.cpp operators.cpp ../include/slua/wrappers.h)
+set(SOURCE_FILES main.cpp scripts.cpp types.cpp functions.cpp property.cpp getter.cpp setter.cpp constructor.cpp destructor.cpp method.cpp ../include/slua/wrapper.h overloading.cpp stack.cpp)
 
 add_executable(tests ${SOURCE_FILES})
 target_link_libraries(tests ${GTEST_LIBRARY})

@@ -22,7 +22,7 @@ TEST(ConstructorTest, testConstructor) {
     Lua _lua;
 
     ClassPrototype *propertyPrototype = ClassPrototypeBuilder("Example")
-            .constr(mk_cfunc(&ConstructorExample::create))
+            .constructor(mk_function(&ConstructorExample::create))
             .build();
 
     _lua.file("c", "scripts/constructor.lua")
@@ -41,7 +41,7 @@ TEST(ConstructorTest, testPersistence) {
         Lua _lua;
 
         ClassPrototype *propertyPrototype = ClassPrototypeBuilder("Example")
-                .constr(mk_cfunc(&ConstructorExample::create))
+                .constructor(mk_function(&ConstructorExample::create))
                 .build();
 
         _lua.file("c", "scripts/constructor.lua")

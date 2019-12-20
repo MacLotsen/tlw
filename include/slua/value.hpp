@@ -14,7 +14,7 @@ protected:
     AbstractValue(const std::type_info &type, void *data) : type(type), data(data) {}
 public:
     template<typename T>
-    const T& to() const {
+    const T &to() const {
         return *static_cast<T*>(data);
     }
     

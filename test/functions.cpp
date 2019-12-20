@@ -14,10 +14,13 @@ void noop() {
 
 }
 
+using F1 = double (*)(double, double);
+
 TEST_F(FunctionsTest, testZeroReturnValues) {
-    lua_CFunction p = mk_cfunc(plus);
-    lua_CFunction n = mk_cfunc(noop);
-    lua.add("plus", p);
+    mkfunc(lua.getState(), plus);
+    lua_setglobal(lua.getState(), "plus");
+    lua_CFunction n = mk_function(noop);
+//    lua.add("plus", p);
     lua.add("noop", n);
 //    lua.call("plus");
     lua.file("plus", "scripts/plus.lua");

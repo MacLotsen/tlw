@@ -15,7 +15,7 @@ public:
 TEST(GetterTest, testGetter) {
     Lua _lua;
     ClassPrototype *propertyPrototype = ClassPrototypeBuilder("PropertyExample")
-            .getter("property", mk_getter(&GetterExample::getProperty))
+            .getter("property", mk_function(&GetterExample::getProperty))
             .build();
 
     GetterExample example {"Property"};

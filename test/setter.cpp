@@ -18,7 +18,7 @@ public:
 TEST(SetterTest, testSetter) {
     Lua _lua;
     ClassPrototype *propertyPrototype = ClassPrototypeBuilder("PropertyExample")
-            .setter("property", mk_setter(&SetterExample::setProperty))
+            .setter("property", mk_function(&SetterExample::setProperty))
             .build();
 
     SetterExample example {"Property"};

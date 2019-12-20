@@ -6,6 +6,7 @@
 #define SIMPLELUA_METATABLE_H
 
 #include "class.h"
+#include <lua.hpp>
 
 class ClassPrototype;
 
@@ -16,7 +17,7 @@ public:
 
 static int luaMetaConstructor(lua_State *L) {
     int constructed = 0;
-    String metatable = lua_tostring(L, lua_upvalueindex(1));
+    std::string metatable = lua_tostring(L, lua_upvalueindex(1));
     lua_CFunction constructor = lua_tocfunction(L, lua_upvalueindex(2));
     constructed = constructor(L);
     if (!constructed) {
@@ -32,7 +33,7 @@ static int luaMetaConstructor(lua_State *L) {
 
 static int luaMetaIndex(lua_State *L) {
     ClassPrototype *prototype = (ClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
-    String property = lua_tostring(L, 2);
+    std::string property = lua_tostring(L, 2);
     lua_pop(L, 1);
 
     for (auto kv: prototype->properties) {
@@ -61,7 +62,7 @@ static int luaMetaIndex(lua_State *L) {
 
 static int luaMetaNewIndex(lua_State *L) {
     ClassPrototype *prototype = (ClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
-    String property = lua_tostring(L, 2);
+    std::string property = lua_tostring(L, 2);
     lua_remove(L, 2);
 
     for (auto kv: prototype->properties) {

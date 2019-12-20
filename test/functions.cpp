@@ -2,6 +2,8 @@
 // Created by enijenhuis on 12-12-2019.
 //
 #include "test.h"
+#include <slua/types.hpp>
+#include <slua/wrapper.h>
 
 class FunctionsTest : public ::testing::Test {
 };
@@ -17,12 +19,10 @@ void noop() {
 using F1 = double (*)(double, double);
 
 TEST_F(FunctionsTest, testZeroReturnValues) {
-    mkfunc(lua.getState(), plus);
-    lua_setglobal(lua.getState(), "plus");
+    lua_CFunction p = mk_function(plus);
     lua_CFunction n = mk_function(noop);
-//    lua.add("plus", p);
+    lua.add("plus", p);
     lua.add("noop", n);
-//    lua.call("plus");
-    lua.file("plus", "scripts/plus.lua");
-    ASSERT_EQ(5.0, lua.call("plus")->to<Number>());
+    auto f = lua.file<LuaFunction<double()>>("scripts/plus.lua");
+    ASSERT_EQ(5.0, f());
 }

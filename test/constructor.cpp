@@ -2,6 +2,8 @@
 // Created by erik on 14-12-19.
 //
 #include "test.h"
+#include <slua/wrapper.h>
+#include <slua/types.hpp>
 
 class ConstructorExample;
 
@@ -25,9 +27,8 @@ TEST(ConstructorTest, testConstructor) {
             .constructor(mk_function(&ConstructorExample::create))
             .build();
 
-    _lua.file("c", "scripts/constructor.lua")
-            .add<ConstructorExample>(propertyPrototype)
-            .call("c");
+    _lua.add<ConstructorExample>(propertyPrototype)
+            .file<LuaFunction<>>("scripts/constructor.lua")();
 
     ASSERT_EQ(5, examples.size());
     for (auto v: examples) {
@@ -44,9 +45,8 @@ TEST(ConstructorTest, testPersistence) {
                 .constructor(mk_function(&ConstructorExample::create))
                 .build();
 
-        _lua.file("c", "scripts/constructor.lua")
-                .add<ConstructorExample>(propertyPrototype)
-                .call("c");
+        _lua.add<ConstructorExample>(propertyPrototype)
+                .file<LuaFunction<>>("scripts/constructor.lua")();
     }
     ASSERT_EQ(5, examples.size());
     for (auto v: examples) {

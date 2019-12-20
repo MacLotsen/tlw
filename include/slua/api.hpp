@@ -5,47 +5,34 @@
 #ifndef SIMPLELUA_API_HPP
 #define SIMPLELUA_API_HPP
 
-#include <unordered_map>
-#include <lua.hpp>
-#include "types.hpp"
-#include "value.hpp"
-#include "script.hpp"
-#include "class.h"
+#include "stack.hpp"
 #include "metatable.h"
-#include "wrapper.h"
+#include <lua.hpp>
 
-class Lua {
-private:
-    lua_State *L;
-    std::unordered_map<std::string, Script *> scripts;
+class Lua : Stack {
 public:
-    Lua() : L(luaL_newstate()) {
+    Lua() : Stack(luaL_newstate()) {
         luaL_openlibs(L);
     }
 
     ~Lua() {
-        for (auto kv:scripts) {
-            delete kv.second;
-        }
         lua_close(L);
     }
 
-    Lua &file(const std::string &name, const std::string &path) {
-        scripts[name] = new Script(L, path.c_str());
-        return *this;
+    template<typename T>
+    T file(const std::string &path) {
+        if (luaL_loadfile(L, path.c_str())) {
+            throw std::runtime_error(lua_tostring(L, -1));
+        }
+        return TypedStack<T>::pop(L);
     }
 
-    Lua &src(const std::string &name, const std::string &src) {
-        scripts[name] = new Script(L, src.c_str(), true);
-        return *this;
-    }
-
-    lua_State *getState() {
-        return L;
-    }
-
-    AbstractValue *call(const std::string &name) {
-        return scripts[name]->run();
+    template<typename T>
+    T src(const std::string &name, const std::string &src) {
+        if (luaL_loadstring(L, src.c_str())) {
+            throw std::runtime_error(lua_tostring(L, -1));
+        }
+        return TypedStack<T>::pop(L);
     }
 
     Lua &add(const std::string &name, lua_CFunction f) {
@@ -54,7 +41,7 @@ public:
     }
 
     template<class C>
-    Lua &set(String name, C *object) {
+    Lua &set(const std::string &name, C *object) {
         C **ud = (C **) lua_newuserdata(L, sizeof(C **));
         *ud = object;
         luaL_getmetatable(L, MetaTable::metatables[&typeid(C*)].c_str());

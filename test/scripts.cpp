@@ -2,24 +2,28 @@
 // Created by enijenhuis on 11-12-2019.
 //
 #include "test.h"
+#include <slua/types.hpp>
 
 class ScriptsTest : public ::testing::Test {};
 
 TEST_F(ScriptsTest, testZeroReturnValues) {
-    AbstractValue *returnVal = lua.call("noop");
-    ASSERT_EQ(nullptr, returnVal);
+    ASSERT_NO_THROW(lua.file<LuaFunction<>>("scripts/noop.lua")());
 }
 
 TEST_F(ScriptsTest, testSingleReturnValue) {
-    AbstractValue *returnVal = lua.call("single");;
-    ASSERT_NE(nullptr, returnVal);
-    ASSERT_TRUE(returnVal->is<Number>());
-    ASSERT_EQ(0, returnVal->to<Number>());
+    auto f = lua.file<LuaFunction<double()>>("scripts/single_return.lua");
+    ASSERT_EQ(0, f());
 }
 
 TEST_F(ScriptsTest, testMultiReturnValues) {
-    AbstractValue *returnVal = lua.call("primitives");
-    ASSERT_NE(nullptr, returnVal);
-    ASSERT_TRUE(returnVal->is<List>());
-    ASSERT_LT(1, returnVal->to<List>().size());
+    auto f = lua.file<LuaFunction<std::tuple<bool, double, std::string>()>>("scripts/return_primitives.lua");
+
+    bool b;
+    double d;
+    std::string s;
+    std::tie(b, d, s) = f();
+
+    ASSERT_TRUE(b);
+    ASSERT_EQ(2.5, d);
+    ASSERT_EQ("string", s);
 }

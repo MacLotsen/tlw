@@ -1,6 +1,8 @@
 //
 // Created by erik on 14-12-19.
 //
+#include <slua/wrapper.h>
+#include <slua/types.hpp>
 #include "test.h"
 
 class MethodExample {
@@ -10,15 +12,15 @@ public:
     void method1() {
         callMask |= 1;
     }
-    Number method2() {
+    double method2() {
         callMask |= 2;
         return 5.0;
     }
-    Number method3(Number a, Number b) {
+    double method3(double a, double b) {
         callMask |= 4;
         return a + b;
     }
-    void method4(Number, Number) {
+    void method4(double, double) {
         callMask |= 8;
     }
     unsigned int getCallMask() {
@@ -39,11 +41,9 @@ TEST(MethodTest, testMethods) {
     MethodExample e;
 
     auto retValue = lua.add<MethodExample>(classPrototype)
-            .file("m", "scripts/method.lua")
             .set("example", &e)
-            .call("m");
+            .file<LuaFunction<double()>>("scripts/method.lua")();
 
     ASSERT_EQ(15, e.getCallMask());
-    ASSERT_TRUE(retValue->is<Number>());
-    ASSERT_EQ(10.0, retValue->to<Number>());
+    ASSERT_EQ(10.0, retValue);
 }

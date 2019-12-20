@@ -2,9 +2,11 @@
 // Created by erik on 14-12-19.
 //
 #include "test.h"
+#include <slua/wrapper.h>
+#include <slua/types.hpp>
 
 struct PropertyExample {
-    String property;
+    std::string property;
 };
 
 
@@ -17,10 +19,8 @@ TEST(PropertyTest, testProperty) {
     PropertyExample example {"Property"};
     auto r = _lua.add<PropertyExample>(propertyPrototype)
             .set("example", &example)
-            .file("p", "scripts/property.lua")
-            .call("p");
+            .file<LuaFunction<std::string()>>("scripts/property.lua")();
 
-    ASSERT_TRUE(r->is<String>());
-    ASSERT_EQ("Property", r->to<String>());
+    ASSERT_EQ("Property", r);
     ASSERT_EQ("property changed", example.property);
 }

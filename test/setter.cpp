@@ -1,15 +1,18 @@
 //
 // Created by erik on 14-12-19.
 //
+#include <slua/wrapper.h>
+#include <slua/types.hpp>
+#include <utility>
 #include "test.h"
 
 class SetterExample {
 private:
-    String property;
+    std::string property;
 public:
-    explicit SetterExample(String p) : property(p) {}
-    void setProperty(String p) { property = p; }
-    String get() {
+    explicit SetterExample(std::string p) : property(std::move(p)) {}
+    void setProperty(const std::string& p) { property = p; }
+    std::string get() {
         return property;
     }
 };
@@ -24,8 +27,7 @@ TEST(SetterTest, testSetter) {
     SetterExample example {"Property"};
     _lua.add<SetterExample>(propertyPrototype)
             .set("example", &example)
-            .file("p", "scripts/setter.lua")
-            .call("p");
+            .file<LuaFunction<>>("scripts/setter.lua")();
 
     ASSERT_EQ("property changed", example.get());
 }

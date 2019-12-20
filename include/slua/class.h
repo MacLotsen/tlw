@@ -5,10 +5,11 @@
 #ifndef SIMPLELUA_CLASS_H
 #define SIMPLELUA_CLASS_H
 
+#include <lua.hpp>
 #include <unordered_map>
 
 struct ClassPrototype {
-    const String &name;
+    const std::string &name;
     lua_CFunction constructor;
     std::unordered_map<std::string, lua_CFunction> overloading {};
     std::unordered_map<std::string, lua_CFunction> properties {};
@@ -16,9 +17,9 @@ struct ClassPrototype {
     std::unordered_map<std::string, lua_CFunction> setters {};
     std::unordered_map<std::string, lua_CFunction> methods {};
 
-    explicit ClassPrototype(const String &name) : ClassPrototype(name, nullptr) {}
+    explicit ClassPrototype(const std::string &name) : ClassPrototype(name, nullptr) {}
 
-    ClassPrototype(const String &name, lua_CFunction constr) :
+    ClassPrototype(const std::string &name, lua_CFunction constr) :
             name(name), constructor(constr) {}
 };
 
@@ -27,9 +28,9 @@ private:
     ClassPrototype *prototype;
     bool built = false;
 public:
-    explicit ClassPrototypeBuilder(const String &name) : prototype(new ClassPrototype(name)) {}
+    explicit ClassPrototypeBuilder(const std::string &name) : prototype(new ClassPrototype(name)) {}
 
-    explicit ClassPrototypeBuilder(const String &name, lua_CFunction constructor) : prototype(
+    explicit ClassPrototypeBuilder(const std::string &name, lua_CFunction constructor) : prototype(
             new ClassPrototype(name, constructor)) {}
 
     ~ClassPrototypeBuilder() {
@@ -47,22 +48,22 @@ public:
         return *this;
     }
 
-    ClassPrototypeBuilder &method(const String &n, lua_CFunction f) {
+    ClassPrototypeBuilder &method(const std::string &n, lua_CFunction f) {
         prototype->methods[n] = f;
         return *this;
     }
 
-    ClassPrototypeBuilder &property(const String &n, lua_CFunction f) {
+    ClassPrototypeBuilder &property(const std::string &n, lua_CFunction f) {
         prototype->properties[n] = f;
         return *this;
     }
 
-    ClassPrototypeBuilder &getter(const String &n, lua_CFunction f) {
+    ClassPrototypeBuilder &getter(const std::string &n, lua_CFunction f) {
         prototype->getters[n] = f;
         return *this;
     }
 
-    ClassPrototypeBuilder &setter(const String &n, lua_CFunction f) {
+    ClassPrototypeBuilder &setter(const std::string &n, lua_CFunction f) {
         prototype->setters[n] = f;
         return *this;
     }

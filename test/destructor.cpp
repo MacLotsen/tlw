@@ -5,6 +5,8 @@
 //
 // Created by erik on 14-12-19.
 //
+#include <slua/wrapper.h>
+#include <slua/types.hpp>
 #include "test.h"
 
 static bool destroyed = false;
@@ -28,10 +30,9 @@ TEST(DestructorTest, testDestructor) {
     auto e = new DestructorExample;
 
     Lua _lua;
-    _lua.file("d", "scripts/destructor.lua")
-            .add<DestructorExample>(propertyPrototype)
+    _lua.add<DestructorExample>(propertyPrototype)
             .set("example", e)
-            .call("d");
+            .file<LuaFunction<>>("scripts/destructor.lua")();
 
     ASSERT_TRUE(destroyed);
 }

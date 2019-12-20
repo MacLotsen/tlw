@@ -285,63 +285,6 @@ public:
     }
 };
 
-template<typename ...Ts>
-class TypedStack<std::variant<Ts...>> {
-    using T = std::variant<Ts...>;
-public:
-    inline static T get(lua_State *L, int i) {
-        int t = lua_type(L, i);
-        switch (t) {
-            case LUA_TBOOLEAN:
-                return TypedStack<bool>::get(L, i);
-            case LUA_TNUMBER:
-                return TypedStack<double>::get(L, i);
-            case LUA_TSTRING:
-                if constexpr ((std::is_same_v<std::string, Ts> || ...)) {
-                    return TypedStack<std::string>::get(L, i);
-                } else {
-                    return TypedStack<const char *>::get(L, i);
-                }
-            case LUA_TTABLE:
-                // TODO
-                break;
-            case LUA_TLIGHTUSERDATA:
-                // TODO
-                break;
-            case LUA_TUSERDATA:
-                // TODO
-                break;
-        }
-    }
-
-    inline static T pop(lua_State *L) {
-        T v = get(L, -1);
-        lua_pop(L, 1);
-        return v;
-    }
-
-    inline static void push(lua_State *L, const T &v) {
-        push<Ts...>(L, v);
-    }
-
-    template<typename Arg>
-    inline static void push(lua_State *L, const T &v) {
-        if (std::holds_alternative<Arg>(v)) {
-            TypedStack<Arg>::push(L, std::get<Arg>(v));
-        } else {
-            throw std::runtime_error("Incompatible variant type given.");
-        }
-    }
-
-    template<typename Arg1, typename Arg2, typename ...Args>
-    inline static void push(lua_State *L, const T &v) {
-        if (std::holds_alternative<Arg1>(v)) {
-            TypedStack<Arg1>::push(L, std::get<Arg1>(v));
-        } else {
-            push<Arg2, Args...>(L, v);
-        }
-    }
-};
 
 template<typename K, typename ...Args>
 class TypedStack<std::vector<K, Args...>> {
@@ -370,20 +313,6 @@ public:
             lua_rawseti(L, -2, i++);
         }
     }
-};
-
-template<typename K, typename V, typename ...Args>
-class TypedStack<std::unordered_map<K, V, Args...>> {
-    using T = std::unordered_map<K, V, Args...>;
-public:
-    /* TODO single value typed map */
-};
-
-template<typename ...Args>
-class TypedStack<std::unordered_map<const std::string &, std::variant<Args...>>> {
-    using T = std::unordered_map<const std::string &, std::variant<Args...>>;
-public:
-    /* TODO variant map */
 };
 
 template<int... Is>
@@ -467,6 +396,7 @@ private:
 };
 
 class LuaRef {
+    friend TypedStack<LuaRef>;
 protected:
     lua_State *L;
     int index = -1;
@@ -479,6 +409,55 @@ public:
         luaL_unref(L, LUA_REGISTRYINDEX, index);
     }
 };
+
+template<typename K>
+class LuaStructure : public LuaRef {
+public:
+    template<typename V>
+    V get(K k) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, index);
+        TypedStack<K>::push(L, k);
+        lua_gettable(L, -2);
+        V v = TypedStack<V>::pop(L);
+        lua_pop(L, 1);
+        return v;
+    }
+
+    template<typename V>
+    void set(K k, V v) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, index);
+        TypedStack<K>::push(L, k);
+        TypedStack<V>::push(L, v);
+        lua_settable(L, -3);
+        lua_pop(L, 1);
+    }
+};
+
+using LuaList = LuaStructure<int>;
+using LuaTable = LuaStructure<std::string>;
+
+template<typename K>
+class TypedStack<LuaStructure<K>> {
+using T = LuaStructure<K>;
+public:
+    inline static T get(lua_State *L, int i) {
+        lua_pushvalue(L, i);
+        return T{L};
+    }
+
+    inline static T pop(lua_State *L) {
+        return T{L};
+    }
+};
+
+template<>
+class TypedStack<LuaRef> {
+public:
+    inline static void push(lua_State *L, const LuaRef &r) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, r.index);
+    }
+};
+
 
 template<typename ...T>
 class LuaFunction : public LuaRef {
@@ -563,6 +542,11 @@ template<typename R, typename ...Args>
 class TypedStack<LuaFunction<R(Args...)>> {
     typedef LuaFunction<R(Args...)> T;
 public:
+    inline static T get(lua_State *L, int i) {
+        lua_pushvalue(L, i);
+        return T{L};
+    }
+
     inline static T pop(lua_State *L) {
         return T{L};
     }
@@ -572,6 +556,11 @@ template<typename ...Args>
 class TypedStack<LuaFunction<void(Args...)>> {
     typedef LuaFunction<void(Args...)> T;
 public:
+    inline static T get(lua_State *L, int i) {
+        lua_pushvalue(L, i);
+        return T{L};
+    }
+
     inline static T pop(lua_State *L) {
         return T{L};
     }
@@ -581,6 +570,10 @@ template<typename R>
 class TypedStack<LuaFunction<R()>> {
     typedef LuaFunction<R()> T;
 public:
+    inline static T get(lua_State *L, int i) {
+        lua_pushvalue(L, i);
+        return T{L};
+    }
     inline static T pop(lua_State *L) {
         return T{L};
     }
@@ -590,6 +583,11 @@ template<>
 class TypedStack<LuaFunction<>> {
     typedef LuaFunction<> T;
 public:
+    inline static T get(lua_State *L, int i) {
+        lua_pushvalue(L, i);
+        return T{L};
+    }
+
     inline static T pop(lua_State *L) {
         return T{L};
     }
@@ -652,43 +650,6 @@ TEST(StackTest, testValueTypes) {
     ASSERT_STREQ("LUA", str.c_str());
 
     ASSERT_EQ(0, lua_gettop(L));
-    lua_close(L);
-}
-
-TEST(StackTest, testVariant) {
-    using T = std::variant<bool, double, std::string, const char *>;
-    lua_State *L = luaL_newstate();
-    luaL_openlibs(L);
-    Stack s(L);
-
-    T var1;
-    lua_pushboolean(L, true);
-    var1 = s.pop<T>();
-    ASSERT_TRUE(std::holds_alternative<bool>(var1));
-    ASSERT_TRUE(std::get<bool>(var1));
-
-    T var2;
-    lua_pushnumber(L, 2.5);
-    var2 = s.pop<T>();
-    ASSERT_TRUE(std::holds_alternative<double>(var2));
-    ASSERT_EQ(2.5, std::get<double>(var2));
-
-    T var3;
-    lua_pushstring(L, "LUA");
-    var3 = s.pop<T>();
-    ASSERT_TRUE(std::holds_alternative<std::string>(var3));
-    ASSERT_EQ("LUA", std::get<std::string>(var3));
-
-    // Test pushing a variant
-    T var4 = "LUA";
-    ASSERT_FALSE(std::holds_alternative<bool>(var4));
-    ASSERT_FALSE(std::holds_alternative<double>(var4));
-    ASSERT_FALSE(std::holds_alternative<std::string>(var4));
-    ASSERT_TRUE(std::holds_alternative<const char *>(var4));
-    s.push(var4);
-    ASSERT_EQ(1, lua_gettop(L));
-    ASSERT_EQ("LUA", s.pop<std::string>());
-
     lua_close(L);
 }
 
@@ -761,25 +722,26 @@ TEST(StackTest, testPopArgumentsAsTuple) {
     lua_close(L);
 }
 
-//TEST(StackTest, testTable) {
-//    lua_State *L = luaL_newstate();
-//    luaL_openlibs(L);
-//    Stack s(L);
-//
-//    // Test table/struct
-//    lua_newtable(L);
-//    lua_pushnumber(L, 1.5);
-//    lua_setfield(L, -2, "number");
-//    lua_pushstring(L, "a string");
-//    lua_setfield(L, -2, "str");
-//
-//    /*
-//    auto t = s.pop<TableTest>();
-//    ASSERT_EQ(1.5, t.number);
-//    ASSERT_EQ("a string", t.str);
-//     */
-//    lua_close(L);
-//}
+TEST(StackTest, testTable) {
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+    Stack s(L);
+
+    // Test table/struct
+    lua_newtable(L);
+    lua_pushnumber(L, 1.5);
+    lua_setfield(L, -2, "number");
+    lua_pushstring(L, "a string");
+    lua_setfield(L, -2, "str");
+
+    {
+        auto t = s.pop<LuaTable>();
+        ASSERT_EQ(1.5, t.get<double>("number"));
+        ASSERT_EQ("a string", t.get<std::string>("str"));
+    }
+
+    lua_close(L);
+}
 
 TEST(StackTest, testLuaFunctions) {
     lua_State *L = luaL_newstate();

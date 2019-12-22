@@ -93,11 +93,6 @@ public:
         return *this;
     }
 
-    ClassPrototypeBuilder &floorDivision(lua_CFunction f) {
-        prototype->overloading["__idiv"] = f;
-        return *this;
-    }
-
     ClassPrototypeBuilder &modulo(lua_CFunction f) {
         prototype->overloading["__mod"] = f;
         return *this;

@@ -6,4 +6,4 @@
 -- To change this template use File | Settings | File Templates.
 --
 
-return -ne
+return -ne, ne + 1, ne - 1, ne * 2, ne / 1, ne % 2, ne ^ 2, ne ~= ne2, ne < ne2, ne <= ne2

@@ -60,10 +60,7 @@ public:
 
     inline static void push(lua_State *L, T *o) {
         if (MetaTable::metatables.count(&typeid(T *))) {
-            T **userDatum = (T**) lua_newuserdata(L, sizeof(T **));
-            *userDatum = o;
-            luaL_getmetatable(L, MetaTable::metatables[&typeid(T *)].c_str());
-            lua_setmetatable(L, -2);
+            MetaTable::createObject(L, o);
         } else {
             lua_pushlightuserdata(L, (void *) o);
         }

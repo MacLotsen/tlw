@@ -21,8 +21,8 @@ using F1 = double (*)(double, double);
 TEST_F(FunctionsTest, testZeroReturnValues) {
     lua_CFunction p = mk_function(plus);
     lua_CFunction n = mk_function(noop);
-    lua.add("plus", p);
-    lua.add("noop", n);
+    lua.global("plus", p);
+    lua.global("noop", n);
     auto f = lua.file<LuaFunction<double()>>("scripts/plus.lua");
     ASSERT_EQ(5.0, f());
 }

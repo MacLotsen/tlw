@@ -26,7 +26,7 @@ TEST(SetterTest, testSetter) {
 
     SetterExample example {"Property"};
     _lua.add<SetterExample>(propertyPrototype)
-            .set("example", &example)
+            .global("example", &example)
             .file<LuaFunction<>>("scripts/setter.lua")();
 
     ASSERT_EQ("property changed", example.get());

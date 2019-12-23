@@ -28,24 +28,34 @@ public:
     }
 
     template<typename T>
-    T src(const std::string &name, const std::string &src) {
+    T src(const std::string &src) {
         if (luaL_loadstring(L, src.c_str())) {
             throw std::runtime_error(lua_tostring(L, -1));
         }
         return TypedStack<T>::pop(L);
     }
 
-    Lua &add(const std::string &name, lua_CFunction f) {
+    template<typename T>
+    T global(const std::string &name) {
+        lua_getglobal(L, name.c_str());
+        return pop<T>();
+    }
+
+    template<typename T>
+    Lua &global(const std::string &name, T value) {
+        push<T>(value);
+        lua_setglobal(L, name.c_str());
+        return *this;
+    }
+
+    Lua &global(const std::string &name, lua_CFunction f) {
         lua_register(L, name.c_str(), f);
         return *this;
     }
 
     template<class C>
-    Lua &set(const std::string &name, C *object) {
-        C **ud = (C **) lua_newuserdata(L, sizeof(C **));
-        *ud = object;
-        luaL_getmetatable(L, MetaTable::metatables[&typeid(C*)].c_str());
-        lua_setmetatable(L, -2);
+    Lua &global(const std::string &name, C *object) {
+        push(object);
         lua_setglobal(L, name.c_str());
         return *this;
     }
@@ -53,9 +63,22 @@ public:
     template<typename C>
     Lua &add(const ClassPrototype *klass) {
         if (!MetaTable::metatables.count(&typeid(C *))) {
-            MetaTable::metatables[&typeid(C *)] = klass->name;
+            MetaTable::metatables[&typeid(C *)] = klass;
         }
-        luaCreateMetaTable(L, klass);
+
+        // Get the type of the meta table. Nil if it doesn't exist
+        luaL_getmetatable(L, klass->name.c_str());
+        int t = lua_type(L, -1);
+        lua_pop(L, 1);
+
+        if (t == LUA_TNIL) {
+            // Create meta table for this lua instance directly for e.g. constructor creation
+            luaCreateMetaTable(L, klass);
+            lua_pop(L, 1);
+        } else {
+            std::cerr << "Warning: Class '" << klass->name << "'already created." << std::endl;
+        }
+
         return *this;
     }
 };

@@ -41,7 +41,7 @@ TEST(MethodTest, testMethods) {
     MethodExample e;
 
     auto retValue = lua.add<MethodExample>(classPrototype)
-            .set("example", &e)
+            .global("example", &e)
             .file<LuaFunction<double()>>("scripts/method.lua")();
 
     ASSERT_EQ(15, e.getCallMask());

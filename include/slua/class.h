@@ -11,7 +11,7 @@
 struct ClassPrototype {
     const std::string &name;
     lua_CFunction constructor;
-    std::unordered_map<std::string, lua_CFunction> overloading {};
+    std::unordered_map<std::string, lua_CFunction> operators {};
     std::unordered_map<std::string, lua_CFunction> properties {};
     std::unordered_map<std::string, lua_CFunction> getters {};
     std::unordered_map<std::string, lua_CFunction> setters {};
@@ -44,7 +44,7 @@ public:
     }
 
     ClassPrototypeBuilder &destructor(lua_CFunction f) {
-        prototype->overloading["__gc"] = f;
+        prototype->operators["__gc"] = f;
         return *this;
     }
 
@@ -69,92 +69,92 @@ public:
     }
 
     ClassPrototypeBuilder &inverse(lua_CFunction f) {
-        prototype->overloading["__unm"] = f;
+        prototype->operators["__unm"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &addition(lua_CFunction f) {
-        prototype->overloading["__add"] = f;
+        prototype->operators["__add"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &subtraction(lua_CFunction f) {
-        prototype->overloading["__sub"] = f;
+        prototype->operators["__sub"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &multiplication(lua_CFunction f) {
-        prototype->overloading["__mul"] = f;
+        prototype->operators["__mul"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &division(lua_CFunction f) {
-        prototype->overloading["__div"] = f;
+        prototype->operators["__div"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &modulo(lua_CFunction f) {
-        prototype->overloading["__mod"] = f;
+        prototype->operators["__mod"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &power(lua_CFunction f) {
-        prototype->overloading["__pow"] = f;
+        prototype->operators["__pow"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &concat(lua_CFunction f) {
-        prototype->overloading["__concat"] = f;
+        prototype->operators["__concat"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &equality(lua_CFunction f) {
-        prototype->overloading["__eq"] = f;
+        prototype->operators["__eq"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &lessThan(lua_CFunction f) {
-        prototype->overloading["__lt"] = f;
+        prototype->operators["__lt"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &lessThanOrEqual(lua_CFunction f) {
-        prototype->overloading["__le"] = f;
+        prototype->operators["__le"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &binaryAnd(lua_CFunction f) {
-        prototype->overloading["__band"] = f;
+        prototype->operators["__band"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &binaryOr(lua_CFunction f) {
-        prototype->overloading["__bor"] = f;
+        prototype->operators["__bor"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &binaryXor(lua_CFunction f) {
-        prototype->overloading["__bxor"] = f;
+        prototype->operators["__bxor"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &binaryInverse(lua_CFunction f) {
-        prototype->overloading["__le"] = f;
+        prototype->operators["__le"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &leftShift(lua_CFunction f) {
-        prototype->overloading["__le"] = f;
+        prototype->operators["__le"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &rightShift(lua_CFunction f) {
-        prototype->overloading["__le"] = f;
+        prototype->operators["__le"] = f;
         return *this;
     }
 
     ClassPrototypeBuilder &toString(lua_CFunction f) {
-        prototype->overloading["__tostring"] = f;
+        prototype->operators["__tostring"] = f;
         return *this;
     }
 

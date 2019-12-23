@@ -4,7 +4,7 @@
 #include "test.h"
 
 Lua lua;
-std::unordered_map<const std::type_info*, std::string> MetaTable::metatables = {};
+std::unordered_map<const std::type_info*, const ClassPrototype*> MetaTable::metatables = {};
 
 int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);

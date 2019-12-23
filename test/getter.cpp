@@ -22,7 +22,7 @@ TEST(GetterTest, testGetter) {
 
     GetterExample example {"Property"};
     auto r = _lua.add<GetterExample>(propertyPrototype)
-            .set("example", &example)
+            .global("example", &example)
             .file<LuaFunction<std::string()>>("scripts/getter.lua")();
 
     ASSERT_EQ("Property", r);

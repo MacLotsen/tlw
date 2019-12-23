@@ -9,10 +9,21 @@
 #include <lua.hpp>
 
 class ClassPrototype;
+static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass);
 
 class MetaTable {
 public:
-    static std::unordered_map<const std::type_info *, std::string> metatables;
+    static std::unordered_map<const std::type_info *, const ClassPrototype*> metatables;
+
+    template<typename T>
+    static void createObject(lua_State *L, T *object) {
+        if (!metatables.count(&typeid(T*)))
+            throw std::runtime_error("No such class.");
+        T **ud = (T **) lua_newuserdata(L, sizeof(T **));
+        *ud = object;
+        luaCreateMetaTable(L, metatables[&typeid(T*)]);
+        lua_setmetatable(L, -2);
+    }
 };
 
 static int luaMetaConstructor(lua_State *L) {
@@ -105,7 +116,7 @@ static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass) {
         }
 
         // Set all operator overloading
-        for (auto kv: klass->overloading) {
+        for (auto kv: klass->operators) {
             lua_pushstring(L, kv.first.c_str());
             lua_pushcfunction(L, kv.second);
             lua_settable(L, metatable);
@@ -125,9 +136,9 @@ static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass) {
             lua_settable(L, metatable);
         }
 
+        // Pop the prototype and leave the meta table on top of the stack
+        lua_pop(L, 1);
     }
-    // Clear working data
-    lua_settop(L, 0);
 }
 
 #endif //SIMPLELUA_METATABLE_H

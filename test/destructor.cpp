@@ -32,7 +32,7 @@ TEST(DestructorTest, testDestructor) {
     Lua _lua;
     _lua.add<DestructorExample>(propertyPrototype)
             .global("example", e)
-            .file<LuaFunction<>>("scripts/destructor.lua")();
+            .file<LuaFunction<>>("test/scripts/destructor.lua")();
 
     ASSERT_TRUE(destroyed);
 }

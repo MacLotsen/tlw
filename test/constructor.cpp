@@ -28,7 +28,7 @@ TEST(ConstructorTest, testConstructor) {
             .build();
 
     _lua.add<ConstructorExample>(propertyPrototype)
-            .file<LuaFunction<>>("scripts/constructor.lua")();
+            .file<LuaFunction<>>("test/scripts/constructor.lua")();
 
     ASSERT_EQ(5, examples.size());
     for (auto v: examples) {
@@ -46,7 +46,7 @@ TEST(ConstructorTest, testPersistence) {
                 .build();
 
         _lua.add<ConstructorExample>(propertyPrototype)
-                .file<LuaFunction<>>("scripts/constructor.lua")();
+                .file<LuaFunction<>>("test/scripts/constructor.lua")();
     }
     ASSERT_EQ(5, examples.size());
     for (auto v: examples) {

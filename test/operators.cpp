@@ -36,7 +36,7 @@ TEST(OverloadingTest, testOverloading) {
     auto retVal = _lua.add<OverloadingExample>(prototype)
         .set("e1", &e1)
         .set("e2", &e2)
-        .file("o", "scripts/overloading.lua")
+        .file("o", "test/scripts/overloading.lua")
         .call("o");
 
     ASSERT_TRUE(retVal->is<Boolean>());

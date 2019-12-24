@@ -7,16 +7,16 @@
 class ScriptsTest : public ::testing::Test {};
 
 TEST_F(ScriptsTest, testZeroReturnValues) {
-    ASSERT_NO_THROW(lua.file<LuaFunction<>>("scripts/noop.lua")());
+    ASSERT_NO_THROW(lua.file<LuaFunction<>>("test/scripts/noop.lua")());
 }
 
 TEST_F(ScriptsTest, testSingleReturnValue) {
-    auto f = lua.file<LuaFunction<double()>>("scripts/single_return.lua");
+    auto f = lua.file<LuaFunction<double()>>("test/scripts/single_return.lua");
     ASSERT_EQ(0, f());
 }
 
 TEST_F(ScriptsTest, testMultiReturnValues) {
-    auto f = lua.file<LuaFunction<std::tuple<bool, double, std::string>()>>("scripts/return_primitives.lua");
+    auto f = lua.file<LuaFunction<std::tuple<bool, double, std::string>()>>("test/scripts/return_primitives.lua");
 
     bool b;
     double d;

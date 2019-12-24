@@ -23,6 +23,6 @@ TEST_F(FunctionsTest, testZeroReturnValues) {
     lua_CFunction n = mk_function(noop);
     lua.global("plus", p);
     lua.global("noop", n);
-    auto f = lua.file<LuaFunction<double()>>("scripts/plus.lua");
+    auto f = lua.file<LuaFunction<double()>>("test/scripts/plus.lua");
     ASSERT_EQ(5.0, f());
 }

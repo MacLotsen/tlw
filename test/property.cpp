@@ -19,7 +19,7 @@ TEST(PropertyTest, testProperty) {
     PropertyExample example {"Property"};
     auto r = _lua.add<PropertyExample>(propertyPrototype)
             .global("example", &example)
-            .file<LuaFunction<std::string()>>("scripts/property.lua")();
+            .file<LuaFunction<std::string()>>("test/scripts/property.lua")();
 
     ASSERT_EQ("Property", r);
     ASSERT_EQ("property changed", example.property);

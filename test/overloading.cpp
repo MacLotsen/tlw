@@ -95,7 +95,7 @@ TEST(OverloadingTest, testNumber) {
     auto r = _lua.add<NumberExample>(prototype)
             .global("ne", &ne)
             .global("ne2", &ne2)
-            .file<LuaFunction<std::tuple<double, double, double, double, double, double, double, bool, bool, bool>()>>("scripts/number_overloading.lua")();
+            .file<LuaFunction<std::tuple<double, double, double, double, double, double, double, bool, bool, bool>()>>("test/scripts/number_overloading.lua")();
 
     ASSERT_EQ(-1, std::get<0>(r));
     ASSERT_EQ(2, std::get<1>(r));

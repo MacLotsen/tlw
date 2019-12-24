@@ -134,7 +134,7 @@ TEST(StackTest, testLuaFunctions) {
     luaL_openlibs(L);
     Stack s(L);
 
-    luaL_dofile(L, "scripts/functions.lua");
+    luaL_dofile(L, "test/scripts/functions.lua");
 
     // Let the functions live within an active lua state (see last line)
     {

@@ -1,0 +1,13 @@
+get_filename_component(SLua_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
+include(CMakeFindDependecyMacro)
+
+list(APPEND CMAKE_MODULE_PATH ${SLua_CMAKE_DIR})
+
+find_package(LuaJit REQUIRED)
+list(REMOVE_AT CMAKE_MODULE_PATH -1)
+
+if (NOT TARGET SLUA)
+    include("${SLua_CMAKE_DIR}/SLuaTargets.cmake")
+endif ()
+
+set(SLUA_LIBRARIES slua)

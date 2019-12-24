@@ -2,8 +2,8 @@
 // Created by enijenhuis on 17-12-2019.
 //
 #include <gtest/gtest.h>
-#include <slua/types.hpp>
-#include "slua/stack.hpp"
+#include <tlw/types.hpp>
+#include "tlw/stack.hpp"
 
 
 TEST(StackTest, testValueTypes) {

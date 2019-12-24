@@ -2,7 +2,7 @@
 // Created by enijenhuis on 11-12-2019.
 //
 #include "test.h"
-#include <slua/types.hpp>
+#include <tlw/types.hpp>
 
 class ScriptsTest : public ::testing::Test {};
 

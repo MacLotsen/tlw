@@ -2,8 +2,8 @@
 // Created by enijenhuis on 12-12-2019.
 //
 #include "test.h"
-#include <slua/types.hpp>
-#include <slua/wrapper.h>
+#include <tlw/types.hpp>
+#include <tlw/wrapper.h>
 
 class FunctionsTest : public ::testing::Test {
 };

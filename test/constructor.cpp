@@ -2,8 +2,8 @@
 // Created by erik on 14-12-19.
 //
 #include "test.h"
-#include <slua/wrapper.h>
-#include <slua/types.hpp>
+#include <tlw/wrapper.h>
+#include <tlw/types.hpp>
 
 class ConstructorExample;
 

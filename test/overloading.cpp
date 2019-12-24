@@ -1,8 +1,8 @@
 //
 // Created by enijenhuis on 16-12-2019.
 //
-#include <slua/types.hpp>
-#include <slua/wrapper.h>
+#include <tlw/types.hpp>
+#include <tlw/wrapper.h>
 #include <cmath>
 #include "test.h"
 

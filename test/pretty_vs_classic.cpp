@@ -1,9 +1,9 @@
 //
 // Created by enijenhuis on 23-12-2019.
 //
-#include <slua/api.hpp>
-#include <slua/wrapper.h>
-#include <slua/types.hpp>
+#include <tlw/api.hpp>
+#include <tlw/wrapper.h>
+#include <tlw/types.hpp>
 #include <gtest/gtest.h>
 #include <chrono>
 

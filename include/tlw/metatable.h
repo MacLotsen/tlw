@@ -13,8 +13,8 @@ static void luaCreateMetaTable(lua_State *L, const PrettyClassPrototype *klass);
 
 class MetaTable {
 public:
-    static std::unordered_map<const std::type_info *, const ClassPrototype*> metaTables;
-    static std::unordered_map<const std::type_info *, const PrettyClassPrototype*> prettyTables;
+    inline static std::unordered_map<const std::type_info *, const ClassPrototype*> metaTables = {};
+    inline static std::unordered_map<const std::type_info *, const PrettyClassPrototype*> prettyTables = {};
 
     template<typename T>
     static void createObject(lua_State *L, T *object) {

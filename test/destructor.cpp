@@ -5,8 +5,8 @@
 //
 // Created by erik on 14-12-19.
 //
-#include <slua/wrapper.h>
-#include <slua/types.hpp>
+#include <tlw/wrapper.h>
+#include <tlw/types.hpp>
 #include "test.h"
 
 static bool destroyed = false;

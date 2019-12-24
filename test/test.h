@@ -5,7 +5,7 @@
 #ifndef SIMPLELUA_TEST_H
 #define SIMPLELUA_TEST_H
 #include <gtest/gtest.h>
-#include <slua/api.hpp>
+#include <tlw/api.hpp>
 
 extern Lua lua;
 

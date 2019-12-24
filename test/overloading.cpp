@@ -77,7 +77,7 @@ public:
 TEST(OverloadingTest, testNumber) {
     Lua _lua;
 
-    ClassPrototype *prototype = ClassPrototypeBuilder("NumberExample")
+    PrettyClassPrototype *prototype = PrettyClassPrototypeBuilder("NumberExample")
             .inverse(mk_function(&NumberExample::inverse))
             .addition(mk_function(&NumberExample::addition))
             .subtraction(mk_function(&NumberExample::subtraction))

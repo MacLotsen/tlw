@@ -20,7 +20,7 @@ public:
 
 TEST(SetterTest, testSetter) {
     Lua _lua;
-    ClassPrototype *propertyPrototype = ClassPrototypeBuilder("PropertyExample")
+    PrettyClassPrototype *propertyPrototype = PrettyClassPrototypeBuilder("PropertyExample")
             .setter("property", mk_function(&SetterExample::setProperty))
             .build();
 

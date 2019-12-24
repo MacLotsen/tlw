@@ -43,7 +43,7 @@ template<typename T>
 class TypedStack<T *> {
 public:
     inline static T *get(lua_State *L, int i) {
-        if (MetaTable::metatables.count(&typeid(T *))) {
+        if (MetaTable::metaTables.count(&typeid(T *)) || MetaTable::prettyTables.count(&typeid(T *))) {
             T **ptp = (T **) lua_touserdata(L, i);
             return *ptp;
         } else {
@@ -59,7 +59,7 @@ public:
     }
 
     inline static void push(lua_State *L, T *o) {
-        if (MetaTable::metatables.count(&typeid(T *))) {
+        if (MetaTable::metaTables.count(&typeid(T *)) || MetaTable::prettyTables.count(&typeid(T *))) {
             MetaTable::createObject(L, o);
         } else {
             lua_pushlightuserdata(L, (void *) o);

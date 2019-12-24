@@ -23,7 +23,7 @@ public:
 TEST(ConstructorTest, testConstructor) {
     Lua _lua;
 
-    ClassPrototype *propertyPrototype = ClassPrototypeBuilder("Example")
+    PrettyClassPrototype *propertyPrototype = PrettyClassPrototypeBuilder("Example")
             .constructor(mk_function(&ConstructorExample::create))
             .build();
 
@@ -41,7 +41,7 @@ TEST(ConstructorTest, testPersistence) {
     {
         Lua _lua;
 
-        ClassPrototype *propertyPrototype = ClassPrototypeBuilder("Example")
+        PrettyClassPrototype *propertyPrototype = PrettyClassPrototypeBuilder("Example")
                 .constructor(mk_function(&ConstructorExample::create))
                 .build();
 

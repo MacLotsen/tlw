@@ -7,6 +7,7 @@
 
 #include "stack.hpp"
 #include "metatable.h"
+#include <iostream>
 #include <lua.hpp>
 
 class Lua : Stack {
@@ -62,11 +63,33 @@ public:
 
     template<typename C>
     Lua &add(const ClassPrototype *klass) {
-        if (!MetaTable::metatables.count(&typeid(C *))) {
-            MetaTable::metatables[&typeid(C *)] = klass;
+        if (!MetaTable::metaTables.count(&typeid(C *))) {
+            MetaTable::metaTables[&typeid(C *)] = klass;
         }
 
-        // Get the type of the meta table. Nil if it doesn't exist
+        // Get the type of the meta table. Nil if it doesn't exist for this lua instance
+        luaL_getmetatable(L, klass->name.c_str());
+        int t = lua_type(L, -1);
+        lua_pop(L, 1);
+
+        if (t == LUA_TNIL) {
+            // Create meta table for this lua instance directly for e.g. constructor creation
+            luaCreateMetaTable(L, klass);
+            lua_pop(L, 1);
+        } else {
+            std::cerr << "Warning: Class '" << klass->name << "'already created." << std::endl;
+        }
+
+        return *this;
+    }
+
+    template<typename C>
+    Lua &add(const PrettyClassPrototype *klass) {
+        if (!MetaTable::prettyTables.count(&typeid(C *))) {
+            MetaTable::prettyTables[&typeid(C *)] = klass;
+        }
+
+        // Get the type of the meta table. Nil if it doesn't exist for this lua instance
         luaL_getmetatable(L, klass->name.c_str());
         int t = lua_type(L, -1);
         lua_pop(L, 1);

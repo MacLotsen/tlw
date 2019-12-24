@@ -8,20 +8,22 @@
 #include "class.h"
 #include <lua.hpp>
 
-class ClassPrototype;
 static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass);
+static void luaCreateMetaTable(lua_State *L, const PrettyClassPrototype *klass);
 
 class MetaTable {
 public:
-    static std::unordered_map<const std::type_info *, const ClassPrototype*> metatables;
+    static std::unordered_map<const std::type_info *, const ClassPrototype*> metaTables;
+    static std::unordered_map<const std::type_info *, const PrettyClassPrototype*> prettyTables;
 
     template<typename T>
     static void createObject(lua_State *L, T *object) {
-        if (!metatables.count(&typeid(T*)))
-            throw std::runtime_error("No such class.");
         T **ud = (T **) lua_newuserdata(L, sizeof(T **));
         *ud = object;
-        luaCreateMetaTable(L, metatables[&typeid(T*)]);
+        if (metaTables.count(&typeid(T*)))
+            luaCreateMetaTable(L, metaTables[&typeid(T*)]);
+        else if (prettyTables.count(&typeid(T*)))
+            luaCreateMetaTable(L, prettyTables[&typeid(T*)]);
         lua_setmetatable(L, -2);
     }
 };
@@ -43,7 +45,7 @@ static int luaMetaConstructor(lua_State *L) {
 }
 
 static int luaMetaIndex(lua_State *L) {
-    ClassPrototype *prototype = (ClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
+    PrettyClassPrototype *prototype = (PrettyClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
     std::string property = lua_tostring(L, 2);
     lua_pop(L, 1);
 
@@ -72,7 +74,7 @@ static int luaMetaIndex(lua_State *L) {
 }
 
 static int luaMetaNewIndex(lua_State *L) {
-    ClassPrototype *prototype = (ClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
+    PrettyClassPrototype *prototype = (PrettyClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
     std::string property = lua_tostring(L, 2);
     lua_remove(L, 2);
 
@@ -93,7 +95,7 @@ static int luaMetaNewIndex(lua_State *L) {
     return 0;
 }
 
-static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass) {
+static void luaCreateMetaTable(lua_State *L, const PrettyClassPrototype *klass) {
     if (luaL_newmetatable(L, klass->name.c_str())) {
         // Target metatable
         int metatable = lua_gettop(L);
@@ -138,6 +140,43 @@ static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass) {
 
         // Pop the prototype and leave the meta table on top of the stack
         lua_pop(L, 1);
+    }
+}
+
+static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass) {
+    if (luaL_newmetatable(L, klass->name.c_str())) {
+        // Target metatable
+        int metatable = lua_gettop(L);
+
+        // Create anonymous meta table (Deny access for lua)
+        lua_pushliteral(L, "__metatable");
+        lua_pushnil(L);
+        lua_settable(L, metatable);
+
+        // Set constructor if needed
+        if (klass->constructor) {
+            lua_pushstring(L, klass->name.c_str());
+            lua_pushcfunction(L, klass->constructor);
+            lua_pushcclosure(L, luaMetaConstructor, 2);
+            lua_setglobal(L, klass->name.c_str());
+        }
+
+        // Set all operator overloading
+        for (auto kv: klass->operators) {
+            lua_pushstring(L, kv.first.c_str());
+            lua_pushcfunction(L, kv.second);
+            lua_settable(L, metatable);
+        }
+
+        if (!klass->methods.empty()) {
+            // Set the methods
+            lua_createtable(L, 0, 0);
+            for (auto kv: klass->methods) {
+                lua_pushcfunction(L, kv.second);
+                lua_setfield(L, -2, kv.first.c_str());
+            }
+            lua_setfield(L, -2, "__index");
+        }
     }
 }
 

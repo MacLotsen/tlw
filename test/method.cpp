@@ -31,7 +31,7 @@ public:
 TEST(MethodTest, testMethods) {
     Lua _lua;
 
-    ClassPrototype *classPrototype = ClassPrototypeBuilder("MethodExample")
+    PrettyClassPrototype *classPrototype = PrettyClassPrototypeBuilder("MethodExample")
             .method("method1", mk_method(&MethodExample::method1))
             .method("method2", mk_method(&MethodExample::method2))
             .method("method3", mk_method(&MethodExample::method3))

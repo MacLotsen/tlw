@@ -53,9 +53,21 @@ static void errorUnmatchedArguments(lua_State *L) {
     lua_error(L);
 }
 
+static std::string getTypesOnStack(lua_State *L) {
+    std::string scratch = "";
+    int n = lua_gettop(L);
+    for (int i = 1; i <= n; ++i) {
+        scratch += luaL_typename(L, i);
+        if (i != n) {
+            scratch += ", ";
+        }
+    }
+    return scratch;
+}
+
 static void expectNoArguments(lua_State *L) {
     if (lua_gettop(L)) {
-        lua_pushstring(L, "Expected no arguments.");
+        lua_pushstring(L, (std::string("Expected no arguments. ") + getTypesOnStack(L) + " given.").c_str());
         lua_error(L);
     }
 }
@@ -246,9 +258,6 @@ static int luaWrapMethod(lua_State *L, class_none_to_one_t<C, R> f) {
     expectNoArguments(L);
     C *klass = getClassByUpValue<C>(L);
     TypedStack<R>::push(L, (klass->*f)());
-//    LuaStack stack(L);
-//    Value<R> r((klass->*f)());
-//    stack.push(r);
     return 1;
 }
 
@@ -257,9 +266,6 @@ static int luaWrapMethod(lua_State *L, class_many_to_none_t<C, Args...> f) {
     expectArguments<Args...>(L);
     C *klass = getClassByUpValue<C>(L);
     LuaCMethodInvoker<C(void(Args...))>::invoke(L, klass, f);
-//    LuaStack stack(L);
-//    auto s = stack.getArgs();
-//    (klass->*f)(getArg<Args>(s)...);
     return 0;
 }
 
@@ -268,31 +274,8 @@ static int luaWrapMethod(lua_State *L, class_many_to_one_t<C, R, Args...> f) {
     expectArguments<Args...>(L);
     C *klass = getClassByUpValue<C>(L);
     TypedStack<R>::push(L, LuaCMethodInvoker<C(R(Args...))>::invoke(L, klass, f));
-//    LuaStack stack(L);
-//    auto s = stack.getArgs();
-//    Value<R> r((klass->*f)(getArg<Args>(s)...));
-//    stack.push(r);
     return 1;
 }
-
-
-//template<typename R, typename ...Args>
-//static int luaFunctionExecutioner(lua_State *L) {
-//    R (**f)(Args...) = (R (**)(Args...)) lua_touserdata(L, lua_upvalueindex(1));
-//    LuaStack stack(L);
-//    auto args = stack.getArgs();
-//    R r = (*f)(getArg<Args>(args)...);
-//    Value<R> ret(r);
-//    stack.push(ret);
-//    return 1;
-//}
-//
-//template<typename R, typename ...Args>
-//void mkfunc(lua_State *L, R (*f)(Args...)) {
-//    R (**F)(Args...) = (R(**)(Args...)) lua_newuserdata(L, sizeof(R(**)(Args...)));
-//    *F = f;
-//    lua_pushcclosure(L, luaFunctionExecutioner<R, Args...>, 1);
-//}
 
 #define mk_function(f) ([](lua_State *L) -> int { return luaWrapFunction(L, f); })
 #define mk_property(p) ([](lua_State *L) -> int { return luaWrapProperty(L, p); })

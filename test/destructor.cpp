@@ -22,7 +22,7 @@ public:
 };
 
 TEST(DestructorTest, testDestructor) {
-    ClassPrototype *propertyPrototype = ClassPrototypeBuilder("Example")
+    PrettyClassPrototype *propertyPrototype = PrettyClassPrototypeBuilder("Example")
             .destructor(mk_function(&DestructorExample::destroy))
             .build();
 

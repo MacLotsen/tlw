@@ -24,6 +24,10 @@ struct PrettyExample {
 
 
 static int classicGet(lua_State *L) {
+    if (lua_gettop(L) != 1) {
+        lua_pushstring(L, "Expected a class");
+        lua_error(L);
+    }
     auto object = *((PrettyExample **) lua_touserdata(L, 1));
     lua_settop(L, 0);
     lua_pushnumber(L, object->get());
@@ -31,6 +35,14 @@ static int classicGet(lua_State *L) {
 }
 
 static int classicSet(lua_State *L) {
+    if (!lua_isuserdata(L, 1)) {
+        lua_pushstring(L, "Not a user datum");
+        lua_error(L);
+    }
+    if (!lua_isnumber(L, 2)) {
+        lua_pushstring(L, "Expected a number!");
+        lua_error(L);
+    }
     auto object = *((PrettyExample **) lua_touserdata(L, 1));
     auto n = lua_tonumber(L, 2);
     lua_settop(L, 0);

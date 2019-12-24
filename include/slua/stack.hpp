@@ -19,6 +19,14 @@ class TypedStack {
 template<typename T>
 class TypedStack<T> {
 public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_islightuserdata(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
     inline static T &get(lua_State *L, int i) {
         if (lua_islightuserdata(L, i)) {
             return *((T *) lua_touserdata(L, i));
@@ -42,6 +50,14 @@ public:
 template<typename T>
 class TypedStack<T *> {
 public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isuserdata(L, i) || lua_islightuserdata(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
     inline static T *get(lua_State *L, int i) {
         if (MetaTable::metaTables.count(&typeid(T *)) || MetaTable::prettyTables.count(&typeid(T *))) {
             T **ptp = (T **) lua_touserdata(L, i);
@@ -103,6 +119,14 @@ class TypedStack<T &&> {
 template<>
 class TypedStack<bool> {
 public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isboolean(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
     inline static bool get(lua_State *L, int i) {
         return lua_toboolean(L, i);
     }
@@ -129,13 +153,16 @@ public:
 template<>
 class TypedStack<int> {
 public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isnumber(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
     inline static int get(lua_State *L, int i) {
-        if (lua_isnumber(L, i)) {
-            return int(lua_tointeger(L, i));
-        }
-        lua_pushstring(L, "NaN");
-        lua_error(L);
-        return 0;
+        return int(lua_tointeger(L, i));
     }
 
     inline static int pop(lua_State *L) {
@@ -160,6 +187,14 @@ public:
 template<>
 class TypedStack<float> {
 public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isnumber(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
     inline static float get(lua_State *L, int i) {
         if (lua_isnumber(L, i)) {
             return float(lua_tonumber(L, i));
@@ -191,13 +226,16 @@ public:
 template<>
 class TypedStack<double> {
 public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isnumber(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
     inline static double get(lua_State *L, int i) {
-        if (lua_isnumber(L, i)) {
-            return lua_tonumber(L, i);
-        }
-        lua_pushstring(L, "NaN");
-        lua_error(L);
-        return 0;
+        return lua_tonumber(L, i);
     }
 
     inline static double pop(lua_State *L) {
@@ -222,6 +260,14 @@ public:
 template<>
 class TypedStack<const char *> {
 public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isstring(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
     inline static const char *get(lua_State *L, int i) {
         return lua_tostring(L, i);
     }
@@ -240,6 +286,14 @@ public:
 template<>
 class TypedStack<char *> {
 public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isstring(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
     inline static char *get(lua_State *L, int i) {
         return const_cast<char *>(TypedStack<const char *>::get(L, i));
     }
@@ -258,6 +312,14 @@ public:
 template<>
 class TypedStack<std::string> {
 public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isstring(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
     inline static std::string get(lua_State *L, int i) {
         return TypedStack<const char *>::get(L, i);
     }
@@ -276,9 +338,18 @@ public:
 template<>
 class TypedStack<const std::string &> {
 public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isstring(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
     inline static std::string get(lua_State *L, int i) {
         return TypedStack<const char *>::get(L, i);
     }
+
     inline static void push(lua_State *L, const std::string &o) {
         TypedStack<const char *>::push(L, o.c_str());
     }
@@ -289,6 +360,14 @@ template<typename K, typename ...Args>
 class TypedStack<std::vector<K, Args...>> {
     typedef std::vector<K, Args...> T;
 public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_istable(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
     inline static T get(lua_State *L, int i) {
         T v;
         lua_pushnil(L);
@@ -319,6 +398,14 @@ template<typename ...Args>
 class TypedStack<std::tuple<Args...>> {
     typedef std::tuple<Args...> T;
 public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_istable(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
     inline static T get(lua_State *L, int i) {
         return get(L, i, gen_seq<sizeof...(Args)>());
     }
@@ -360,6 +447,15 @@ public:
 template<typename T1, typename T2, typename ...Ts>
 class TypedStack<T1, T2, Ts...> {
 public:
+    template<int ...Is>
+    inline static bool expect(lua_State *L, seq<Is...>) {
+        return TypedStack<T1>::expect(L, 1) && TypedStack<T2>::expect(L, 2) && (... && TypedStack<Ts>::expect(L, Is + 3));
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, gen_seq<sizeof...(Ts)>());
+    }
+
     inline static std::tuple<T1, T2, Ts...> pop(lua_State *L) {
         auto results = get(L);
         lua_settop(L, 0);
@@ -407,6 +503,11 @@ public:
     template<typename Arg1, typename Arg2, typename ...Args>
     void push(Arg1 arg1, Arg2 arg2, Args... args) {
         TypedStack<Arg1, Arg2, Args...>::push(L, arg1, arg2, args...);
+    }
+
+    template<typename ...Ts>
+    bool expect() {
+        return TypedStack<Ts...>::expect(L);
     }
 };
 

@@ -25,10 +25,6 @@ struct StandardExample {
 
 
 static int classicGet(lua_State *L) {
-//    if (!lua_isuserdata(L, 1)) {
-//        lua_pushstring(L, "Not a user datum");
-//        lua_error(L);
-//    }
     if (lua_gettop(L) != 1) {
         lua_pushstring(L, "Expected a class");
         lua_error(L);
@@ -40,19 +36,14 @@ static int classicGet(lua_State *L) {
 }
 
 static int classicSet(lua_State *L) {
-    if (lua_gettop(L) != 2) {
-        lua_pushstring(L, "Expected a class and a number");
+    if (!lua_isuserdata(L, 1)) {
+        lua_pushstring(L, "Not a user datum");
         lua_error(L);
     }
-    // That's called cheating
-//    if (!lua_isuserdata(L, 1)) {
-//        lua_pushstring(L, "Not a user datum");
-//        lua_error(L);
-//    }
-//    if (!lua_isnumber(L, 2)) {
-//        lua_pushstring(L, "Expected a number!");
-//        lua_error(L);
-//    }
+    if (!lua_isnumber(L, 2)) {
+        lua_pushstring(L, "Expected a number!");
+        lua_error(L);
+    }
     auto object = *((StandardExample **) lua_touserdata(L, 1));
     auto n = lua_tonumber(L, 2);
     lua_settop(L, 0);
@@ -142,8 +133,8 @@ TEST_F(AcceptationTest, testGetterSetter) {
               << std::chrono::duration_cast<std::chrono::milliseconds>(classic_diff).count() << " milliseconds."
               << std::endl;
 
-    ASSERT_LT(double(standard_diff.count()) * .75, classic_diff.count())
-                                << "Expect standard execution to be at most 1/4 times slower than traditional.";
+    ASSERT_LT(double(standard_diff.count()), classic_diff.count() * 1.4)
+                                << "Expect standard execution to be at most 2/5 times slower than traditional.";
 }
 
 TEST_F(AcceptationTest, testProperty) {
@@ -178,6 +169,6 @@ TEST_F(AcceptationTest, testProperty) {
               << std::chrono::duration_cast<std::chrono::milliseconds>(classic_diff).count() << " milliseconds."
               << std::endl;
 
-    ASSERT_LT(double(standard_diff.count()) * .75, classic_diff.count())
-                                << "Expect standard execution to be at most 1/4 times slower than traditional.";
+    ASSERT_LT(double(standard_diff.count()), classic_diff.count() * 1.4)
+                                << "Expect standard execution to be at most 2/5 times slower than traditional.";
 }

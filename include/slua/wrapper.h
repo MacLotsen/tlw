@@ -46,13 +46,6 @@ static std::string typesToString() {
     return std::string(typeid(FIRST).name()) + ", " + typesToString<SECOND, Args...>();
 }
 
-template<typename ...Args>
-static void errorUnmatchedArguments(lua_State *L) {
-    std::string errorMessage = "Expected: " + typesToString<Args...>();
-    lua_pushstring(L, errorMessage.c_str());
-    lua_error(L);
-}
-
 static std::string getTypesOnStack(lua_State *L) {
     std::string scratch = "";
     int n = lua_gettop(L);
@@ -65,6 +58,13 @@ static std::string getTypesOnStack(lua_State *L) {
     return scratch;
 }
 
+template<typename ...Args>
+static void errorUnmatchedArguments(lua_State *L) {
+    std::string errorMessage = "Expected: " + typesToString<Args...>() + ". Types " + getTypesOnStack(L) + " were given";
+    lua_pushstring(L, errorMessage.c_str());
+    lua_error(L);
+}
+
 static void expectNoArguments(lua_State *L) {
     if (lua_gettop(L)) {
         lua_pushstring(L, (std::string("Expected no arguments. ") + getTypesOnStack(L) + " given.").c_str());
@@ -74,11 +74,7 @@ static void expectNoArguments(lua_State *L) {
 
 template<typename ...Args>
 static void expectArguments(lua_State *L) {
-    // TODO reimplement inspector
-//    if (!LuaStack(L).expect<Args...>()) {
-//        errorUnmatchedArguments<Args...>(L);
-//    }
-    if (lua_gettop(L) != sizeof...(Args)) {
+    if (!TypedStack<Args...>::expect(L)) {
         errorUnmatchedArguments<Args...>(L);
     }
 }

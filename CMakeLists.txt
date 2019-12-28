@@ -4,6 +4,7 @@ project(TLW VERSION 1.0)
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 option(BUILD_TEST "Build GTest tests for Simple Lua" ON)
+option(BUILD_BENCHMARKS "Build Benchmarks in GTest" OFF)
 
 find_package(LuaJIT REQUIRED)
 

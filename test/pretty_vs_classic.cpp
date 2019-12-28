@@ -103,7 +103,7 @@ static const char *propertyScript = "local oldVal = object.num\n"
 static const char *classicGetterSetterScript = "local oldVal = object:get()\n"
                                    "object:set(oldVal + 50.0)\n";
 
-/*
+
 TEST_F(PrettyAcceptationTest, testGetterSetter) {
     auto f = lua->src<LuaFunction<>>(getterSetterScript);
 
@@ -112,6 +112,7 @@ TEST_F(PrettyAcceptationTest, testGetterSetter) {
 
     using clock = std::chrono::high_resolution_clock;
 
+    std::cout << "Benchmarking pretty getter and setter (" << iterationCount << " times)" << std::endl;
     // Sample pretty execution time
     auto pretty_start = clock::now();
     for (int i = 0; i < iterationCount; ++i)
@@ -119,7 +120,7 @@ TEST_F(PrettyAcceptationTest, testGetterSetter) {
     auto pretty_end = clock::now();
     auto pretty_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(pretty_end - pretty_start);
 
-    std::cout << std::fixed << std::setprecision(3) << "Pretty property time: "
+    std::cout << std::fixed << std::setprecision(3) << "Pretty getter/setter time: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(pretty_diff).count() << " milliseconds."
               << std::endl;
 
@@ -132,7 +133,7 @@ TEST_F(PrettyAcceptationTest, testGetterSetter) {
     auto classic_end = clock::now();
     auto classic_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(classic_end - classic_start);
 
-    std::cout << std::fixed << std::setprecision(3) << "Classic property time: "
+    std::cout << std::fixed << std::setprecision(3) << "Classic getter/setter time: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(classic_diff).count() << " milliseconds."
               << std::endl;
 
@@ -148,6 +149,7 @@ TEST_F(PrettyAcceptationTest, testProperty) {
 
     using clock = std::chrono::high_resolution_clock;
 
+    std::cout << "Benchmarking pretty property (" << iterationCount << " times)" << std::endl;
     // Sample pretty execution time
     auto pretty_start = clock::now();
     for (int i = 0; i < iterationCount; ++i)
@@ -175,4 +177,3 @@ TEST_F(PrettyAcceptationTest, testProperty) {
     ASSERT_LT(pretty_diff.count() / 7, classic_diff.count())
                                 << "Expect pretty execution to be at most 7 times slower than traditional.";
 }
-*/

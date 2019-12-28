@@ -100,7 +100,7 @@ static const char *getterSetterScript = "local oldVal = object:get()\n"
 
 static const char *propertyScript = "local oldVal = object:num()\n"
                                     "object:num(oldVal + 50.0)\n";
-/*
+
 TEST_F(AcceptationTest, testGetterSetter) {
     auto f = lua->src<LuaFunction<>>(getterSetterScript);
 
@@ -109,6 +109,7 @@ TEST_F(AcceptationTest, testGetterSetter) {
 
     using clock = std::chrono::high_resolution_clock;
 
+    std::cout << "Benchmarking standard getter and setter (" << iterationCount << " times)" << std::endl;
     // Sample standard execution time
     auto standard_start = clock::now();
     for (int i = 0; i < iterationCount; ++i)
@@ -116,7 +117,7 @@ TEST_F(AcceptationTest, testGetterSetter) {
     auto standard_end = clock::now();
     auto standard_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(standard_end - standard_start);
 
-    std::cout << std::fixed << std::setprecision(3) << "Standard property time: "
+    std::cout << std::fixed << std::setprecision(3) << "Standard getter/setter time: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(standard_diff).count() << " milliseconds."
               << std::endl;
 
@@ -129,7 +130,7 @@ TEST_F(AcceptationTest, testGetterSetter) {
     auto classic_end = clock::now();
     auto classic_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(classic_end - classic_start);
 
-    std::cout << std::fixed << std::setprecision(3) << "Classic property time: "
+    std::cout << std::fixed << std::setprecision(3) << "Classic getter/setter time: "
               << std::chrono::duration_cast<std::chrono::milliseconds>(classic_diff).count() << " milliseconds."
               << std::endl;
 
@@ -145,6 +146,7 @@ TEST_F(AcceptationTest, testProperty) {
 
     using clock = std::chrono::high_resolution_clock;
 
+    std::cout << "Benchmarking standard property (" << iterationCount << " times)" << std::endl;
     // Sample standard execution time
     auto standard_start = clock::now();
     for (int i = 0; i < iterationCount; ++i)
@@ -172,4 +174,3 @@ TEST_F(AcceptationTest, testProperty) {
     ASSERT_LT(double(standard_diff.count()), classic_diff.count() * 1.4)
                                 << "Expect standard execution to be at most 2/5 times slower than traditional.";
 }
-*/

@@ -2,11 +2,11 @@
 // Created by enijenhuis on 11-12-2019.
 //
 
-#ifndef SIMPLELUA_API_HPP
-#define SIMPLELUA_API_HPP
+#ifndef TLW_API_HPP
+#define TLW_API_HPP
 
 #include "stack.hpp"
-#include "metatable.h"
+#include "metatable.hpp"
 #include <iostream>
 #include <lua.hpp>
 
@@ -15,6 +15,8 @@ public:
     Lua() : Stack(luaL_newstate()) {
         luaL_openlibs(L);
     }
+
+    explicit Lua(lua_State *L) : Stack(L) {}
 
     ~Lua() {
         lua_close(L);
@@ -106,4 +108,4 @@ public:
     }
 };
 
-#endif //SIMPLELUA_API_HPP
+#endif //TLW_API_HPP

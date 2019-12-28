@@ -2,13 +2,13 @@
 // Created by enijenhuis on 16-12-2019.
 //
 
-#ifndef SIMPLELUA_WRAPPER_H
-#define SIMPLELUA_WRAPPER_H
+#ifndef TLW_WRAPPING_H
+#define TLW_WRAPPING_H
 
 #include <lua.hpp>
 #include <functional>
 #include "stack.hpp"
-#include "util.h"
+#include "util.hpp"
 
 using function_none_to_none_t = void (*)();
 
@@ -277,4 +277,4 @@ static int luaWrapMethod(lua_State *L, class_many_to_one_t<C, R, Args...> f) {
 #define mk_property(p) ([](lua_State *L) -> int { return luaWrapProperty(L, p); })
 #define mk_method(f) ([](lua_State *L) -> int { return luaWrapMethod(L, f); })
 
-#endif //SIMPLELUA_WRAPPER_H
+#endif //TLW_WRAPPING_H

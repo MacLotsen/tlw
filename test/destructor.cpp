@@ -1,25 +1,12 @@
 //
 // Created by erik on 14-12-19.
 //
-
-//
-// Created by erik on 14-12-19.
-//
-#include <tlw/wrapper.h>
+#include <tlw/wrapping.hpp>
 #include <tlw/types.hpp>
+#include "destr_example.h"
 #include "test.h"
 
-static bool destroyed = false;
-
-class DestructorExample {
-public:
-    DestructorExample() = default;
-
-    static void destroy(DestructorExample *instance) {
-        delete instance;
-        destroyed = true;
-    }
-};
+// TODO: Can be merged generically
 
 TEST(DestructorTest, testDestructor) {
     PrettyClassPrototype *propertyPrototype = PrettyClassPrototypeBuilder("Example")
@@ -32,7 +19,7 @@ TEST(DestructorTest, testDestructor) {
     Lua _lua;
     _lua.add<DestructorExample>(propertyPrototype)
             .global("example", e)
-            .file<LuaFunction<>>("test/scripts/destructor.lua")();
+            .src<LuaFunction<>>(DestructorExample::script)();
 
-    ASSERT_TRUE(destroyed);
+    ASSERT_TRUE(DestructorExample::destroyed);
 }

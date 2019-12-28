@@ -1,8 +1,8 @@
 //
 // Created by enijenhuis on 23-12-2019.
 //
-#include <tlw/api.hpp>
-#include <tlw/wrapper.h>
+#include <tlw/tlw.hpp>
+#include <tlw/wrapping.hpp>
 #include <tlw/types.hpp>
 #include <gtest/gtest.h>
 #include <chrono>
@@ -100,7 +100,7 @@ static const char *getterSetterScript = "local oldVal = object:get()\n"
 
 static const char *propertyScript = "local oldVal = object:num()\n"
                                     "object:num(oldVal + 50.0)\n";
-
+/*
 TEST_F(AcceptationTest, testGetterSetter) {
     auto f = lua->src<LuaFunction<>>(getterSetterScript);
 
@@ -172,3 +172,4 @@ TEST_F(AcceptationTest, testProperty) {
     ASSERT_LT(double(standard_diff.count()), classic_diff.count() * 1.4)
                                 << "Expect standard execution to be at most 2/5 times slower than traditional.";
 }
+*/

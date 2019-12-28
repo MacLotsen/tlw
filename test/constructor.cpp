@@ -2,55 +2,35 @@
 // Created by erik on 14-12-19.
 //
 #include "test.h"
-#include <tlw/wrapper.h>
+#include "constr_example.h"
+#include <tlw/wrapping.hpp>
 #include <tlw/types.hpp>
 
-class ConstructorExample;
-
-static std::vector<ConstructorExample *> examples;
-
-class ConstructorExample {
-public:
-    ConstructorExample() {
-        examples.push_back(this);
-    }
-
-    static ConstructorExample *create() {
-        return new ConstructorExample;
-    }
-};
+// TODO: Can be merged generically
 
 TEST(ConstructorTest, testConstructor) {
-    Lua _lua;
+    lua.src<LuaFunction<>>(ConstructorExample::script)();
 
-    PrettyClassPrototype *propertyPrototype = PrettyClassPrototypeBuilder("Example")
-            .constructor(mk_function(&ConstructorExample::create))
-            .build();
-
-    _lua.add<ConstructorExample>(propertyPrototype)
-            .file<LuaFunction<>>("test/scripts/constructor.lua")();
-
-    ASSERT_EQ(5, examples.size());
-    for (auto v: examples) {
+    ASSERT_EQ(5, ConstructorExample::examples.size());
+    for (auto v: ConstructorExample::examples) {
         delete v;
     }
-    examples.clear();
+    ConstructorExample::examples.clear();
 }
 
 TEST(ConstructorTest, testPersistence) {
+    auto constrPrototype = PrettyClassPrototypeBuilder("ConstructorExample")
+            .constructor(mk_function(&ConstructorExample::create))
+            .build();
     {
         Lua _lua;
 
-        PrettyClassPrototype *propertyPrototype = PrettyClassPrototypeBuilder("Example")
-                .constructor(mk_function(&ConstructorExample::create))
-                .build();
-
-        _lua.add<ConstructorExample>(propertyPrototype)
-                .file<LuaFunction<>>("test/scripts/constructor.lua")();
+        _lua.add<ConstructorExample>(constrPrototype)
+                .src<LuaFunction<>>(ConstructorExample::script)();
     }
-    ASSERT_EQ(5, examples.size());
-    for (auto v: examples) {
+    ASSERT_EQ(5, ConstructorExample::examples.size());
+    for (auto v: ConstructorExample::examples) {
         delete v;
     }
-    examples.clear();
+    ConstructorExample::examples.clear();
 }

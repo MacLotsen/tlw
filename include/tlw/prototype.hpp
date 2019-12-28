@@ -2,27 +2,28 @@
 // Created by enijenhuis on 12-12-2019.
 //
 
-#ifndef SIMPLELUA_CLASS_H
-#define SIMPLELUA_CLASS_H
+#ifndef TLW_CLASS_H
+#define TLW_CLASS_H
 
 #include <lua.hpp>
 #include <unordered_map>
+#include <utility>
 
 
 struct ClassPrototype {
-    const std::string &name;
+    std::string name;
     lua_CFunction constructor;
     std::unordered_map<std::string, lua_CFunction> operators{};
     std::unordered_map<std::string, lua_CFunction> methods{};
 
     explicit ClassPrototype(const std::string &name) : ClassPrototype(name, nullptr) {}
 
-    ClassPrototype(const std::string &name, lua_CFunction constr) :
-            name(name), constructor(constr) {}
+    ClassPrototype(std::string name, lua_CFunction constr) :
+            name(std::move(name)), constructor(constr) {}
 };
 
 struct PrettyClassPrototype {
-    const std::string &name;
+    std::string name;
     lua_CFunction constructor;
     std::unordered_map<std::string, lua_CFunction> operators{};
     std::unordered_map<std::string, lua_CFunction> properties{};
@@ -303,4 +304,4 @@ public:
     }
 };
 
-#endif //SIMPLELUA_CLASS_H
+#endif //TLW_CLASS_H

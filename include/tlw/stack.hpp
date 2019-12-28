@@ -2,11 +2,11 @@
 // Created by enijenhuis on 11-12-2019.
 //
 
-#ifndef SIMPLELUA_STACK_HPP
-#define SIMPLELUA_STACK_HPP
+#ifndef TLW_STACK_HPP
+#define TLW_STACK_HPP
 
-#include "util.h"
-#include "metatable.h"
+#include "util.hpp"
+#include "metatable.hpp"
 #include <lua.hpp>
 #include <vector>
 
@@ -511,4 +511,4 @@ public:
     }
 };
 
-#endif //SIMPLELUA_STACK_HPP
+#endif //TLW_STACK_HPP

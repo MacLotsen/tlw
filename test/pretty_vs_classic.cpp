@@ -1,8 +1,8 @@
 //
 // Created by enijenhuis on 23-12-2019.
 //
-#include <tlw/api.hpp>
-#include <tlw/wrapper.h>
+#include <tlw/tlw.hpp>
+#include <tlw/wrapping.hpp>
 #include <tlw/types.hpp>
 #include <gtest/gtest.h>
 #include <chrono>
@@ -103,6 +103,7 @@ static const char *propertyScript = "local oldVal = object.num\n"
 static const char *classicGetterSetterScript = "local oldVal = object:get()\n"
                                    "object:set(oldVal + 50.0)\n";
 
+/*
 TEST_F(PrettyAcceptationTest, testGetterSetter) {
     auto f = lua->src<LuaFunction<>>(getterSetterScript);
 
@@ -174,3 +175,4 @@ TEST_F(PrettyAcceptationTest, testProperty) {
     ASSERT_LT(pretty_diff.count() / 7, classic_diff.count())
                                 << "Expect pretty execution to be at most 7 times slower than traditional.";
 }
+*/

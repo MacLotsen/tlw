@@ -2,8 +2,8 @@
 // Created by enijenhuis on 11-12-2019.
 //
 
-#ifndef SIMPLELUA_TYPES_HPP
-#define SIMPLELUA_TYPES_HPP
+#ifndef TLW_TYPES_HPP
+#define TLW_TYPES_HPP
 
 #include "stack.hpp"
 
@@ -60,7 +60,9 @@ public:
     void operator()() {
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         if (lua_pcall(L, 0, 0, 0)) {
-            throw std::runtime_error(lua_tostring(L, -1));
+            std::string err = lua_tostring(L, -1);
+            lua_pop(L, 1);
+            throw std::runtime_error(err);
         }
     }
 };
@@ -103,10 +105,15 @@ public:
     }
 };
 
+#include <iostream>
 template<typename ...Rs>
 class LuaFunction<std::tuple<Rs...>()> : public LuaRef {
 public:
     std::tuple<Rs...> operator()() {
+        // TMP
+        if (lua_gettop(L)) {
+            std::cerr << lua_tostring(L, 1) << std::endl;
+        }
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         if (lua_pcall(L, 0, sizeof...(Rs), 0)) {
             throw std::runtime_error(lua_tostring(L, -1));
@@ -207,4 +214,4 @@ public:
     }
 };
 
-#endif //SIMPLELUA_TYPES_HPP
+#endif //TLW_TYPES_HPP

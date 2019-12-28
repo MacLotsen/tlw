@@ -2,10 +2,10 @@
 // Created by erik on 13-12-19.
 //
 
-#ifndef SIMPLELUA_METATABLE_H
-#define SIMPLELUA_METATABLE_H
+#ifndef TLW_METATABLE_H
+#define TLW_METATABLE_H
 
-#include "class.h"
+#include "prototype.hpp"
 #include <lua.hpp>
 
 static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass);
@@ -180,4 +180,4 @@ static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass) {
     }
 }
 
-#endif //SIMPLELUA_METATABLE_H
+#endif //TLW_METATABLE_H

@@ -134,7 +134,24 @@ TEST(StackTest, testLuaFunctions) {
     luaL_openlibs(L);
     Stack s(L);
 
-    luaL_dofile(L, "test/scripts/functions.lua");
+    luaL_dostring(L, "r1 = nil\n"
+                     "r3 = nil\n"
+                     "\n"
+                     "function f1()\n"
+                     "    r1 = true\n"
+                     "end\n"
+                     "\n"
+                     "function f2()\n"
+                     "    return true\n"
+                     "end\n"
+                     "\n"
+                     "function f3(s1, s2)\n"
+                     "    r3 = s1 .. ' ' .. s2\n"
+                     "end\n"
+                     "\n"
+                     "function f4(n1, n2)\n"
+                     "    return n1 + n2\n"
+                     "end");
 
     // Let the functions live within an active lua state (see last line)
     {
@@ -181,10 +198,13 @@ TEST(StackTest, testScriptAsFunction) {
 
         ASSERT_EQ(0, lua_gettop(L));
 
-        auto results = f();
-        ASSERT_TRUE(std::get<0>(results));
-        ASSERT_EQ(1, std::get<1>(results));
-        ASSERT_EQ("true", std::get<2>(results));
+        bool a;
+        double b;
+        std::string c;
+        std::tie(a, b, c) = f();
+        ASSERT_TRUE(a);
+        ASSERT_EQ(1, b);
+        ASSERT_EQ("true", c);
     }
     lua_close(L);
 }

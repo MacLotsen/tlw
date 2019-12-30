@@ -23,8 +23,21 @@ public:
     }
 
     template<typename T>
+    T file(const char *path) {
+        if (luaL_loadfile(L, path)) {
+            throw std::runtime_error(lua_tostring(L, -1));
+        }
+        return TypedStack<T>::pop(L);
+    }
+
+    template<typename T>
     T file(const std::string &path) {
-        if (luaL_loadfile(L, path.c_str())) {
+        return this->file<T>(path.c_str());
+    }
+
+    template<typename T>
+    T src(const char *src) {
+        if (luaL_loadstring(L, src)) {
             throw std::runtime_error(lua_tostring(L, -1));
         }
         return TypedStack<T>::pop(L);
@@ -32,10 +45,7 @@ public:
 
     template<typename T>
     T src(const std::string &src) {
-        if (luaL_loadstring(L, src.c_str())) {
-            throw std::runtime_error(lua_tostring(L, -1));
-        }
-        return TypedStack<T>::pop(L);
+        return this->src<T>(src.c_str());
     }
 
     template<typename T>

@@ -17,6 +17,11 @@ public:
         index = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 
+    LuaRef(const LuaRef &ref) : L(ref.L) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, ref.index);
+        index = luaL_ref(L, -1);
+    }
+
     ~LuaRef() {
         luaL_unref(L, LUA_REGISTRYINDEX, index);
     }
@@ -51,12 +56,13 @@ using LuaTable = LuaStructure<std::string>;
 
 template<typename ...T>
 class LuaFunction : public LuaRef {
-
 };
 
 template<>
 class LuaFunction<> : public LuaRef {
 public:
+    LuaFunction(lua_State *L) : LuaRef(L) {}
+    LuaFunction(const LuaFunction<> &f) : LuaRef(f) {}
     void operator()() {
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         if (lua_pcall(L, 0, 0, 0)) {
@@ -70,6 +76,8 @@ public:
 template<typename R, typename ...Args>
 class LuaFunction<R(Args...)> : public LuaRef {
 public:
+    LuaFunction(lua_State *L) : LuaRef(L) {}
+    LuaFunction(const LuaFunction<R(Args...)> &f) : LuaRef(f) {}
     R operator()(Args...args) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         (..., TypedStack<Args>::push(L, args));
@@ -83,6 +91,8 @@ public:
 template<typename ...Rs, typename ...Args>
 class LuaFunction<std::tuple<Rs...>(Args...)> : public LuaRef {
 public:
+    LuaFunction(lua_State *L) : LuaRef(L) {}
+    LuaFunction(const LuaFunction<std::tuple<Rs...>(Args...)> &f) : LuaRef(f) {}
     std::tuple<Rs...> operator()(Args...args) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         (..., TypedStack<Args>::push(L, args));
@@ -96,6 +106,8 @@ public:
 template<typename R>
 class LuaFunction<R()> : public LuaRef {
 public:
+    LuaFunction(lua_State *L) : LuaRef(L) {}
+    LuaFunction(const LuaFunction<R()> &f) : LuaRef(f) {}
     R operator()() {
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         if (lua_pcall(L, 0, 1, 0)) {
@@ -109,6 +121,8 @@ public:
 template<typename ...Rs>
 class LuaFunction<std::tuple<Rs...>()> : public LuaRef {
 public:
+    LuaFunction(lua_State *L) : LuaRef(L) {}
+    LuaFunction(const LuaFunction<std::tuple<Rs...>()> &f) : LuaRef(f) {}
     std::tuple<Rs...> operator()() {
         // TMP
         if (lua_gettop(L)) {
@@ -125,6 +139,8 @@ public:
 template<typename ...Args>
 class LuaFunction<void(Args...)> : public LuaRef {
 public:
+    LuaFunction(lua_State *L) : LuaRef(L) {}
+    LuaFunction(const LuaFunction<void(Args...)> &f) : LuaRef(f) {}
     void operator()(Args...args) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         (..., TypedStack<Args>::push(L, args));

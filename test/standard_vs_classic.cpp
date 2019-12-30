@@ -25,6 +25,7 @@ struct StandardExample {
 
 
 static int classicGet(lua_State *L) {
+#ifdef STRICT_ARGUMENTS
     if (lua_gettop(L) != 1) {
         lua_pushstring(L, "Expected a class");
         lua_error(L);
@@ -33,6 +34,7 @@ static int classicGet(lua_State *L) {
         lua_pushstring(L, "Not a user datum");
         lua_error(L);
     }
+#endif
     auto object = *((StandardExample **) lua_touserdata(L, 1));
     lua_settop(L, 0);
     lua_pushnumber(L, object->get());
@@ -40,6 +42,7 @@ static int classicGet(lua_State *L) {
 }
 
 static int classicSet(lua_State *L) {
+#ifdef STRICT_ARGUMENTS
     if (lua_gettop(L) != 2) {
         lua_pushstring(L, "Expected a class");
         lua_error(L);
@@ -52,6 +55,7 @@ static int classicSet(lua_State *L) {
         lua_pushstring(L, "Expected a number!");
         lua_error(L);
     }
+#endif
     auto object = *((StandardExample **) lua_touserdata(L, 1));
     auto n = lua_tonumber(L, 2);
     lua_settop(L, 0);
@@ -60,6 +64,7 @@ static int classicSet(lua_State *L) {
 }
 
 static int classicPropSet(lua_State *L) {
+#ifdef STRICT_ARGUMENTS
     if (lua_gettop(L) != 2) {
         lua_pushstring(L, "Expected a class");
         lua_error(L);
@@ -72,6 +77,7 @@ static int classicPropSet(lua_State *L) {
         lua_pushstring(L, "Expected a number!");
         lua_error(L);
     }
+#endif
     auto object = *((StandardExample **) lua_touserdata(L, 1));
     object->num = lua_tonumber(L, 2);
     lua_settop(L, 0);
@@ -79,6 +85,7 @@ static int classicPropSet(lua_State *L) {
 }
 
 static int classicPropGet(lua_State *L) {
+#ifdef STRICT_ARGUMENTS
     if (lua_gettop(L) != 1) {
         lua_pushstring(L, "Expected a class");
         lua_error(L);
@@ -87,6 +94,7 @@ static int classicPropGet(lua_State *L) {
         lua_pushstring(L, "Not a user datum");
         lua_error(L);
     }
+#endif
     auto object = *((StandardExample **) lua_touserdata(L, 1));
     lua_settop(L, 0);
     lua_pushnumber(L, object->num);
@@ -183,7 +191,7 @@ TEST_F(AcceptationTest, testGetterSetter) {
               << std::endl;
 
     ASSERT_LT(double(standard_diff.count()), classic_diff.count() * 1.4)
-                                << "Expect standard execution to be at most 2/5 times slower than traditional.";
+                                << "Expect standard execution to be at most 40% times slower than traditional.";
 }
 
 TEST_F(AcceptationTest, testProperty) {
@@ -219,6 +227,6 @@ TEST_F(AcceptationTest, testProperty) {
               << std::chrono::duration_cast<std::chrono::milliseconds>(classic_diff).count() << " milliseconds."
               << std::endl;
 
-    ASSERT_LT(double(standard_diff.count()), classic_diff.count() * 1.05)
-                                << "Expect standard execution to be at most 5% times slower or faster than traditional.";
+    ASSERT_LT(double(standard_diff.count()), classic_diff.count() * 1.1)
+                                << "Expect standard execution to be at most 10% times slower than traditional.";
 }

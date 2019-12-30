@@ -17,6 +17,10 @@ target_include_directories(tlw
         $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
         ${LUA_INCLUDE_DIR})
 
+if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
+    target_compile_definitions(tlw INTERFACE STRICT_ARGUMENTS)
+endif ()
+
 set_target_properties(tlw PROPERTIES EXPORT_NAME TLW)
 
 install(TARGETS tlw

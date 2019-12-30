@@ -24,10 +24,16 @@ struct PrettyExample {
 
 
 static int classicGet(lua_State *L) {
+#ifdef STRICT_ARGUMENTS
     if (lua_gettop(L) != 1) {
         lua_pushstring(L, "Expected a class");
         lua_error(L);
     }
+    if (!lua_isuserdata(L, 1)) {
+        lua_pushstring(L, "Not a user datum");
+        lua_error(L);
+    }
+#endif
     auto object = *((PrettyExample **) lua_touserdata(L, 1));
     lua_settop(L, 0);
     lua_pushnumber(L, object->get());
@@ -35,6 +41,11 @@ static int classicGet(lua_State *L) {
 }
 
 static int classicSet(lua_State *L) {
+#ifdef STRICT_ARGUMENTS
+    if (lua_gettop(L) != 2) {
+        lua_pushstring(L, "Expected a class");
+        lua_error(L);
+    }
     if (!lua_isuserdata(L, 1)) {
         lua_pushstring(L, "Not a user datum");
         lua_error(L);
@@ -43,6 +54,7 @@ static int classicSet(lua_State *L) {
         lua_pushstring(L, "Expected a number!");
         lua_error(L);
     }
+#endif
     auto object = *((PrettyExample **) lua_touserdata(L, 1));
     auto n = lua_tonumber(L, 2);
     lua_settop(L, 0);
@@ -51,10 +63,12 @@ static int classicSet(lua_State *L) {
 }
 
 static int classicGetByUpValue(lua_State *L) {
+#ifdef STRICT_ARGUMENTS
     if (lua_gettop(L)) {
         lua_pushstring(L, "Expected no arguments.");
         lua_error(L);
     }
+#endif
     auto object = *((PrettyExample **) lua_touserdata(L, lua_upvalueindex(1)));
     lua_pushnumber(L, object->get());
     return 1;

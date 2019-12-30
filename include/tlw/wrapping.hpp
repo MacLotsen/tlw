@@ -74,7 +74,7 @@ static void expectNoArguments(lua_State *L) {
 
 template<typename ...Args>
 static void expectArguments(lua_State *L) {
-    if (!TypedStack<Args...>::expect(L)) {
+    if (lua_gettop(L) == sizeof...(Args) && !TypedStack<Args...>::expect(L)) {
         errorUnmatchedArguments<Args...>(L);
     }
 }

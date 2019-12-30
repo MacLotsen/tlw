@@ -29,6 +29,10 @@ static int classicGet(lua_State *L) {
         lua_pushstring(L, "Expected a class");
         lua_error(L);
     }
+    if (!lua_isuserdata(L, 1)) {
+        lua_pushstring(L, "Not a user datum");
+        lua_error(L);
+    }
     auto object = *((StandardExample **) lua_touserdata(L, 1));
     lua_settop(L, 0);
     lua_pushnumber(L, object->get());
@@ -36,6 +40,10 @@ static int classicGet(lua_State *L) {
 }
 
 static int classicSet(lua_State *L) {
+    if (lua_gettop(L) != 2) {
+        lua_pushstring(L, "Expected a class");
+        lua_error(L);
+    }
     if (!lua_isuserdata(L, 1)) {
         lua_pushstring(L, "Not a user datum");
         lua_error(L);
@@ -49,6 +57,44 @@ static int classicSet(lua_State *L) {
     lua_settop(L, 0);
     object->set(n);
     return 0;
+}
+
+static int classicPropSet(lua_State *L) {
+    if (lua_gettop(L) != 2) {
+        lua_pushstring(L, "Expected a class");
+        lua_error(L);
+    }
+    if (!lua_isuserdata(L, 1)) {
+        lua_pushstring(L, "Not a user datum");
+        lua_error(L);
+    }
+    if (!lua_isnumber(L, 2)) {
+        lua_pushstring(L, "Expected a number!");
+        lua_error(L);
+    }
+    auto object = *((StandardExample **) lua_touserdata(L, 1));
+    object->num = lua_tonumber(L, 2);
+    lua_settop(L, 0);
+    return 0;
+}
+
+static int classicPropGet(lua_State *L) {
+    if (lua_gettop(L) != 1) {
+        lua_pushstring(L, "Expected a class");
+        lua_error(L);
+    }
+    if (!lua_isuserdata(L, 1)) {
+        lua_pushstring(L, "Not a user datum");
+        lua_error(L);
+    }
+    auto object = *((StandardExample **) lua_touserdata(L, 1));
+    lua_settop(L, 0);
+    lua_pushnumber(L, object->num);
+    return 1;
+}
+
+static int classicGetterSetter(lua_State *L) {
+    return lua_gettop(L) > 1 ? classicPropSet(L) : classicPropGet(L);
 }
 
 class AcceptationTest : public ::testing::Test {
@@ -79,6 +125,8 @@ protected:
         *ud = pe;
         if (luaL_newmetatable(L, "ClassicExample.metatable")) {
             lua_createtable(L, 0, 0);
+            lua_pushcfunction(L, classicGetterSetter);
+            lua_setfield(L, -2, "num");
             lua_pushcfunction(L, classicGet);
             lua_setfield(L, -2, "get");
             lua_pushcfunction(L, classicSet);
@@ -141,7 +189,7 @@ TEST_F(AcceptationTest, testGetterSetter) {
 TEST_F(AcceptationTest, testProperty) {
     auto f = lua->src<LuaFunction<>>(propertyScript);
 
-    luaL_loadstring(L, getterSetterScript);
+    luaL_loadstring(L, propertyScript);
     lua_setglobal(L, "module");
 
     using clock = std::chrono::high_resolution_clock;
@@ -171,6 +219,6 @@ TEST_F(AcceptationTest, testProperty) {
               << std::chrono::duration_cast<std::chrono::milliseconds>(classic_diff).count() << " milliseconds."
               << std::endl;
 
-    ASSERT_LT(double(standard_diff.count()), classic_diff.count() * 1.4)
-                                << "Expect standard execution to be at most 2/5 times slower than traditional.";
+    ASSERT_LT(double(standard_diff.count()), classic_diff.count() * 1.05)
+                                << "Expect standard execution to be at most 5% times slower or faster than traditional.";
 }

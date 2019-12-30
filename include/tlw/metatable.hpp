@@ -49,23 +49,15 @@ static int luaMetaIndex(lua_State *L) {
     std::string property = lua_tostring(L, 2);
     lua_pop(L, 1);
 
-    for (auto kv: prototype->properties) {
-        if (property == kv.first) {
-            return kv.second(L);
-        }
-    }
+    if (prototype->properties.find(property) != prototype->properties.end())
+        return prototype->properties[property](L);
 
-    for (auto kv: prototype->getters) {
-        if (property == kv.first) {
-            return kv.second(L);
-        }
-    }
+    if (prototype->getters.find(property) != prototype->getters.end())
+        return prototype->getters[property](L);
 
-    for (auto kv: prototype->methods) {
-        if (property == kv.first) {
-            lua_pushcclosure(L, kv.second, 1);
-            return 1;
-        }
+    if (prototype->methods.find(property) != prototype->methods.end()) {
+        lua_pushcclosure(L, prototype->methods[property], 1);
+        return 1;
     }
 
     lua_pushstring(L, ("No such property " + property).c_str());
@@ -78,17 +70,11 @@ static int luaMetaNewIndex(lua_State *L) {
     std::string property = lua_tostring(L, 2);
     lua_remove(L, 2);
 
-    for (auto kv: prototype->properties) {
-        if (property == kv.first) {
-            return kv.second(L);
-        }
-    }
+    if (prototype->properties.find(property) != prototype->properties.end())
+        return prototype->properties[property](L);
 
-    for (auto kv: prototype->setters) {
-        if (property == kv.first) {
-            return kv.second(L);
-        }
-    }
+    if (prototype->setters.find(property) != prototype->setters.end())
+        return prototype->setters[property](L);
 
     lua_pushstring(L, ("No such property " + property).c_str());
     lua_error(L);
@@ -124,14 +110,14 @@ static void luaCreateMetaTable(lua_State *L, const PrettyClassPrototype *klass) 
             lua_settable(L, metatable);
         }
 
-        if (klass->properties.size() || klass->getters.size() || klass->methods.size()) {
+        if (!klass->properties.empty() || !klass->getters.empty() || !klass->methods.empty()) {
             lua_pushliteral(L, "__index");
             lua_pushvalue(L, prototype);
             lua_pushcclosure(L, luaMetaIndex, 1);
             lua_settable(L, metatable);
         }
 
-        if (klass->properties.size() || klass->setters.size()) {
+        if (!klass->properties.empty() || !klass->setters.empty()) {
             lua_pushliteral(L, "__newindex");
             lua_pushvalue(L, prototype);
             lua_pushcclosure(L, luaMetaNewIndex, 1);

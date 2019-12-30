@@ -50,6 +50,39 @@ static int classicSet(lua_State *L) {
     return 0;
 }
 
+static int classicGetByUpValue(lua_State *L) {
+    if (lua_gettop(L)) {
+        lua_pushstring(L, "Expected no arguments.");
+        lua_error(L);
+    }
+    auto object = *((PrettyExample **) lua_touserdata(L, lua_upvalueindex(1)));
+    lua_pushnumber(L, object->get());
+    return 1;
+}
+
+static int classicIndexer(lua_State *L) {
+    std::string prop = lua_tostring(L, -1);
+    lua_pop(L, 1);
+    if (prop == "get" || prop == "num") {
+        return classicGet(L);
+    } else {
+        lua_pushstring(L, "No such property to get");
+        lua_error(L);
+    }
+    return 0;
+}
+
+static int classicNewIndexer(lua_State *L) {
+    std::string prop = lua_tostring(L, 2);
+    lua_remove(L, 2);
+    if (prop == "num" || prop == "set") {
+        return classicSet(L);
+    }
+    lua_pushstring(L, "No such property to set");
+    lua_error(L);
+    return 0;
+}
+
 class PrettyAcceptationTest : public ::testing::Test {
 protected:
     Lua *lua = nullptr;
@@ -77,12 +110,10 @@ protected:
         auto ud = (PrettyExample **) lua_newuserdata(L, sizeof(PrettyExample **));
         *ud = pe;
         if (luaL_newmetatable(L, "ClassicExample.metatable")) {
-            lua_createtable(L, 0, 0);
-            lua_pushcfunction(L, classicGet);
-            lua_setfield(L, -2, "get");
-            lua_pushcfunction(L, classicSet);
-            lua_setfield(L, -2, "set");
+            lua_pushcfunction(L, classicIndexer);
             lua_setfield(L, -2, "__index");
+            lua_pushcfunction(L, classicNewIndexer);
+            lua_setfield(L, -2, "__newindex");
         }
         lua_setmetatable(L, -2);
         lua_setglobal(L, "object");
@@ -100,14 +131,11 @@ static const char *getterSetterScript = "local oldVal = object.get\n"
 static const char *propertyScript = "local oldVal = object.num\n"
                                     "object.num = oldVal + 50.0\n";
 
-static const char *classicGetterSetterScript = "local oldVal = object:get()\n"
-                                   "object:set(oldVal + 50.0)\n";
-
 
 TEST_F(PrettyAcceptationTest, testGetterSetter) {
     auto f = lua->src<LuaFunction<>>(getterSetterScript);
 
-    luaL_loadstring(L, classicGetterSetterScript);
+    luaL_loadstring(L, getterSetterScript);
     lua_setglobal(L, "module");
 
     using clock = std::chrono::high_resolution_clock;
@@ -128,7 +156,9 @@ TEST_F(PrettyAcceptationTest, testGetterSetter) {
     auto classic_start = clock::now();
     for (int i = 0; i < iterationCount; ++i) {
         lua_getglobal(L, "module");
-        lua_pcall(L, 0, 0, 0);
+        if (lua_pcall(L, 0, 0, 0)) {
+            FAIL() << lua_tostring(L, -1);
+        }
     }
     auto classic_end = clock::now();
     auto classic_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(classic_end - classic_start);
@@ -144,7 +174,7 @@ TEST_F(PrettyAcceptationTest, testGetterSetter) {
 TEST_F(PrettyAcceptationTest, testProperty) {
     auto f = lua->src<LuaFunction<>>(propertyScript);
 
-    luaL_loadstring(L, classicGetterSetterScript);
+    luaL_loadstring(L, propertyScript);
     lua_setglobal(L, "module");
 
     using clock = std::chrono::high_resolution_clock;
@@ -165,7 +195,9 @@ TEST_F(PrettyAcceptationTest, testProperty) {
     auto classic_start = clock::now();
     for (int i = 0; i < iterationCount; ++i) {
         lua_getglobal(L, "module");
-        lua_pcall(L, 0, 0, 0);
+        if (lua_pcall(L, 0, 0, 0)) {
+            FAIL() << lua_tostring(L, -1);
+        }
     }
     auto classic_end = clock::now();
     auto classic_diff = std::chrono::duration_cast<std::chrono::nanoseconds>(classic_end - classic_start);

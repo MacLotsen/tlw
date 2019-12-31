@@ -19,7 +19,7 @@ public:
 
     LuaRef(const LuaRef &ref) : L(ref.L) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, ref.index);
-        index = luaL_ref(L, -1);
+        index = luaL_ref(L, LUA_REGISTRYINDEX);
     }
 
     ~LuaRef() {
@@ -33,10 +33,8 @@ public:
     template<typename V>
     V get(K k) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
-        TypedStack<K>::push(L, k);
-        lua_gettable(L, -2);
-        V v = TypedStack<V>::pop(L);
-        lua_pop(L, 1);
+        V v = getOfStack<V>(-2, k);
+        lua_pop(L, 2);
         return v;
     }
 
@@ -48,10 +46,48 @@ public:
         lua_settable(L, -3);
         lua_pop(L, 1);
     }
+
+    template<typename ...Vs>
+    std::tuple<Vs...> all(K keys...) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, index);
+        int i = lua_gettop(L);
+        std::tuple<Vs...> r = {getOfStack<Vs>(i, keys)...};
+        lua_settop(L, i - 1);
+        return r;
+    }
+
+    template<typename ...Vs>
+    void setAll(std::pair<K, Vs> ...values) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, index);
+        int i = lua_gettop(L);
+        (..., setOnStack<Vs>(i, values.first, values.second));
+        lua_pop(L, 1);
+    }
+
+    void unset(K k) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, index);
+        lua_pushnil(L);
+        lua_settable(L, -2);
+        lua_pop(L, 1);
+    }
+private:
+    template<typename V>
+    V getOfStack(int index, K k) {
+        TypedStack<K>::push(L, k);
+        lua_gettable(L, index);
+        return TypedStack<V>::get(L, -1);
+    }
+
+    template<typename V>
+    void setOnStack(int index, K k, V v) {
+        TypedStack<K>::push(L, k);
+        TypedStack<V>::push(L, v);
+        lua_settable(L, index);
+    }
 };
 
 using LuaList = LuaStructure<int>;
-using LuaTable = LuaStructure<std::string>;
+using LuaTable = LuaStructure<const char *>;
 
 
 template<typename ...T>

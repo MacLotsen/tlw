@@ -32,7 +32,7 @@ public:
             name(std::move(name)), script(script), classicRunner(c), implementationRunner(i), iterations(iterations) {}
 
     Benchmark(std::string name, const char *script, BenchmarkRunner *c, BenchmarkRunner *i) :
-            Benchmark(std::move(name), script, c, i, 10000000) {}
+            Benchmark(std::move(name), script, c, i, 1000000) {}
 
     void run() {
         classicRunner->prepare(script);
@@ -55,17 +55,21 @@ public:
                         ? (double(implementationDiff.count()) / double(classicDiff.count()))
                         : (double(classicDiff.count()) / double(implementationDiff.count()));
 
+        std::stringstream ss;
+        ss << (classicDiff < implementationDiff ? "Classic = " : "Implementation = ")
+           << std::setprecision(2) << ((factor - 1) * 100)
+           << "% faster.";
+
         std::cout << std::setfill('_') << std::setw(80) << "" << std::endl << std::setfill(' ')
                   << std::left << "| " << std::setw(37) << name << "|"
-                  << std::setw(19) << " Classic" << "|"
-                  << std::setw(19) << " Implementation" << "|" << std::endl
-                  << "| " << std::setw(37) << script << "|"
+                  << std::setw(19) << " Lua" << "|"
+                  << std::setw(19) << " TLW" << "|" << std::endl
+                  << "| " << std::setw(37) << ss.str() << "|"
                   << std::fixed << std::right
-                  << std::setw(17) << classicDiff.count() << "ms" << "|"
-                  << std::setw(17) << implementationDiff.count() << "ms" << "|" << std::endl
-                  << (classicDiff < implementationDiff ? "Classic = " : "Implementation = ")
-                  << std::setprecision(2) << ((factor - 1) * 100)
-                  << "% faster. Script was " << iterations << "x executed.\n" << std::endl;
+                  << std::setw(16) << classicDiff.count() << "ms |"
+                  << std::setw(16) << implementationDiff.count() << "ms |" << std::endl
+                  << script << std::endl
+                  << std::endl;
     }
 };
 

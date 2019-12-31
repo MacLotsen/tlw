@@ -101,10 +101,65 @@ public:
     }
 
     void run() override {
-        double d;
-        bool b;
-        const char * str;
-        std::tie(d, b, str) = (*func)();
+        auto r = (*func)();
+    }
+};
+
+class ImplTableFetchBenchmark : public ImplBenchmarkRunner {
+protected:
+    LuaTable *table;
+public:
+    void prepare(const char *script) override {
+        ImplBenchmarkRunner::prepare(script);
+        ImplBenchmarkRunner::run();
+        table = new LuaTable(lua.global<LuaTable>("t"));
+    }
+
+    void run() override {
+        auto num = table->get<double>("r");
+    }
+};
+
+class ImplTableFetchesBenchmark : public ImplTableFetchBenchmark {
+public:
+    void run() override {
+        auto num = table->all<double, double, double>("r", "g", "b");
+    }
+};
+
+class ImplListFetchBenchmark : public ImplBenchmarkRunner {
+protected:
+    LuaList *table;
+public:
+    void prepare(const char *script) override {
+        ImplBenchmarkRunner::prepare(script);
+        ImplBenchmarkRunner::run();
+        table = new LuaList(lua.global<LuaList>("t"));
+    }
+
+    void run() override {
+        auto num = table->get<double>(1);
+    }
+};
+
+class ImplListFetchesBenchmark : public ImplListFetchBenchmark {
+public:
+    void run() override {
+        auto num = table->all<double, double, double>(1, 2, 3);
+    }
+};
+
+class ImplTableSetBenchmark : public ImplTableFetchBenchmark {
+public:
+    void run() override {
+        table->set("key", 2.5);
+    }
+};
+
+class ImplTableSetsBenchmark : public ImplTableFetchBenchmark {
+public:
+    void run() override {
+        table->setAll(std::pair{"key1", 2.5}, std::pair{"key2", 2.5}, std::pair{"key3", 2.5});
     }
 };
 

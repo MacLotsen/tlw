@@ -270,4 +270,136 @@ public:
     }
 };
 
+class ClassicTableFetchBenchmark : public ClassicBenchmarkRunner {
+protected:
+    int index = -1;
+public:
+    void prepare(const char *script) override {
+        ClassicBenchmarkRunner::prepare(script);
+        ClassicBenchmarkRunner::run();
+        lua_getglobal(L, "t");
+        index = luaL_ref(L, LUA_REGISTRYINDEX);
+    }
+
+    void run() override {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, index);
+        lua_pushliteral(L, "r");
+        lua_gettable(L, -2);
+#ifdef STRICT_ARGUMENTS
+        if (!lua_isnumber(L, -1))
+            throw std::runtime_error("NaN");
+#endif
+        double num = lua_tonumber(L, -1);
+        lua_pop(L, 2);
+    }
+};
+
+class ClassicTableFetchesBenchmark : public ClassicTableFetchBenchmark {
+public:
+    void run() override {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, index);
+        int i = lua_gettop(L);
+        lua_pushliteral(L, "r");
+        lua_gettable(L, i);
+#ifdef STRICT_ARGUMENTS
+        if (!lua_isnumber(L, -1))
+            throw std::runtime_error("NaN");
+#endif
+        double r = lua_tonumber(L, -1);
+        lua_pushliteral(L, "g");
+        lua_gettable(L, i);
+#ifdef STRICT_ARGUMENTS
+        if (!lua_isnumber(L, -1))
+            throw std::runtime_error("NaN");
+#endif
+        double g = lua_tonumber(L, -1);
+        lua_pushliteral(L, "b");
+        lua_gettable(L, i);
+#ifdef STRICT_ARGUMENTS
+        if (!lua_isnumber(L, -1))
+            throw std::runtime_error("NaN");
+#endif
+        double b = lua_tonumber(L, -1);
+        lua_settop(L, i - 1);
+    }
+};
+
+class ClassicListFetchBenchmark : public ClassicTableFetchBenchmark {
+public:
+    void run() override {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, index);
+        lua_pushinteger(L, 1);
+        lua_gettable(L, -2);
+#ifdef STRICT_ARGUMENTS
+        if (!lua_isnumber(L, -1))
+            throw std::runtime_error("NaN");
+#endif
+        double num = lua_tonumber(L, -1);
+        lua_pop(L, 2);
+    }
+};
+
+class ClassicListFetchesBenchmark : public ClassicTableFetchBenchmark {
+public:
+    void run() override {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, index);
+        int i = lua_gettop(L);
+        lua_pushinteger(L, 1);
+        lua_gettable(L, i);
+#ifdef STRICT_ARGUMENTS
+        if (!lua_isnumber(L, -1))
+            throw std::runtime_error("NaN");
+#endif
+        double r = lua_tonumber(L, -1);
+        lua_pushinteger(L, 2);
+        lua_gettable(L, i);
+#ifdef STRICT_ARGUMENTS
+        if (!lua_isnumber(L, -1))
+            throw std::runtime_error("NaN");
+#endif
+        double g = lua_tonumber(L, -1);
+        lua_pushinteger(L, 3);
+        lua_gettable(L, i);
+#ifdef STRICT_ARGUMENTS
+        if (!lua_isnumber(L, -1))
+            throw std::runtime_error("NaN");
+#endif
+        double b = lua_tonumber(L, -1);
+        lua_settop(L, i - 1);
+    }
+};
+
+class ClassicTableSetBenchmark : public ClassicTableFetchBenchmark {
+public:
+    void prepare(const char *script) override {
+        ClassicTableFetchBenchmark::prepare(script);
+    }
+
+    void run() override {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, index);
+        lua_pushliteral(L, "key");
+        lua_pushnumber(L, 2.5);
+        lua_settable(L, -3);
+        lua_pop(L, 1);
+    }
+};
+
+class ClassicTableSetsBenchmark : public ClassicTableSetBenchmark {
+public:
+    void run() override {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, index);
+        int i = lua_gettop(L);
+        lua_pushliteral(L, "key1");
+        lua_pushnumber(L, 2.5);
+        lua_settable(L, i);
+        lua_pushliteral(L, "key2");
+        lua_pushnumber(L, 2.5);
+        lua_settable(L, i);
+        lua_pushliteral(L, "key3");
+        lua_pushnumber(L, 2.5);
+        lua_settable(L, i);
+        lua_settop(L, i - 1);
+    }
+};
+
 #endif //TLW_CLASSIC_H

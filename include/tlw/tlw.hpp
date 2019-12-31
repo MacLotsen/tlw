@@ -7,6 +7,7 @@
 
 #include "stack.hpp"
 #include "metatable.hpp"
+#include "types.hpp"
 #include <iostream>
 #include <lua.hpp>
 
@@ -71,6 +72,12 @@ public:
         push(object);
         lua_setglobal(L, name.c_str());
         return *this;
+    }
+
+    template<typename K>
+    LuaStructure<K> table() {
+        lua_createtable(L, 0, 0);
+        return LuaStructure<K>(L);
     }
 
     template<typename C>

@@ -9,7 +9,8 @@ int main(int argc, char **argv) {
     ::testing::InitGoogleTest(&argc, argv);
 
     // Configure all prototypes for the cross-test lua state
-    auto constructorPrototype = PrettyClassPrototypeBuilder("ConstructorExample", mk_function(&ConstructorExample::create))
+    auto constructorPrototype = PrettyClassPrototypeBuilder("ConstructorExample",
+                                                            mk_function(&ConstructorExample::create))
             .build();
 
     auto getterPrototype = PrettyClassPrototypeBuilder("GetterExample")
@@ -40,6 +41,10 @@ int main(int argc, char **argv) {
             .lessThanOrEqual(mk_function(&NumberExample::lessThanOrEqual))
             .build();
 
+    auto strPrototype = ClassPrototypeBuilder("StrExample")
+            .concat(mk_function(&StringExample::concat))
+            .build();
+
     lua
             .global("noop", FunctionExample::lnoop)
             .global("plus", FunctionExample::lplus)
@@ -47,7 +52,8 @@ int main(int argc, char **argv) {
             .add<GetterExample>(getterPrototype)
             .add<SetterExample>(setterPrototype)
             .add<MethodExample>(methodPrototype)
-            .add<NumberExample>(numberPrototype);
+            .add<NumberExample>(numberPrototype)
+            .add<StringExample>(strPrototype);
 
     return RUN_ALL_TESTS();
 }

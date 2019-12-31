@@ -15,6 +15,7 @@
 #include "number_example.h"
 #include "prop_example.h"
 #include "script_example.h"
+#include "str_example.h"
 
 extern Lua lua;
 

@@ -17,7 +17,7 @@ public:
     inline static std::unordered_map<const std::type_info *, const PrettyClassPrototype*> prettyTables = {};
 
     template<typename T>
-    static void createObject(lua_State *L, T *object) {
+    inline static void createObject(lua_State *L, T *object) {
         T **ud = (T **) lua_newuserdata(L, sizeof(T **));
         *ud = object;
         if (metaTables.count(&typeid(T*)))

@@ -5,6 +5,7 @@
 #ifndef TLW_GETTER_EXAMPLE_H
 #define TLW_GETTER_EXAMPLE_H
 
+#include <utility>
 #include <tlw/wrapping.hpp>
 #include <string>
 
@@ -13,7 +14,7 @@ private:
     std::string property;
 public:
     inline static const char * script = "return example.property";
-    explicit GetterExample(std::string p) : property(p) {}
+    explicit GetterExample(std::string p) : property(std::move(p)) {}
     std::string getProperty() { return property; }
 };
 

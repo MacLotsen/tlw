@@ -49,7 +49,7 @@ TEST(MethodWrappers, testDestructor) {
 }
 
 TEST(MethodWrappers, testGetter) {
-    GetterExample example {"Property"};
+    GetterExample example{"Property"};
     auto r = lua.global("example", &example).src<LuaFunction<std::string()>>(GetterExample::script)();
     ASSERT_EQ("Property", r);
 }
@@ -68,7 +68,7 @@ TEST(MethodWrappers, testProperty) {
             .property("property", mk_property(&PropertyExample::property))
             .build();
 
-    PropertyExample example {"Property"};
+    PropertyExample example{"Property"};
     auto r = _lua.add<PropertyExample>(propertyPrototype)
             .global("example", &example)
             .src<LuaFunction<std::string()>>(PropertyExample::script)();
@@ -92,7 +92,8 @@ TEST(MethodWrappers, testNumber) {
     auto r = lua
             .global("ne", &ne)
             .global("ne2", &ne2)
-            .src<LuaFunction<std::tuple<double, double, double, double, double, double, double, bool, bool, bool>()>>(NumberExample::script)();
+            .src<LuaFunction<std::tuple<double, double, double, double, double, double, double, bool, bool, bool>()>>(
+                    NumberExample::script)();
 
     ASSERT_EQ(-1, std::get<0>(r));
     ASSERT_EQ(2, std::get<1>(r));
@@ -107,9 +108,10 @@ TEST(MethodWrappers, testNumber) {
 }
 
 TEST(MethodWrappers, testString) {
-    // TODO concat
-}
+    StringExample e("C++");
+    auto r = lua
+            .global("example", &e)
+            .src<LuaFunction<const char *()>>(StringExample::script)();
 
-TEST(MethodWrappers, testBinary) {
-    // TODO all binary operators
+    ASSERT_STREQ(r, "C++ in Lua");
 }

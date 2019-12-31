@@ -124,36 +124,6 @@ public:
         return *this;
     }
 
-    ClassPrototypeBuilder &binaryAnd(lua_CFunction f) {
-        prototype->operators["__band"] = f;
-        return *this;
-    }
-
-    ClassPrototypeBuilder &binaryOr(lua_CFunction f) {
-        prototype->operators["__bor"] = f;
-        return *this;
-    }
-
-    ClassPrototypeBuilder &binaryXor(lua_CFunction f) {
-        prototype->operators["__bxor"] = f;
-        return *this;
-    }
-
-    ClassPrototypeBuilder &binaryInverse(lua_CFunction f) {
-        prototype->operators["__le"] = f;
-        return *this;
-    }
-
-    ClassPrototypeBuilder &leftShift(lua_CFunction f) {
-        prototype->operators["__le"] = f;
-        return *this;
-    }
-
-    ClassPrototypeBuilder &rightShift(lua_CFunction f) {
-        prototype->operators["__le"] = f;
-        return *this;
-    }
-
     ClassPrototypeBuilder &toString(lua_CFunction f) {
         prototype->operators["__tostring"] = f;
         return *this;
@@ -261,36 +231,6 @@ public:
     }
 
     PrettyClassPrototypeBuilder &lessThanOrEqual(lua_CFunction f) {
-        prototype->operators["__le"] = f;
-        return *this;
-    }
-
-    PrettyClassPrototypeBuilder &binaryAnd(lua_CFunction f) {
-        prototype->operators["__band"] = f;
-        return *this;
-    }
-
-    PrettyClassPrototypeBuilder &binaryOr(lua_CFunction f) {
-        prototype->operators["__bor"] = f;
-        return *this;
-    }
-
-    PrettyClassPrototypeBuilder &binaryXor(lua_CFunction f) {
-        prototype->operators["__bxor"] = f;
-        return *this;
-    }
-
-    PrettyClassPrototypeBuilder &binaryInverse(lua_CFunction f) {
-        prototype->operators["__le"] = f;
-        return *this;
-    }
-
-    PrettyClassPrototypeBuilder &leftShift(lua_CFunction f) {
-        prototype->operators["__le"] = f;
-        return *this;
-    }
-
-    PrettyClassPrototypeBuilder &rightShift(lua_CFunction f) {
         prototype->operators["__le"] = f;
         return *this;
     }

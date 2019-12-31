@@ -30,7 +30,7 @@ public:
 
 static int luaMetaConstructor(lua_State *L) {
     int constructed = 0;
-    std::string metatable = lua_tostring(L, lua_upvalueindex(1));
+    const char * metatable = lua_tostring(L, lua_upvalueindex(1));
     lua_CFunction constructor = lua_tocfunction(L, lua_upvalueindex(2));
     constructed = constructor(L);
     if (!constructed) {
@@ -38,15 +38,15 @@ static int luaMetaConstructor(lua_State *L) {
         lua_error(L);
     }
     for (int i = 1; i <= constructed; ++i) {
-        luaL_getmetatable(L, metatable.c_str());
+        luaL_getmetatable(L, metatable);
         lua_setmetatable(L, i);
     }
     return constructed;
 }
 
 static int luaMetaIndex(lua_State *L) {
-    PrettyClassPrototype *prototype = (PrettyClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
-    std::string property = lua_tostring(L, 2);
+    auto prototype = (PrettyClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
+    const char * property = lua_tostring(L, 2);
     lua_pop(L, 1);
 
     if (prototype->properties.find(property) != prototype->properties.end())
@@ -60,14 +60,14 @@ static int luaMetaIndex(lua_State *L) {
         return 1;
     }
 
-    lua_pushstring(L, ("No such property " + property).c_str());
+    lua_pushstring(L, ("No such property " + std::string(property)).c_str());
     lua_error(L);
     return 0;
 }
 
 static int luaMetaNewIndex(lua_State *L) {
-    PrettyClassPrototype *prototype = (PrettyClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
-    std::string property = lua_tostring(L, 2);
+    auto prototype = (PrettyClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
+    const char * property = lua_tostring(L, 2);
     lua_remove(L, 2);
 
     if (prototype->properties.find(property) != prototype->properties.end())
@@ -76,13 +76,13 @@ static int luaMetaNewIndex(lua_State *L) {
     if (prototype->setters.find(property) != prototype->setters.end())
         return prototype->setters[property](L);
 
-    lua_pushstring(L, ("No such property " + property).c_str());
+    lua_pushstring(L, ("No such property " + std::string(property)).c_str());
     lua_error(L);
     return 0;
 }
 
 static void luaCreateMetaTable(lua_State *L, const PrettyClassPrototype *klass) {
-    if (luaL_newmetatable(L, klass->name.c_str())) {
+    if (luaL_newmetatable(L, klass->name)) {
         // Target metatable
         int metatable = lua_gettop(L);
 
@@ -97,15 +97,15 @@ static void luaCreateMetaTable(lua_State *L, const PrettyClassPrototype *klass) 
 
         // Set constructor if needed
         if (klass->constructor) {
-            lua_pushstring(L, klass->name.c_str());
+            lua_pushstring(L, klass->name);
             lua_pushcfunction(L, klass->constructor);
             lua_pushcclosure(L, luaMetaConstructor, 2);
-            lua_setglobal(L, klass->name.c_str());
+            lua_setglobal(L, klass->name);
         }
 
         // Set all operator overloading
         for (auto kv: klass->operators) {
-            lua_pushstring(L, kv.first.c_str());
+            lua_pushstring(L, kv.first.data());
             lua_pushcfunction(L, kv.second);
             lua_settable(L, metatable);
         }
@@ -130,7 +130,7 @@ static void luaCreateMetaTable(lua_State *L, const PrettyClassPrototype *klass) 
 }
 
 static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass) {
-    if (luaL_newmetatable(L, klass->name.c_str())) {
+    if (luaL_newmetatable(L, klass->name)) {
         // Target metatable
         int metatable = lua_gettop(L);
 
@@ -141,15 +141,15 @@ static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass) {
 
         // Set constructor if needed
         if (klass->constructor) {
-            lua_pushstring(L, klass->name.c_str());
+            lua_pushstring(L, klass->name);
             lua_pushcfunction(L, klass->constructor);
             lua_pushcclosure(L, luaMetaConstructor, 2);
-            lua_setglobal(L, klass->name.c_str());
+            lua_setglobal(L, klass->name);
         }
 
         // Set all operator overloading
         for (auto kv: klass->operators) {
-            lua_pushstring(L, kv.first.c_str());
+            lua_pushstring(L, kv.first.data());
             lua_pushcfunction(L, kv.second);
             lua_settable(L, metatable);
         }
@@ -159,7 +159,7 @@ static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass) {
             lua_createtable(L, 0, 0);
             for (auto kv: klass->methods) {
                 lua_pushcfunction(L, kv.second);
-                lua_setfield(L, -2, kv.first.c_str());
+                lua_setfield(L, -2, kv.first.data());
             }
             lua_setfield(L, -2, "__index");
         }

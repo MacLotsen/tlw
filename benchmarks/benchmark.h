@@ -57,7 +57,7 @@ public:
 
         std::stringstream ss;
         ss << (classicDiff < implementationDiff ? "Classic = " : "Implementation = ")
-           << std::setprecision(2) << ((factor - 1) * 100)
+           << std::fixed << std::setprecision(2) << ((factor - 1) * 100)
            << "% faster.";
 
         std::cout << std::setfill('_') << std::setw(80) << "" << std::endl << std::setfill(' ')

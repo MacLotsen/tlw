@@ -10,30 +10,32 @@
 #include <utility>
 
 
+using function_mapping = std::unordered_map<std::string_view, lua_CFunction>;
+
 struct ClassPrototype {
-    std::string name;
+    const char * name;
     lua_CFunction constructor;
-    std::unordered_map<std::string, lua_CFunction> operators{};
-    std::unordered_map<std::string, lua_CFunction> methods{};
+    function_mapping operators{};
+    function_mapping methods{};
 
-    explicit ClassPrototype(const std::string &name) : ClassPrototype(name, nullptr) {}
+    explicit ClassPrototype(const char *name) : ClassPrototype(name, nullptr) {}
 
-    ClassPrototype(std::string name, lua_CFunction constr) :
-            name(std::move(name)), constructor(constr) {}
+    ClassPrototype(const char * name, lua_CFunction constr) :
+            name(name), constructor(constr) {}
 };
 
 struct PrettyClassPrototype {
-    std::string name;
+    const char * name;
     lua_CFunction constructor;
-    std::unordered_map<std::string, lua_CFunction> operators{};
-    std::unordered_map<std::string, lua_CFunction> properties{};
-    std::unordered_map<std::string, lua_CFunction> getters{};
-    std::unordered_map<std::string, lua_CFunction> setters{};
-    std::unordered_map<std::string, lua_CFunction> methods{};
+    function_mapping operators{};
+    function_mapping properties{};
+    function_mapping getters{};
+    function_mapping setters{};
+    function_mapping methods{};
 
-    explicit PrettyClassPrototype(const std::string &name) : PrettyClassPrototype(name, nullptr) {}
+    explicit PrettyClassPrototype(const char *name) : PrettyClassPrototype(name, nullptr) {}
 
-    PrettyClassPrototype(const std::string &name, lua_CFunction constr) :
+    PrettyClassPrototype(const char * name, lua_CFunction constr) :
             name(name), constructor(constr) {}
 };
 
@@ -42,9 +44,9 @@ private:
     ClassPrototype *prototype;
     bool built = false;
 public:
-    explicit ClassPrototypeBuilder(const std::string &name) : prototype(new ClassPrototype(name)) {}
+    explicit ClassPrototypeBuilder(const char *name) : prototype(new ClassPrototype(name)) {}
 
-    explicit ClassPrototypeBuilder(const std::string &name, lua_CFunction constructor) : prototype(
+    explicit ClassPrototypeBuilder(const char *name, lua_CFunction constructor) : prototype(
             new ClassPrototype(name, constructor)) {}
 
     ~ClassPrototypeBuilder() {
@@ -62,7 +64,7 @@ public:
         return *this;
     }
 
-    ClassPrototypeBuilder &method(const std::string &n, lua_CFunction f) {
+    ClassPrototypeBuilder &method(const char *n, lua_CFunction f) {
         prototype->methods[n] = f;
         return *this;
     }
@@ -168,9 +170,9 @@ private:
     PrettyClassPrototype *prototype;
     bool built = false;
 public:
-    explicit PrettyClassPrototypeBuilder(const std::string &name) : prototype(new PrettyClassPrototype(name)) {}
+    explicit PrettyClassPrototypeBuilder(const char *name) : prototype(new PrettyClassPrototype(name)) {}
 
-    explicit PrettyClassPrototypeBuilder(const std::string &name, lua_CFunction constructor) : prototype(
+    explicit PrettyClassPrototypeBuilder(const char *name, lua_CFunction constructor) : prototype(
             new PrettyClassPrototype(name, constructor)) {}
 
     ~PrettyClassPrototypeBuilder() {
@@ -188,22 +190,22 @@ public:
         return *this;
     }
 
-    PrettyClassPrototypeBuilder &method(const std::string &n, lua_CFunction f) {
+    PrettyClassPrototypeBuilder &method(const char *n, lua_CFunction f) {
         prototype->methods[n] = f;
         return *this;
     }
 
-    PrettyClassPrototypeBuilder &property(const std::string &n, lua_CFunction f) {
+    PrettyClassPrototypeBuilder &property(const char *n, lua_CFunction f) {
         prototype->properties[n] = f;
         return *this;
     }
 
-    PrettyClassPrototypeBuilder &getter(const std::string &n, lua_CFunction f) {
+    PrettyClassPrototypeBuilder &getter(const char *n, lua_CFunction f) {
         prototype->getters[n] = f;
         return *this;
     }
 
-    PrettyClassPrototypeBuilder &setter(const std::string &n, lua_CFunction f) {
+    PrettyClassPrototypeBuilder &setter(const char *n, lua_CFunction f) {
         prototype->setters[n] = f;
         return *this;
     }

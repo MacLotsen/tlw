@@ -87,7 +87,7 @@ public:
         }
 
         // Get the type of the meta table. Nil if it doesn't exist for this lua instance
-        luaL_getmetatable(L, klass->name.c_str());
+        luaL_getmetatable(L, klass->name);
         int t = lua_type(L, -1);
         lua_pop(L, 1);
 
@@ -109,7 +109,7 @@ public:
         }
 
         // Get the type of the meta table. Nil if it doesn't exist for this lua instance
-        luaL_getmetatable(L, klass->name.c_str());
+        luaL_getmetatable(L, klass->name);
         int t = lua_type(L, -1);
         lua_pop(L, 1);
 

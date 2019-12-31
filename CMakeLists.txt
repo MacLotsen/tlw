@@ -1,12 +1,12 @@
 cmake_minimum_required(VERSION 3.10)
+project(TLW)
+
 execute_process(
         COMMAND git describe --tags --always
         OUTPUT_STRIP_TRAILING_WHITESPACE
         OUTPUT_VARIABLE GIT_REV
         WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
 )
-project(TLW VERSION ${GIT_REV})
-
 
 message("Typed Lua Wrapping v${GIT_REV}")
 

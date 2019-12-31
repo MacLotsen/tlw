@@ -1,5 +1,14 @@
 cmake_minimum_required(VERSION 3.10)
-project(TLW VERSION 1.0)
+execute_process(
+        COMMAND git describe --tags --always
+        OUTPUT_STRIP_TRAILING_WHITESPACE
+        OUTPUT_VARIABLE GIT_REV
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+)
+project(TLW VERSION ${GIT_REV})
+
+
+message("Typed Lua Wrapping v${GIT_REV}")
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
@@ -41,7 +50,7 @@ set(CMAKE_CONFIG_DIR lib/cmake/TLW)
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
         ${CMAKE_CURRENT_BINARY_DIR}/TLWConfigVersion.cmake
-        VERSION ${PROJECT_VERSION}
+        VERSION "${GIT_REV}"
         COMPATIBILITY AnyNewerVersion
 )
 

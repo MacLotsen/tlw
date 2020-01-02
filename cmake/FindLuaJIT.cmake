@@ -1,3 +1,4 @@
+# Found in minetest repository https://gitlab.com/minetest/minetest/blob/a6b9acb7af7ac7b8dd184ee33ced425b616b9744/cmake/Modules/FindLuaJIT.cmake
 # Locate LuaJIT library
 # This module defines
 #  LUAJIT_FOUND, if false, do not try to link to Lua

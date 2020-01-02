@@ -66,14 +66,14 @@ public:
         auto classicDiff = std::chrono::duration_cast<time>(classicEnd - classicStart);
         auto implementationDiff = std::chrono::duration_cast<time>(implementationEnd - implementationStart);
 
-        double factor = classicDiff < implementationDiff
+        double factor = classicDiff > implementationDiff
                         ? (double(implementationDiff.count()) / double(classicDiff.count()))
                         : (double(classicDiff.count()) / double(implementationDiff.count()));
 
         std::stringstream ss;
-        ss << (classicDiff < implementationDiff ? "Classic = " : "Implementation = ")
-           << std::fixed << std::setprecision(2) << ((factor - 1) * 100)
-           << "% faster.";
+        ss << "Implementation is "
+           << std::fixed << std::setprecision(2) << ((1 - factor) * 100)
+           << "% " << (classicDiff < implementationDiff ? "slower" : "faster") << ".";
 
         std::cout << std::setfill('_') << std::setw(80) << "" << std::endl << std::setfill(' ')
                   << std::left << "| " << std::setw(37) << name << "|"

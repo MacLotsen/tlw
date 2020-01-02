@@ -22,7 +22,7 @@
 
 
 TEST(MethodWrappers, testConstructor) {
-    lua.src<LuaFunction<>>(ConstructorExample::script)();
+    lua.src(ConstructorExample::script)();
 
     ASSERT_EQ(5, ConstructorExample::examples.size());
     for (auto v: ConstructorExample::examples) {
@@ -39,7 +39,7 @@ TEST(MethodWrappers, testPersistence) {
         Lua _lua;
 
         _lua.add<ConstructorExample>(constrPrototype)
-                .src<LuaFunction<>>(ConstructorExample::script)();
+                .src(ConstructorExample::script)();
     }
     ASSERT_EQ(5, ConstructorExample::examples.size());
     for (auto v: ConstructorExample::examples) {
@@ -59,21 +59,21 @@ TEST(MethodWrappers, testDestructor) {
     Lua _lua;
     _lua.add<DestructorExample>(propertyPrototype)
             .global("example", e)
-            .src<LuaFunction<>>(DestructorExample::script)();
+            .src(DestructorExample::script)();
 
     ASSERT_TRUE(DestructorExample::destroyed);
 }
 
 TEST(MethodWrappers, testGetter) {
     GetterExample example{"Property"};
-    auto r = lua.global("example", &example).src<LuaFunction<std::string()>>(GetterExample::script)();
+    auto r = lua.global("example", &example).src<std::string()>(GetterExample::script)();
     ASSERT_EQ("Property", r);
 }
 
 TEST(MethodWrappers, testSetter) {
     SetterExample example{"Property"};
     lua.global("example", &example)
-            .src<LuaFunction<>>(SetterExample::script)();
+            .src(SetterExample::script)();
 
     ASSERT_EQ("property changed", example.get());
 }
@@ -87,7 +87,7 @@ TEST(MethodWrappers, testProperty) {
     PropertyExample example{"Property"};
     auto r = _lua.add<PropertyExample>(propertyPrototype)
             .global("example", &example)
-            .src<LuaFunction<std::string()>>(PropertyExample::script)();
+            .src<std::string()>(PropertyExample::script)();
 
     ASSERT_EQ("Property", r);
     ASSERT_EQ("property changed", example.property);
@@ -97,7 +97,7 @@ TEST(MethodWrappers, testMethods) {
     MethodExample e;
 
     auto retValue = lua.global("example", &e)
-            .src<LuaFunction<double()>>(MethodExample::script)();
+            .src<double()>(MethodExample::script)();
 
     ASSERT_EQ(15, e.getCallMask());
     ASSERT_EQ(10.0, retValue);
@@ -108,7 +108,7 @@ TEST(MethodWrappers, testNumber) {
     auto r = lua
             .global("ne", &ne)
             .global("ne2", &ne2)
-            .src<LuaFunction<std::tuple<double, double, double, double, double, double, double, bool, bool, bool>()>>(
+            .src<std::tuple<double, double, double, double, double, double, double, bool, bool, bool>()>(
                     NumberExample::script)();
 
     ASSERT_EQ(-1, std::get<0>(r));
@@ -127,7 +127,7 @@ TEST(MethodWrappers, testString) {
     StringExample e("C++");
     auto r = lua
             .global("example", &e)
-            .src<LuaFunction<const char *()>>(StringExample::script)();
+            .src<const char *()>(StringExample::script)();
 
     ASSERT_STREQ(r, "C++ in Lua");
 }

@@ -34,11 +34,15 @@ public:
     }
 
     void prepare(const char *script) override {
-        func = new LuaFunction<>(lua.src<LuaFunction<>>(script));
+        func = new LuaFunction<>(lua.src(script));
     }
 
     void run() override {
-        (*func)();
+        try {
+            (*func)();
+        } catch(std::runtime_error &e) {
+            std::cerr << e.what() << std::endl;
+        }
     }
 };
 
@@ -112,7 +116,7 @@ public:
     }
 
     void prepare(const char *script) override {
-        func = new LuaFunction<std::tuple<double, bool, const char *>()>(lua.src<LuaFunction<std::tuple<double, bool, const char *>()>>(script));
+        func = new LuaFunction<std::tuple<double, bool, const char *>()>(lua.src<std::tuple<double, bool, const char *>()>(script));
     }
 
     void run() override {

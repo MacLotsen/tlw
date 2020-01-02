@@ -25,6 +25,8 @@
 #include <lua.hpp>
 #include <vector>
 
+class Lua;
+
 template<typename ...T>
 class TypedStack {
 
@@ -74,13 +76,8 @@ public:
     }
 
     inline static T *get(lua_State *L, int i) {
-        if (MetaTable::metaTables.count(&typeid(T *)) || MetaTable::prettyTables.count(&typeid(T *))) {
-            T **ptp = (T **) lua_touserdata(L, i);
-            return *ptp;
-        } else {
-            auto p = (T *) lua_touserdata(L, i);
-            return p;
-        }
+        T **ptp = (T **) lua_touserdata(L, i);
+        return *ptp;
     }
 
     inline static T *pop(lua_State *L) {
@@ -90,11 +87,8 @@ public:
     }
 
     inline static void push(lua_State *L, T *o) {
-        if (MetaTable::metaTables.count(&typeid(T *)) || MetaTable::prettyTables.count(&typeid(T *))) {
-            MetaTable::createObject(L, o);
-        } else {
-            lua_pushlightuserdata(L, (void *) o);
-        }
+        auto ud = (T**) lua_newuserdata(L, sizeof(T**));
+        *ud = o;
     }
 };
 
@@ -490,7 +484,8 @@ class TypedStack<T1, T2, Ts...> {
 public:
     template<int ...Is>
     inline static bool expect(lua_State *L, seq<Is...>) {
-        return TypedStack<T1>::expect(L, 1) && TypedStack<T2>::expect(L, 2) && (... && TypedStack<Ts>::expect(L, Is + 3));
+        return TypedStack<T1>::expect(L, 1) && TypedStack<T2>::expect(L, 2) &&
+               (... && TypedStack<Ts>::expect(L, Is + 3));
     }
 
     inline static bool expect(lua_State *L) {

@@ -21,25 +21,48 @@
 #define TLW_METATABLE_H
 
 #include "prototype.hpp"
+#include <vector>
 #include <lua.hpp>
 
 static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass);
 static void luaCreateMetaTable(lua_State *L, const PrettyClassPrototype *klass);
 
-class MetaTable {
+class MetaTableRegistry {
+private:
+    std::unordered_map<const std::type_info *, const char *> metaTableRegistry = {};
+    lua_State *L;
 public:
-    inline static std::unordered_map<const std::type_info *, const ClassPrototype*> metaTables = {};
-    inline static std::unordered_map<const std::type_info *, const PrettyClassPrototype*> prettyTables = {};
+    explicit MetaTableRegistry(lua_State *L) : L(L) {}
+
+    template<typename T1, typename T2>
+    void extend() {
+        extend(metaTableRegistry[&typeid(T1)], metaTableRegistry[&typeid(T2)]);
+    }
+
+    void extend(const char * klass, const char * base) {
+        luaL_getmetatable(L, klass);
+        luaL_getmetatable(L, base);
+        lua_setfield(L, -2, "__metatable");
+        lua_pop(L, 1);
+    }
+
+    template<typename C, typename P>
+    void registerClass(P *prototype) {
+        luaCreateMetaTable(L, prototype);
+        metaTableRegistry[&typeid(C*)] = prototype->name;
+        lua_pop(L, 1);
+    }
 
     template<typename T>
-    inline static void createObject(lua_State *L, T *object) {
+    void createObject(T *object) {
         T **ud = (T **) lua_newuserdata(L, sizeof(T **));
         *ud = object;
-        if (metaTables.count(&typeid(T*)))
-            luaCreateMetaTable(L, metaTables[&typeid(T*)]);
-        else if (prettyTables.count(&typeid(T*)))
-            luaCreateMetaTable(L, prettyTables[&typeid(T*)]);
-        lua_setmetatable(L, -2);
+        if (metaTableRegistry.find(&typeid(T*)) != metaTableRegistry.end()) {
+            luaL_getmetatable(L, metaTableRegistry[&typeid(T*)]);
+            lua_setmetatable(L, -2);
+        } else {
+            throw std::runtime_error("No such class");
+        }
     }
 };
 
@@ -105,7 +128,7 @@ static void luaCreateMetaTable(lua_State *L, const PrettyClassPrototype *klass) 
         lua_pushlightuserdata(L, (void *) klass);
         int prototype = lua_gettop(L);
 
-        // Create anonymous metatable (Deny access for lua)
+        // Create anonymous metatable (Deny access for lua by default)
         lua_pushliteral(L, "__metatable");
         lua_pushnil(L);
         lua_settable(L, metatable);

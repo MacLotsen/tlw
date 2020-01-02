@@ -22,21 +22,21 @@
 
 
 TEST(FunctionalWrappers, testCFunctions) {
-    auto f = lua.src<LuaFunction<double()>>(FunctionExample::script);
+    auto f = lua.src<double()>(FunctionExample::script);
     ASSERT_EQ(5.0, f());
 }
 
 TEST(FunctionalWrappers, testScriptWithZeroReturnValues) {
-    ASSERT_NO_THROW(lua.src<LuaFunction<>>(ScriptExample::noopScript)());
+    ASSERT_NO_THROW(lua.src(ScriptExample::noopScript)());
 }
 
 TEST(FunctionalWrappers, testScriptWithSingleReturnValue) {
-    auto f = lua.src<LuaFunction<double()>>(ScriptExample::singleReturnScript);
+    auto f = lua.src<double()>(ScriptExample::singleReturnScript);
     ASSERT_EQ(0, f());
 }
 
 TEST(FunctionalWrappers, testScriptWithMultiReturnValues) {
-    auto f = lua.src<LuaFunction<std::tuple<bool, double, std::string>()>>(ScriptExample::multiReturnScript);
+    auto f = lua.src<std::tuple<bool, double, std::string>()>(ScriptExample::multiReturnScript);
 
     bool b;
     double d;

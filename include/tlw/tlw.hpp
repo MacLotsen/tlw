@@ -27,41 +27,43 @@
 #include <lua.hpp>
 
 class Lua : Stack {
+private:
+    MetaTableRegistry classes;
 public:
-    Lua() : Stack(luaL_newstate()) {
+    Lua() : Lua(luaL_newstate()) {
         luaL_openlibs(L);
     }
 
-    explicit Lua(lua_State *L) : Stack(L) {}
+    explicit Lua(lua_State *L) : Stack(L), classes(L) { }
 
     ~Lua() {
         lua_close(L);
     }
 
-    template<typename T>
-    T file(const char *path) {
+    template<typename ...Ts>
+    LuaFunction<Ts...> file(const char *path) {
         if (luaL_loadfile(L, path)) {
             throw std::runtime_error(lua_tostring(L, -1));
         }
-        return TypedStack<T>::pop(L);
+        return TypedStack<LuaFunction<Ts...>>::pop(L);
     }
 
-    template<typename T>
-    T file(const std::string &path) {
-        return this->file<T>(path.c_str());
+    template<typename ...Ts>
+    LuaFunction<Ts...> file(const std::string &path) {
+        return this->file<Ts...>(path.c_str());
     }
 
-    template<typename T>
-    T src(const char *src) {
+    template<typename ...Ts>
+    LuaFunction<Ts...> src(const char *src) {
         if (luaL_loadstring(L, src)) {
             throw std::runtime_error(lua_tostring(L, -1));
         }
-        return TypedStack<T>::pop(L);
+        return TypedStack<LuaFunction<Ts...>>::pop(L);
     }
 
-    template<typename T>
-    T src(const std::string &src) {
-        return this->src<T>(src.c_str());
+    template<typename ...Ts>
+    LuaFunction<Ts...> src(const std::string &src) {
+        return this->src<LuaFunction<Ts...>>(src.c_str());
     }
 
     template<typename T>
@@ -84,7 +86,8 @@ public:
 
     template<class C>
     Lua &global(const std::string &name, C *object) {
-        push(object);
+        classes.createObject(object);
+
         lua_setglobal(L, name.c_str());
         return *this;
     }
@@ -99,47 +102,20 @@ public:
         return LuaList{L};
     }
 
-    template<typename C>
-    Lua &add(const ClassPrototype *klass) {
-        if (!MetaTable::metaTables.count(&typeid(C *))) {
-            MetaTable::metaTables[&typeid(C *)] = klass;
-        }
-
-        // Get the type of the meta table. Nil if it doesn't exist for this lua instance
-        luaL_getmetatable(L, klass->name);
-        int t = lua_type(L, -1);
-        lua_pop(L, 1);
-
-        if (t == LUA_TNIL) {
-            // Create meta table for this lua instance directly for e.g. constructor creation
-            luaCreateMetaTable(L, klass);
-            lua_pop(L, 1);
-        } else {
-            std::cerr << "Warning: Class '" << klass->name << "'already created." << std::endl;
-        }
-
+    template<typename T, typename P>
+    Lua &add(const P *prototype) {
+        classes.registerClass<T>(prototype);
         return *this;
     }
 
-    template<typename C>
-    Lua &add(const PrettyClassPrototype *klass) {
-        if (!MetaTable::prettyTables.count(&typeid(C *))) {
-            MetaTable::prettyTables[&typeid(C *)] = klass;
-        }
+    Lua &extend(const char *klass, const char *base) {
+        classes.extend(klass, base);
+        return *this;
+    }
 
-        // Get the type of the meta table. Nil if it doesn't exist for this lua instance
-        luaL_getmetatable(L, klass->name);
-        int t = lua_type(L, -1);
-        lua_pop(L, 1);
-
-        if (t == LUA_TNIL) {
-            // Create meta table for this lua instance directly for e.g. constructor creation
-            luaCreateMetaTable(L, klass);
-            lua_pop(L, 1);
-        } else {
-            std::cerr << "Warning: Class '" << klass->name << "'already created." << std::endl;
-        }
-
+    template<typename T1, typename T2>
+    Lua &extend() {
+        classes.extend<T1, T2>();
         return *this;
     }
 };

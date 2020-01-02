@@ -210,7 +210,7 @@ int main(int argc, char **argv) {
                     .method("getNumber", mk_function(&MyClass::get))
                     .build());
     lua.global("example", &myClass)
-       .file<LuaFunction<>>("myclass.lua")();
+       .file("myclass.lua")();
 }
 ```
 
@@ -262,7 +262,7 @@ int main(int argc, char **argv) {
                     .method("printNumber", mk_method(&MyClass::print))
                     .build());
     lua.global("example", &myClass)
-       .file<LuaFunction<>>("myclass.lua")();
+       .file("myclass.lua")();
 }
 ```
 

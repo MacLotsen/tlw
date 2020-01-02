@@ -40,30 +40,44 @@ public:
         lua_close(L);
     }
 
-    template<typename ...Ts>
-    LuaFunction<Ts...> file(const char *path) {
+    LuaFunction<> file(const char *path) {
         if (luaL_loadfile(L, path)) {
             throw std::runtime_error(lua_tostring(L, -1));
         }
-        return TypedStack<LuaFunction<Ts...>>::pop(L);
+        return TypedStack<LuaFunction<>>::pop(L);
     }
 
-    template<typename ...Ts>
-    LuaFunction<Ts...> file(const std::string &path) {
-        return this->file<Ts...>(path.c_str());
+    template<typename T>
+    T file(const char *path) {
+        if (luaL_loadfile(L, path)) {
+            throw std::runtime_error(lua_tostring(L, -1));
+        }
+        return TypedStack<T>::pop(L);
     }
 
-    template<typename ...Ts>
-    LuaFunction<Ts...> src(const char *src) {
+    template<typename T>
+    T file(const std::string &path) {
+        return this->file<T>(path.c_str());
+    }
+
+    LuaFunction<> src(const char *src) {
         if (luaL_loadstring(L, src)) {
             throw std::runtime_error(lua_tostring(L, -1));
         }
-        return TypedStack<LuaFunction<Ts...>>::pop(L);
+        return TypedStack<LuaFunction<>>::pop(L);
     }
 
-    template<typename ...Ts>
-    LuaFunction<Ts...> src(const std::string &src) {
-        return this->src<LuaFunction<Ts...>>(src.c_str());
+    template<typename T>
+    T src(const char *src) {
+        if (luaL_loadstring(L, src)) {
+            throw std::runtime_error(lua_tostring(L, -1));
+        }
+        return TypedStack<T>::pop(L);
+    }
+
+    template<typename T>
+    T src(const std::string &src) {
+        return this->src<T>(src.c_str());
     }
 
     template<typename T>

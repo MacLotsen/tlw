@@ -22,7 +22,7 @@
 
 
 TEST(FunctionalWrappers, testCFunctions) {
-    auto f = lua.src<double()>(FunctionExample::script);
+    auto f = lua.src<LuaFunction<double()>>(FunctionExample::script);
     ASSERT_EQ(5.0, f());
 }
 
@@ -31,12 +31,12 @@ TEST(FunctionalWrappers, testScriptWithZeroReturnValues) {
 }
 
 TEST(FunctionalWrappers, testScriptWithSingleReturnValue) {
-    auto f = lua.src<double()>(ScriptExample::singleReturnScript);
+    auto f = lua.src<LuaFunction<double()>>(ScriptExample::singleReturnScript);
     ASSERT_EQ(0, f());
 }
 
 TEST(FunctionalWrappers, testScriptWithMultiReturnValues) {
-    auto f = lua.src<std::tuple<bool, double, std::string>()>(ScriptExample::multiReturnScript);
+    auto f = lua.src<LuaFunction<std::tuple<bool, double, std::string>()>>(ScriptExample::multiReturnScript);
 
     bool b;
     double d;
@@ -46,4 +46,10 @@ TEST(FunctionalWrappers, testScriptWithMultiReturnValues) {
     ASSERT_TRUE(b);
     ASSERT_EQ(2.5, d);
     ASSERT_EQ("string", s);
+}
+
+TEST(FunctionalWrappers, testScriptWithFunctionReturnValue) {
+    auto script = lua.src<LuaFunction<LuaFunction<double(double, double)>()>>(ScriptExample::functionReturnScript);
+    auto f = script();
+    ASSERT_EQ(5.0, f(2.5, 2.5));
 }

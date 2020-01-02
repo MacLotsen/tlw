@@ -25,7 +25,11 @@ namespace ScriptExample {
     static const char * noopScript = "";
     static const char * singleReturnScript = "return 0";
     static const char * multiReturnScript = "return true, 2.5, 'string'";
-
+    static const char * functionReturnScript = "local function addUp(a, b)\n"
+                                               "    return a + b\n"
+                                               "end\n"
+                                               "\n"
+                                               "return addUp\n";
 }
 
 #endif //TLW_SCRIPT_EXAMPLE_H

@@ -224,3 +224,22 @@ TEST(StackTest, testScriptAsFunction) {
     }
     lua_close(L);
 }
+
+TEST(StackTest, testScriptWithWrongReturnTypes) {
+    lua_State *L = luaL_newstate();
+    luaL_openlibs(L);
+    Stack s(L);
+
+    double num;
+    luaL_loadstring(L, "return 'string'");
+    {
+        auto f = s.pop<LuaFunction<double()>>();
+
+        ASSERT_EQ(0, lua_gettop(L));
+
+        ASSERT_NO_THROW(num = f());
+        ASSERT_EQ(0, num);
+    }
+
+    lua_close(L);
+}

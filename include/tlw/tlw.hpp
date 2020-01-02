@@ -89,10 +89,14 @@ public:
         return *this;
     }
 
-    template<typename K>
-    LuaStructure<K> table() {
+    LuaTable table() {
         lua_createtable(L, 0, 0);
-        return LuaStructure<K>(L);
+        return LuaTable{L};
+    }
+
+    LuaList list() {
+        lua_createtable(L, 0, 0);
+        return LuaList{L};
     }
 
     template<typename C>

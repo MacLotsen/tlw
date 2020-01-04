@@ -35,7 +35,7 @@ public:
 
 class Benchmark {
     using clock = std::chrono::high_resolution_clock;
-    using time = std::chrono::milliseconds;
+    using time = std::chrono::nanoseconds;
 private:
     inline static const int columnWidth = 22;
     std::string name;
@@ -47,7 +47,7 @@ public:
             name(std::move(name)), script(script), classicRunner(c), implementationRunner(i), iterations(iterations) {}
 
     Benchmark(std::string name, const char *script, BenchmarkRunner *c, BenchmarkRunner *i) :
-            Benchmark(std::move(name), script, c, i, 1000000) {}
+            Benchmark(std::move(name), script, c, i, 10000000) {}
 
     void run() {
         classicRunner->prepare(script);
@@ -81,8 +81,10 @@ public:
                   << std::setw(19) << " TLW" << "|" << std::endl
                   << "| " << std::setw(37) << ss.str() << "|"
                   << std::fixed << std::right
-                  << std::setw(16) << classicDiff.count() << "ms |"
-                  << std::setw(16) << implementationDiff.count() << "ms |" << std::endl
+                  << std::setw(5) << classicDiff.count()/1000000 << "ms |"
+                  << std::setw(4) << classicDiff.count() / iterations  << "ns/op |"
+                  << std::setw(5) << implementationDiff.count() / 1000000 << "ms |"
+                  << std::setw(4) << implementationDiff.count() / iterations  << "ns/op |" << std::endl
                   << script << std::endl
                   << std::endl;
     }

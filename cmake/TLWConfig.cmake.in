@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 get_filename_component(TLW_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
-include(CMakeFindDependecyMacro)
+include(CMakeFindDependencyMacro)
 
 list(APPEND CMAKE_MODULE_PATH ${TLW_CMAKE_DIR})
 

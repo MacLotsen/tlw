@@ -116,7 +116,7 @@ public:
     }
 
     void prepare(const char *script) override {
-        func = new LuaFunction<std::tuple<double, bool, const char *>()>(lua.src<std::tuple<double, bool, const char *>()>(script));
+        func = new LuaFunction<std::tuple<double, bool, const char *>()>(lua.src<LuaFunction<std::tuple<double, bool, const char *>()>>(script));
     }
 
     void run() override {

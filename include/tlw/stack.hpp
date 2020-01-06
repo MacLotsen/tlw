@@ -159,6 +159,59 @@ public:
     }
 };
 
+
+template<>
+class TypedStack<const unsigned long> {
+public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isnumber(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
+    inline static const unsigned long get(lua_State *L, int i) {
+        return (const unsigned long) lua_tointeger(L, i);
+    }
+
+    inline static const unsigned long pop(lua_State *L) {
+        auto value = get(L, -1);
+        lua_pop(L, 1);
+        return value;
+    }
+
+    inline static void push(lua_State *L, const unsigned long n) {
+        lua_pushinteger(L, n);
+    }
+};
+
+template<>
+class TypedStack<const unsigned long&> {
+public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isnumber(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
+    inline static const unsigned long get(lua_State *L, int i) {
+        return (const unsigned long) lua_tointeger(L, i);
+    }
+
+    inline static const unsigned long pop(lua_State *L) {
+        auto value = get(L, -1);
+        lua_pop(L, 1);
+        return value;
+    }
+
+    inline static void push(lua_State *L, const unsigned long &n) {
+        lua_pushinteger(L, n);
+    }
+};
+
 template<>
 class TypedStack<int> {
 public:

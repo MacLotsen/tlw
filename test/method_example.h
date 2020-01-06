@@ -31,20 +31,28 @@ public:
                                         "return n1 + n2";
 
     void method1() {
-        callMask |= 1;
+        callMask |= 1u;
     }
+
     double method2() {
-        callMask |= 2;
+        callMask |= 2u;
         return 5.0;
     }
+
     double method3(double a, double b) {
-        callMask |= 4;
+        callMask |= 4u;
         return a + b;
     }
+
     void method4(double, double) {
-        callMask |= 8;
+        callMask |= 8u;
     }
-    unsigned int getCallMask() {
+
+    const MethodExample& getObject() const {
+        return *this;
+    }
+
+    unsigned int getCallMask() const {
         return callMask;
     }
 };

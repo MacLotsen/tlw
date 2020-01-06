@@ -160,9 +160,9 @@ int main(int argc, char** argv) {
     Lua lua;
     // These values will be available globally in a script
     // with the same lua_State of course
-    lua.global("myInteger", myInteger);
-    lua.global("myNumber", myNumber);
-    lua.global("myString", myString);
+    lua.set("myInteger", myInteger);
+    lua.set("myNumber", myNumber);
+    lua.set("myString", myString);
     return 0;
 }
 ```
@@ -209,7 +209,7 @@ int main(int argc, char **argv) {
                     .method("setNumber", mk_function(&MyClass::set))
                     .method("getNumber", mk_function(&MyClass::get))
                     .build());
-    lua.global("example", &myClass)
+    lua.setObject("example", &myClass)
        .file("myclass.lua")();
 }
 ```
@@ -261,7 +261,7 @@ int main(int argc, char **argv) {
                     .getter("getNumber", mk_function(&MyClass::get))
                     .method("printNumber", mk_method(&MyClass::print))
                     .build());
-    lua.global("example", &myClass)
+    lua.setObject("example", &myClass)
        .file("myclass.lua")();
 }
 ```

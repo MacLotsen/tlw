@@ -42,14 +42,26 @@ using class_property_t = T C::*;
 template<typename C>
 using class_none_to_none_t = void (C::*)();
 
+template<typename C>
+using cclass_none_to_none_t = void (C::*)() const;
+
 template<typename C, typename R>
 using class_none_to_one_t = R (C::*)();
+
+template<typename C, typename R>
+using cclass_none_to_one_t = R (C::*) () const;
 
 template<typename C, typename ...Args>
 using class_many_to_none_t = void (C::*)(Args...);
 
+template<typename C, typename ...Args>
+using cclass_many_to_none_t = void (C::*)(Args...) const;
+
 template<typename C, typename R, typename ...Args>
 using class_many_to_one_t = R (C::*)(Args...);
+
+template<typename C, typename R, typename ...Args>
+using cclass_many_to_one_t = R (C::*)(Args...) const;
 
 template<typename LAST>
 static std::string typesToString() {
@@ -226,8 +238,28 @@ static int luaWrapFunction(lua_State *L, class_none_to_none_t<C> f) {
     return 0;
 }
 
+template<typename C>
+static int luaWrapFunction(lua_State *L, cclass_none_to_none_t<C> f) {
+#ifdef STRICT_ARGUMENTS
+    expectArguments<C *>(L);
+#endif
+    C *klass = getClass<C>(L);
+    (klass->*f)();
+    return 0;
+}
+
 template<typename C, typename R>
 static int luaWrapFunction(lua_State *L, class_none_to_one_t<C, R> f) {
+#ifdef STRICT_ARGUMENTS
+    expectArguments<C *>(L);
+#endif
+    C *klass = getClass<C>(L);
+    TypedStack<R>::push(L, (klass->*f)());
+    return 1;
+}
+
+template<typename C, typename R>
+static int luaWrapFunction(lua_State *L, cclass_none_to_one_t<C, R> f) {
 #ifdef STRICT_ARGUMENTS
     expectArguments<C *>(L);
 #endif
@@ -246,8 +278,28 @@ static int luaWrapFunction(lua_State *L, class_many_to_none_t<C, Args...> f) {
     return 0;
 }
 
+template<typename C, typename ...Args>
+static int luaWrapFunction(lua_State *L, cclass_many_to_none_t<C, Args...> f) {
+#ifdef STRICT_ARGUMENTS
+    expectArguments<C *, Args...>(L);
+#endif
+    C *klass = getClass<C>(L);
+    LuaCMethodInvoker<C(void(Args...))>::invoke(L, klass, f);
+    return 0;
+}
+
 template<typename C, typename R, typename ...Args>
 static int luaWrapFunction(lua_State *L, class_many_to_one_t<C, R, Args...> f) {
+#ifdef STRICT_ARGUMENTS
+    expectArguments<C *, Args...>(L);
+#endif
+    C *klass = getClass<C>(L);
+    TypedStack<R>::push(L, LuaCMethodInvoker<C(R(Args...))>::invoke(L, klass, f));
+    return 1;
+}
+
+template<typename C, typename R, typename ...Args>
+static int luaWrapFunction(lua_State *L, cclass_many_to_one_t<C, R, Args...> f) {
 #ifdef STRICT_ARGUMENTS
     expectArguments<C *, Args...>(L);
 #endif

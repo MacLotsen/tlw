@@ -58,7 +58,7 @@ TEST(MethodWrappers, testDestructor) {
 
     Lua _lua;
     _lua.add<DestructorExample>(propertyPrototype)
-            .global("example", e)
+            .setObject("example", e)
             .src(DestructorExample::script)();
 
     ASSERT_TRUE(DestructorExample::destroyed);
@@ -66,13 +66,13 @@ TEST(MethodWrappers, testDestructor) {
 
 TEST(MethodWrappers, testGetter) {
     GetterExample example{"Property"};
-    auto r = lua.global("example", &example).src<LuaFunction<std::string()>>(GetterExample::script)();
+    auto r = lua.setObject("example", &example).src<LuaFunction<std::string()>>(GetterExample::script)();
     ASSERT_EQ("Property", r);
 }
 
 TEST(MethodWrappers, testSetter) {
     SetterExample example{"Property"};
-    lua.global("example", &example)
+    lua.setObject("example", &example)
             .src(SetterExample::script)();
 
     ASSERT_EQ("property changed", example.get());
@@ -86,7 +86,7 @@ TEST(MethodWrappers, testProperty) {
 
     PropertyExample example{"Property"};
     auto r = _lua.add<PropertyExample>(propertyPrototype)
-            .global("example", &example)
+            .setObject("example", &example)
             .src<LuaFunction<std::string()>>(PropertyExample::script)();
 
     ASSERT_EQ("Property", r);
@@ -96,7 +96,7 @@ TEST(MethodWrappers, testProperty) {
 TEST(MethodWrappers, testMethods) {
     MethodExample e;
 
-    auto retValue = lua.global("example", &e)
+    auto retValue = lua.setObject("example", &e)
             .src<LuaFunction<double()>>(MethodExample::script)();
 
     ASSERT_EQ(15, e.getCallMask());
@@ -106,8 +106,8 @@ TEST(MethodWrappers, testMethods) {
 TEST(MethodWrappers, testNumber) {
     NumberExample ne{}, ne2{2.0};
     auto r = lua
-            .global("ne", &ne)
-            .global("ne2", &ne2)
+            .setObject("ne", &ne)
+            .setObject("ne2", &ne2)
             .src<LuaFunction<std::tuple<double, double, double, double, double, double, double, bool, bool, bool>()>>(
                     NumberExample::script)();
 
@@ -126,8 +126,24 @@ TEST(MethodWrappers, testNumber) {
 TEST(MethodWrappers, testString) {
     StringExample e("C++");
     auto r = lua
-            .global("example", &e)
+            .setObject("example", &e)
             .src<LuaFunction<const char *()>>(StringExample::script)();
 
     ASSERT_STREQ(r, "C++ in Lua");
+}
+
+TEST(MethodWrappers, testConstRefObject) {
+    MethodExample me;
+
+    auto f = lua.setObject("example", me)
+            .src<LuaFunction<unsigned int()>>("result = example.self; example.method1(); return example.self.callMask");
+
+    auto r = f();
+
+    ASSERT_EQ(1, r);
+
+    auto r2  = lua.get<const MethodExample&>("result");
+
+    // Not the same pointer, yet still the same behaviour
+    ASSERT_EQ(me.getCallMask(), r2.getCallMask());
 }

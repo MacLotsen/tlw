@@ -42,6 +42,11 @@ int main(int argc, char **argv) {
             .method("method2", mk_method(&MethodExample::method2))
             .method("method3", mk_method(&MethodExample::method3))
             .method("method4", mk_method(&MethodExample::method4))
+            .getter("self", mk_function(&MethodExample::getObject))
+            .build();
+
+    auto constMethodPrototype = PrettyClassPrototypeBuilder("ConstMethodExample")
+            .getter("callMask", mk_function(&MethodExample::getCallMask))
             .build();
 
     auto numberPrototype = PrettyClassPrototypeBuilder("NumberExample")
@@ -61,15 +66,26 @@ int main(int argc, char **argv) {
             .concat(mk_function(&StringExample::concat))
             .build();
 
+    auto classExamplePrototype = PrettyClassPrototypeBuilder("ClassExample")
+            .property("number", mk_property(&ClassExample::number))
+            .build();
+
+    auto constClassExamplePrototype = PrettyClassPrototypeBuilder("ConstClassExample")
+            .getter("number", mk_function(&ClassExample::get))
+            .build();
+
     lua
-            .global("noop", FunctionExample::lnoop)
-            .global("plus", FunctionExample::lplus)
+            .set("noop", FunctionExample::lnoop)
+            .set("plus", FunctionExample::lplus)
             .add<ConstructorExample>(constructorPrototype)
             .add<GetterExample>(getterPrototype)
             .add<SetterExample>(setterPrototype)
             .add<MethodExample>(methodPrototype)
+            .add<const MethodExample>(constMethodPrototype)
             .add<NumberExample>(numberPrototype)
-            .add<StringExample>(strPrototype);
+            .add<StringExample>(strPrototype)
+            .add<ClassExample>(classExamplePrototype)
+            .add<const ClassExample>(constClassExamplePrototype);
 
     return RUN_ALL_TESTS();
 }

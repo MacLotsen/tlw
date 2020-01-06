@@ -34,7 +34,11 @@ public:
         luaL_openlibs(L);
     }
 
-    explicit Lua(lua_State *L) : Stack(L), classes(L) { }
+    explicit Lua(lua_State *L) : Stack(L), classes(L) {
+        lua_pushliteral(L, "classes");
+        lua_pushlightuserdata(L, (void*) &classes);
+        lua_settable(L, LUA_REGISTRYINDEX);
+    }
 
     ~Lua() {
         lua_close(L);
@@ -81,26 +85,60 @@ public:
     }
 
     template<typename T>
-    T global(const std::string &name) {
+    T get(const std::string &name) {
         lua_getglobal(L, name.c_str());
         return pop<T>();
     }
 
     template<typename T>
-    Lua &global(const std::string &name, T value) {
+    Lua &set(const std::string &name, T value) {
         push<T>(value);
         lua_setglobal(L, name.c_str());
         return *this;
     }
 
-    Lua &global(const std::string &name, lua_CFunction f) {
+    template<typename T>
+    Lua &set(const std::string &name, T& value) {
+        return set(name, &value);
+    }
+
+    template<typename T>
+    Lua &set(const std::string &name, const T& value) {
+        return set(name, &value);
+    }
+
+    Lua &set(const std::string &name, lua_CFunction f) {
         lua_register(L, name.c_str(), f);
         return *this;
     }
 
     template<class C>
-    Lua &global(const std::string &name, C *object) {
+    Lua &setObject(const std::string &name, C *object) {
         classes.createObject(object);
+
+        lua_setglobal(L, name.c_str());
+        return *this;
+    }
+
+    template<class C>
+    Lua &setObject(const std::string &name, const C *object) {
+        classes.createObject(object);
+
+        lua_setglobal(L, name.c_str());
+        return *this;
+    }
+
+    template<class C>
+    Lua &setObject(const std::string &name, C &object) {
+        classes.createObject(&object);
+
+        lua_setglobal(L, name.c_str());
+        return *this;
+    }
+
+    template<class C>
+    Lua &setObject(const std::string &name, const C &object) {
+        classes.createObject(&object);
 
         lua_setglobal(L, name.c_str());
         return *this;

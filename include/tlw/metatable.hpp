@@ -55,10 +55,22 @@ public:
 
     template<typename T>
     void createObject(T *object) {
-        T **ud = (T **) lua_newuserdata(L, sizeof(T **));
+        auto ud = (T **) lua_newuserdata(L, sizeof(T **));
         *ud = object;
         if (metaTableRegistry.find(&typeid(T*)) != metaTableRegistry.end()) {
             luaL_getmetatable(L, metaTableRegistry[&typeid(T*)]);
+            lua_setmetatable(L, -2);
+        } else {
+            throw std::runtime_error("No such class");
+        }
+    }
+
+    template<typename T>
+    void createObject(const T *object) {
+        auto ud = (const T **) lua_newuserdata(L, sizeof(T **));
+        *ud = object;
+        if (metaTableRegistry.find(&typeid(const T*)) != metaTableRegistry.end()) {
+            luaL_getmetatable(L, metaTableRegistry[&typeid(const T*)]);
             lua_setmetatable(L, -2);
         } else {
             throw std::runtime_error("No such class");

@@ -27,17 +27,76 @@
 
 class Lua;
 
+inline static MetaTableRegistry &getMetaTableRegistry(lua_State *L) {
+    lua_pushliteral(L, "classes");
+    lua_gettable(L, LUA_REGISTRYINDEX);
+    return *(MetaTableRegistry*) lua_touserdata(L, -1);
+}
+
 template<typename ...T>
 class TypedStack {
 
 };
 
-
 template<typename T>
-class TypedStack<T> {
+class TypedStack<const T> {
 public:
     inline static bool expect(lua_State *L, int i) {
-        return lua_islightuserdata(L, i);
+        return lua_isuserdata(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
+    inline static const T &get(lua_State *L, int i) {
+        T **ptp = (T **) lua_touserdata(L, i);
+        return **ptp;
+    }
+
+    inline static const T &pop(lua_State *L) {
+        auto value = get(L, -1);
+        lua_pop(L, 1);
+        return value;
+    }
+
+    inline static void push(lua_State *L, const T& o) {
+        getMetaTableRegistry(L).createObject(&o);
+    }
+};
+
+template<typename T>
+class TypedStack<const T&> {
+public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isuserdata(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
+    inline static const T &get(lua_State *L, int i) {
+        auto ptp = (const T **) lua_touserdata(L, i);
+        return **ptp;
+    }
+
+    inline static const T &pop(lua_State *L) {
+        const T& value = get(L, -1);
+        lua_pop(L, 1);
+        return value;
+    }
+
+    inline static void push(lua_State *L, const T &o) {
+        getMetaTableRegistry(L).createObject(&o);
+    }
+};
+
+template<typename T>
+class TypedStack<T&> {
+public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isuserdata(L, i);
     }
 
     inline static bool expect(lua_State *L) {
@@ -45,12 +104,8 @@ public:
     }
 
     inline static T &get(lua_State *L, int i) {
-        if (lua_islightuserdata(L, i)) {
-            return *((T *) lua_touserdata(L, i));
-        } else {
-            std::string errorMsg = "Expected a class/struct argument. " + std::string(luaL_typename(L, i)) + " given.";
-            throw std::runtime_error(errorMsg);
-        }
+        T **ptp = (T **) lua_touserdata(L, i);
+        return **ptp;
     }
 
     inline static T &pop(lua_State *L) {
@@ -59,8 +114,8 @@ public:
         return value;
     }
 
-    inline static void push(lua_State *L, T *o) {
-        lua_pushlightuserdata(L, (void *) o);
+    inline static void push(lua_State *L, T &o) {
+        getMetaTableRegistry(L).createObject(&o);
     }
 };
 
@@ -87,41 +142,7 @@ public:
     }
 
     inline static void push(lua_State *L, T *o) {
-        auto ud = (T**) lua_newuserdata(L, sizeof(T**));
-        *ud = o;
-    }
-};
-
-template<typename T>
-class TypedStack<const T> {
-};
-
-template<typename T>
-class TypedStack<T &> {
-};
-
-template<typename T>
-class TypedStack<const T &> {
-};
-
-template<typename T>
-class TypedStack<volatile T &> {
-    inline static void push(lua_State *L, volatile T &o) {
-        TypedStack<T>::push(L, const_cast<const T &>(o));
-    }
-};
-
-template<typename T>
-class TypedStack<const volatile T &> {
-    inline static void push(lua_State *L, const volatile T &o) {
-        TypedStack<T>::push(L, const_cast<const T &>(o));
-    }
-};
-
-template<typename T>
-class TypedStack<T &&> {
-    inline static void push(lua_State *L, T &&o) {
-        TypedStack<T>::push(L, std::forward<T>(o));
+        getMetaTableRegistry(L).createObject(o);
     }
 };
 

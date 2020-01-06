@@ -17,23 +17,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TEST_H
-#define TLW_TEST_H
+#ifndef TLW_CLASS_EXAMPLES_H
+#define TLW_CLASS_EXAMPLES_H
 
-#include <gtest/gtest.h>
-#include <tlw/tlw.hpp>
-#include "constr_example.h"
-#include "destr_example.h"
-#include "func_example.h"
-#include "getter_example.h"
-#include "setter_example.h"
-#include "method_example.h"
-#include "number_example.h"
-#include "prop_example.h"
-#include "script_example.h"
-#include "str_example.h"
-#include "class_examples.h"
+struct ClassExample {
+    double number;
 
-extern Lua lua;
+    double get() const {
+        return number;
+    }
+};
 
-#endif //TLW_TEST_H
+#endif //TLW_CLASS_EXAMPLES_H

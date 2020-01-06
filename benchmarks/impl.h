@@ -38,11 +38,7 @@ public:
     }
 
     void run() override {
-        try {
-            (*func)();
-        } catch(std::runtime_error &e) {
-            std::cerr << e.what() << std::endl;
-        }
+        (*func)();
     }
 };
 
@@ -62,7 +58,7 @@ public:
                                          .build());
 
         example = new PropertyExample;
-        lua.global("example", example);
+        lua.setObject("example", example);
     }
 };
 
@@ -82,7 +78,7 @@ public:
                                          .build());
 
         example = new PropertyExample;
-        lua.global("example", example);
+        lua.setObject("example", example);
     }
 };
 
@@ -102,7 +98,7 @@ public:
                                          .build());
 
         example = new PropertyExample;
-        lua.global("example", example);
+        lua.setObject("example", example);
     }
 };
 
@@ -116,7 +112,8 @@ public:
     }
 
     void prepare(const char *script) override {
-        func = new LuaFunction<std::tuple<double, bool, const char *>()>(lua.src<LuaFunction<std::tuple<double, bool, const char *>()>>(script));
+        func = new LuaFunction<std::tuple<double, bool, const char *>()>(
+                lua.src<LuaFunction<std::tuple<double, bool, const char *>()>>(script));
     }
 
     void run() override {
@@ -131,7 +128,7 @@ public:
     void prepare(const char *script) override {
         ImplBenchmarkRunner::prepare(script);
         ImplBenchmarkRunner::run();
-        table = new LuaTable(lua.global<LuaTable>("t"));
+        table = new LuaTable(lua.get<LuaTable>("t"));
     }
 
     void run() override {
@@ -153,7 +150,7 @@ public:
     void prepare(const char *script) override {
         ImplBenchmarkRunner::prepare(script);
         ImplBenchmarkRunner::run();
-        table = new LuaList(lua.global<LuaList>("t"));
+        table = new LuaList(lua.get<LuaList>("t"));
     }
 
     void run() override {

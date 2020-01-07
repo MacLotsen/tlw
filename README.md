@@ -238,6 +238,7 @@ example.print('The number is ')
 ```
 
 ```cpp
+#include <iostream>
 #include <tlw/tlw.hpp>
 #include <tlw/types.hpp>
 #include <tlw/wrapping.hpp>
@@ -275,6 +276,48 @@ For this exposure we'll need to use the `mk_method` macro.
 
 The difference between the macro's have some technical background. In short,
 the `mk_method` will expect a user datum by upvalue rather than the first function argument.
+
+### Exposing const classes
+
+A constant class can be exposed by giving the const signature.
+The procedure is exactly the same as the previous mentioned class exposures.
+Yet with constant classes exposed methods need to be marked const as well.
+
+```cpp
+#include <iostream>
+#include <tlw/tlw.hpp>
+#include <tlw/types.hpp>
+#include <tlw/wrapping.hpp>
+
+class MyClass {
+private:
+    double myNumber = 0;
+public:
+    double get() const { return myNumber; }
+    void print(const char * prefix) const {
+        std::cout << prefix << myNumber << std::endl;
+    }
+}
+
+int main(int argc, char **argv) {
+    Lua lua;
+    const MyClass myClass;
+    lua.add<const MyClass>(PrettyClassPrototypeBuilder("ConstMyClass")
+                    .getter("number", mk_function(&MyClass::get))
+                    .method("printNumber", mk_method(&MyClass::print))
+                    .build());
+    lua.setObject("example", &myClass)
+       .file("myclass.lua")();
+}
+```
+
+Note that the `lua.add` call and the name of the prototype are different.
+This is required if you want both to exist.
+If you'd use the same prototype name it'll overwrite the previous added prototype.
+Also if using the same signature it'll replace the prototype name for that signature.
+
+My advice is to add consistently normal classes with its name and constant classes with a `Const` prefix.
+Though you can basically use whatever you'd like, as long as you aren't introducing ambiguity on the type and name.
 
 ## Contributing
 

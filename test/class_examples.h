@@ -39,7 +39,7 @@ struct BaseExample {
 struct DerivativeExample : public BaseExample {
     inline static const char * script = "n = example:number() -- expect property of base class\n"
                                         "example:print() -- expect print method to be standard like\n"
-                                        "example:number(n + 2.5)";
+                                        "example:number(n + 2.5)\n";
 
     void printNumber() const {
         std::cout << number << std::endl;

@@ -170,7 +170,7 @@ static void luaCreateMetaTable(lua_State *L, const PrettyClassPrototype *klass) 
 
         // Create anonymous metatable (Deny access for lua by default)
         lua_pushliteral(L, "__metatable");
-        lua_pushnil(L);
+        lua_pushfstring(L, "%s is private", klass->name);
         lua_settable(L, metatable);
 
         // Set constructor if needed
@@ -213,9 +213,9 @@ static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass) {
         int metatable = lua_gettop(L);
 
         // Create anonymous meta table (Deny access for lua)
-//        lua_pushliteral(L, "__metatable");
-//        lua_pushnil(L);
-//        lua_settable(L, metatable);
+        lua_pushliteral(L, "__metatable");
+        lua_pushfstring(L, "%s is private", klass->name);
+        lua_settable(L, metatable);
 
         // Set constructor if needed
         if (klass->constructor) {

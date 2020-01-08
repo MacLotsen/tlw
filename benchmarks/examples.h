@@ -20,6 +20,12 @@
 #ifndef TLW_EXAMPLES_H
 #define TLW_EXAMPLES_H
 
+#include <lua.hpp>
+
+int noop(lua_State *) {
+    return true;
+}
+
 class PropertyExample {
 public:
     double number;

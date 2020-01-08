@@ -36,15 +36,123 @@ public:
         L = luaL_newstate();
         luaL_openlibs(L);
         luaL_loadstring(L, script);
-        lua_setglobal(L, "module");
+        lua_setglobal(L, "script");
     }
 
     void run() override {
-        lua_getglobal(L, "module");
+        lua_getglobal(L, "script");
         if (lua_pcall(L, 0, 0, 0)) {
             std::cerr << lua_tostring(L, -1) << std::endl;
             throw std::runtime_error("Error calling script");
         }
+    }
+};
+
+class ClassicGlobalBooleanGetBenchmark : public ClassicBenchmarkRunner {
+public:
+    void prepare(const char *script) override {
+        ClassicBenchmarkRunner::prepare(script);
+        ClassicBenchmarkRunner::run();
+    }
+
+    void run() override {
+        lua_getglobal(L, "b");
+#ifdef STRICT_ARGUMENTS
+        if (!lua_isboolean(L, -1)) {
+            throw std::runtime_error("error");
+        }
+#endif
+        bool b = lua_toboolean(L, -1);
+        lua_pop(L, 1);
+    }
+};
+
+class ClassicGlobalBooleanSetBenchmark : public ClassicBenchmarkRunner {
+public:
+    void run() override {
+        lua_pushboolean(L, true);
+        lua_setglobal(L, "b");
+    }
+};
+
+class ClassicGlobalNumberGetBenchmark : public ClassicBenchmarkRunner {
+public:
+    void prepare(const char *script) override {
+        ClassicBenchmarkRunner::prepare(script);
+        ClassicBenchmarkRunner::run();
+    }
+
+    void run() override {
+        lua_getglobal(L, "n");
+#ifdef STRICT_ARGUMENTS
+        if (!lua_isnumber(L, -1)) {
+            throw std::runtime_error("error");
+        }
+#endif
+        double d = lua_tonumber(L, -1);
+        lua_pop(L, 1);
+    }
+};
+
+class ClassicGlobalNumberSetBenchmark : public ClassicBenchmarkRunner {
+public:
+    void run() override {
+        lua_pushnumber(L, 2.5);
+        lua_setglobal(L, "n");
+    }
+};
+
+class ClassicGlobalStringGetBenchmark : public ClassicBenchmarkRunner {
+public:
+    void prepare(const char *script) override {
+        ClassicBenchmarkRunner::prepare(script);
+        ClassicBenchmarkRunner::run();
+    }
+
+    void run() override {
+        lua_getglobal(L, "s");
+#ifdef STRICT_ARGUMENTS
+        if (!lua_isstring(L, -1)) {
+            throw std::runtime_error("error");
+        }
+#endif
+        const char * s = lua_tostring(L, -1);
+        lua_pop(L, 1);
+    }
+};
+
+class ClassicGlobalStringSetBenchmark : public ClassicBenchmarkRunner {
+public:
+    void run() override {
+        lua_pushstring(L, "str");
+        lua_setglobal(L, "s");
+    }
+};
+
+class ClassicGlobalFunctionGetBenchmark : public ClassicBenchmarkRunner {
+public:
+    void prepare(const char *script) override {
+        ClassicBenchmarkRunner::prepare(script);
+        ClassicBenchmarkRunner::run();
+    }
+
+    void run() override {
+        lua_getglobal(L, "f");
+#ifdef STRICT_ARGUMENTS
+        if (!lua_isfunction(L, -1)) {
+            throw std::runtime_error("error");
+        }
+#endif
+        // not doing anything with it
+        luaL_unref(L, LUA_REGISTRYINDEX, luaL_ref(L, LUA_REGISTRYINDEX));
+    }
+};
+
+class ClassicGlobalFunctionSetBenchmark : public ClassicBenchmarkRunner {
+public:
+    void run() override {
+        lua_pushcfunction(L, noop);
+        lua_setglobal(L, "f");
     }
 };
 
@@ -271,7 +379,7 @@ public:
 class ClassicScriptResultsBenchmark : public ClassicBenchmarkRunner {
 public:
     void run() override {
-        lua_getglobal(L, "module");
+        lua_getglobal(L, "script");
         if (lua_pcall(L, 0, 3, 0)) {
             std::cerr << lua_tostring(L, -1) << std::endl;
             throw std::runtime_error("Error calling script");

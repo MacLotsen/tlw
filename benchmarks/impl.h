@@ -43,6 +43,82 @@ public:
 };
 
 
+class ImplGlobalBooleanGetBenchmark : public ImplBenchmarkRunner {
+public:
+    void prepare(const char *script) override {
+        ImplBenchmarkRunner::prepare(script);
+        ImplBenchmarkRunner::run();
+    }
+
+    void run() override {
+        auto b = lua.get<bool>("b");
+    }
+};
+
+class ImplGlobalBooleanSetBenchmark : public ImplBenchmarkRunner {
+public:
+    void run() override {
+        lua.set("b", true);
+    }
+};
+
+class ImplGlobalNumberGetBenchmark : public ImplBenchmarkRunner {
+public:
+    void prepare(const char *script) override {
+        ImplBenchmarkRunner::prepare(script);
+        ImplBenchmarkRunner::run();
+    }
+
+    void run() override {
+        auto n = lua.get<double>("n");
+    }
+};
+
+class ImplGlobalNumberSetBenchmark : public ImplBenchmarkRunner {
+public:
+    void run() override {
+        lua.set("n", 2.5);
+    }
+};
+
+class ImplGlobalStringGetBenchmark : public ImplBenchmarkRunner {
+public:
+    void prepare(const char *script) override {
+        ImplBenchmarkRunner::prepare(script);
+        ImplBenchmarkRunner::run();
+    }
+
+    void run() override {
+        auto s = lua.get<const char *>("s");
+    }
+};
+
+class ImplGlobalStringSetBenchmark : public ImplBenchmarkRunner {
+public:
+    void run() override {
+        lua.set("s", "str");
+    }
+};
+
+class ImplGlobalFunctionGetBenchmark : public ImplBenchmarkRunner {
+public:
+    void prepare(const char *script) override {
+        ImplBenchmarkRunner::prepare(script);
+        ImplBenchmarkRunner::run();
+    }
+
+    void run() override {
+        auto f = lua.get<LuaFunction<bool()>>("f");
+    }
+};
+
+class ImplGlobalFunctionSetBenchmark : public ImplBenchmarkRunner {
+public:
+    void run() override {
+        lua.set("f", noop);
+    }
+};
+
 class ImplPropertyBenchmark : public ImplBenchmarkRunner {
 private:
     PropertyExample *example = nullptr;

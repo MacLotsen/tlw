@@ -25,6 +25,7 @@
 #include <lua.hpp>
 
 static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass);
+
 static void luaCreateMetaTable(lua_State *L, const PrettyClassPrototype *klass);
 
 class MetaTableRegistry {
@@ -34,22 +35,20 @@ private:
 public:
     explicit MetaTableRegistry(lua_State *L) : L(L) {}
 
-    template<typename T1, typename T2>
+    template<typename D, typename B, typename ...Os>
     void extend() {
-        extend(metaTableRegistry[&typeid(T1)], metaTableRegistry[&typeid(T2)]);
-    }
-
-    void extend(const char * klass, const char * base) {
-        luaL_getmetatable(L, klass);
-        luaL_getmetatable(L, base);
-        lua_setfield(L, -2, "__metatable");
-        lua_pop(L, 1);
+        luaL_getmetatable(L, metaTableRegistry[&typeid(D *)]);
+        int thisMetatable = lua_gettop(L);
+        _extend<D, B, Os...>("__index");
+        lua_settop(L, thisMetatable);
+        _extend<D, B, Os...>("__newindex");
+        lua_settop(L, 0);
     }
 
     template<typename C, typename P>
     void registerClass(P *prototype) {
         luaCreateMetaTable(L, prototype);
-        metaTableRegistry[&typeid(C*)] = prototype->name;
+        metaTableRegistry[&typeid(C *)] = prototype->name;
         lua_pop(L, 1);
     }
 
@@ -57,8 +56,8 @@ public:
     void createObject(T *object) {
         auto ud = (T **) lua_newuserdata(L, sizeof(T **));
         *ud = object;
-        if (metaTableRegistry.find(&typeid(T*)) != metaTableRegistry.end()) {
-            luaL_getmetatable(L, metaTableRegistry[&typeid(T*)]);
+        if (metaTableRegistry.find(&typeid(T *)) != metaTableRegistry.end()) {
+            luaL_getmetatable(L, metaTableRegistry[&typeid(T *)]);
             lua_setmetatable(L, -2);
         } else {
             throw std::runtime_error("No such class");
@@ -69,18 +68,47 @@ public:
     void createObject(const T *object) {
         auto ud = (const T **) lua_newuserdata(L, sizeof(T **));
         *ud = object;
-        if (metaTableRegistry.find(&typeid(const T*)) != metaTableRegistry.end()) {
-            luaL_getmetatable(L, metaTableRegistry[&typeid(const T*)]);
+        if (metaTableRegistry.find(&typeid(const T *)) != metaTableRegistry.end()) {
+            luaL_getmetatable(L, metaTableRegistry[&typeid(const T *)]);
             lua_setmetatable(L, -2);
         } else {
             throw std::runtime_error("No such class");
         }
     }
+
+private:
+    template<typename T>
+    void _extend(const char * metaField) {
+        // No classes left to bind
+    }
+
+    template<typename D, typename B, typename ...Os>
+    void _extend(const char * metaField) {
+        int t;
+        lua_getfield(L, -1, metaField);
+        if (lua_isnil(L, -1)) {
+            // Create an index wrapper
+            lua_pop(L, 1);
+            lua_createtable(L, 0, 0);
+            lua_pushvalue(L, -1);
+            lua_setfield(L, -3, metaField);
+        }
+        if (lua_istable(L, -1)) {
+            luaL_getmetatable(L, metaTableRegistry[&typeid(B *)]);
+            lua_pushvalue(L, -1);
+            lua_setmetatable(L, -3);
+
+            _extend<B, Os...>(metaField);
+        } else {
+            throw std::runtime_error("Inheritance only works with table indexes");
+        }
+    }
 };
+
 
 static int luaMetaConstructor(lua_State *L) {
     int constructed = 0;
-    const char * metatable = lua_tostring(L, lua_upvalueindex(1));
+    const char *metatable = lua_tostring(L, lua_upvalueindex(1));
     lua_CFunction constructor = lua_tocfunction(L, lua_upvalueindex(2));
     constructed = constructor(L);
     if (!constructed) {
@@ -96,7 +124,7 @@ static int luaMetaConstructor(lua_State *L) {
 
 static int luaMetaIndex(lua_State *L) {
     auto prototype = (PrettyClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
-    const char * property = lua_tostring(L, 2);
+    const char *property = lua_tostring(L, 2);
     lua_pop(L, 1);
 
     if (prototype->properties.find(property) != prototype->properties.end())
@@ -117,7 +145,7 @@ static int luaMetaIndex(lua_State *L) {
 
 static int luaMetaNewIndex(lua_State *L) {
     auto prototype = (PrettyClassPrototype *) lua_touserdata(L, lua_upvalueindex(1));
-    const char * property = lua_tostring(L, 2);
+    const char *property = lua_tostring(L, 2);
     lua_remove(L, 2);
 
     if (prototype->properties.find(property) != prototype->properties.end())
@@ -185,9 +213,9 @@ static void luaCreateMetaTable(lua_State *L, const ClassPrototype *klass) {
         int metatable = lua_gettop(L);
 
         // Create anonymous meta table (Deny access for lua)
-        lua_pushliteral(L, "__metatable");
-        lua_pushnil(L);
-        lua_settable(L, metatable);
+//        lua_pushliteral(L, "__metatable");
+//        lua_pushnil(L);
+//        lua_settable(L, metatable);
 
         // Set constructor if needed
         if (klass->constructor) {

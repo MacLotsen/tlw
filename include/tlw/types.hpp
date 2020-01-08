@@ -175,9 +175,8 @@ public:
     LuaFunction(lua_State *L) : LuaRef(L) {}
     LuaFunction(const LuaFunction<std::tuple<Rs...>()> &f) : LuaRef(f) {}
     std::tuple<Rs...> operator()() {
-        // TMP
         if (lua_gettop(L)) {
-            std::cerr << lua_tostring(L, 1) << std::endl;
+            throw std::runtime_error(lua_tostring(L, -1));
         }
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         if (lua_pcall(L, 0, sizeof...(Rs), 0)) {

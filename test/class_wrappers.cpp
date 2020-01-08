@@ -22,7 +22,7 @@
 TEST(ClassTest, testNormalClass) {
     ClassExample example {5.0};
     lua.setObject("example", &example)
-        .src("example.number = 6.0; print(getmetatable(example))")();
+        .src("example.number = 6.0")();
     ASSERT_EQ(6.0, example.number);
 }
 

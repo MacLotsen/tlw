@@ -97,16 +97,6 @@ public:
         return *this;
     }
 
-    template<typename T>
-    Lua &set(const std::string &name, T& value) {
-        return set(name, &value);
-    }
-
-    template<typename T>
-    Lua &set(const std::string &name, const T& value) {
-        return set(name, &value);
-    }
-
     Lua &set(const std::string &name, lua_CFunction f) {
         lua_register(L, name.c_str(), f);
         return *this;
@@ -115,7 +105,6 @@ public:
     template<class C>
     Lua &setObject(const std::string &name, C *object) {
         classes.createObject(object);
-
         lua_setglobal(L, name.c_str());
         return *this;
     }
@@ -123,7 +112,6 @@ public:
     template<class C>
     Lua &setObject(const std::string &name, const C *object) {
         classes.createObject(object);
-
         lua_setglobal(L, name.c_str());
         return *this;
     }
@@ -131,7 +119,6 @@ public:
     template<class C>
     Lua &setObject(const std::string &name, C &object) {
         classes.createObject(&object);
-
         lua_setglobal(L, name.c_str());
         return *this;
     }
@@ -139,7 +126,6 @@ public:
     template<class C>
     Lua &setObject(const std::string &name, const C &object) {
         classes.createObject(&object);
-
         lua_setglobal(L, name.c_str());
         return *this;
     }
@@ -160,14 +146,9 @@ public:
         return *this;
     }
 
-    Lua &extend(const char *klass, const char *base) {
-        classes.extend(klass, base);
-        return *this;
-    }
-
-    template<typename T1, typename T2>
+    template<typename D, typename B, typename ...Os>
     Lua &extend() {
-        classes.extend<T1, T2>();
+        classes.extend<D, B, Os...>();
         return *this;
     }
 };

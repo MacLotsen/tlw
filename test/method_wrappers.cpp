@@ -105,9 +105,11 @@ TEST(MethodWrappers, testMethods) {
 
 TEST(MethodWrappers, testNumber) {
     NumberExample ne{}, ne2{2.0};
+    const NumberExample cne;
     auto r = lua
             .setObject("ne", &ne)
             .setObject("ne2", &ne2)
+            .setObject("cne", &cne)
             .src<LuaFunction<std::tuple<double, double, double, double, double, double, double, bool, bool, bool>()>>(
                     NumberExample::script)();
 
@@ -142,8 +144,21 @@ TEST(MethodWrappers, testConstRefObject) {
 
     ASSERT_EQ(1, r);
 
-    auto r2  = lua.get<const MethodExample&>("result");
+    auto r2 = lua.get<const MethodExample &>("result");
 
     // Not the same pointer, yet still the same behaviour
     ASSERT_EQ(me.getCallMask(), r2.getCallMask());
+}
+
+TEST(MethodWrappers, testInheritance) {
+    DerivativeExample de;
+    de.number = 2.5;
+
+    auto f = lua.setObject("example", de)
+            .src(DerivativeExample::script);
+
+    f();
+
+    ASSERT_EQ(2.5, lua.get<double>("n"));
+    ASSERT_EQ(5.0, de.number) << "Expect setters to be present in child class";
 }

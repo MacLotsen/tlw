@@ -70,6 +70,14 @@ int main(int argc, char **argv) {
             .property("number", mk_property(&ClassExample::number))
             .build();
 
+    auto baseExamplePrototype = ClassPrototypeBuilder("BaseExample")
+            .method("number", mk_property(&BaseExample::number))
+            .build();
+
+    auto derivativeExamplePrototype = ClassPrototypeBuilder("DerivativeExample")
+            .method("print", mk_function(&DerivativeExample::printNumber))
+            .build();
+
     auto constClassExamplePrototype = PrettyClassPrototypeBuilder("ConstClassExample")
             .getter("number", mk_function(&ClassExample::get))
             .build();
@@ -85,7 +93,10 @@ int main(int argc, char **argv) {
             .add<NumberExample>(numberPrototype)
             .add<StringExample>(strPrototype)
             .add<ClassExample>(classExamplePrototype)
-            .add<const ClassExample>(constClassExamplePrototype);
+            .add<const ClassExample>(constClassExamplePrototype)
+            .add<BaseExample>(baseExamplePrototype)
+            .add<DerivativeExample>(derivativeExamplePrototype)
+            .extend<DerivativeExample, BaseExample>();
 
     return RUN_ALL_TESTS();
 }

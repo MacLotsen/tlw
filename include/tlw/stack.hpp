@@ -308,7 +308,7 @@ public:
         if (lua_isnumber(L, i)) {
             return float(lua_tonumber(L, i));
         }
-        lua_pushstring(L, "NaN");
+        lua_pushfstring(L, "Expected a number. %s given", luaL_typename(L, i));
         lua_error(L);
         return 0;
     }

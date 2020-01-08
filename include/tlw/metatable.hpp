@@ -20,6 +20,7 @@
 #ifndef TLW_METATABLE_H
 #define TLW_METATABLE_H
 
+#include "errors.hpp"
 #include "prototype.hpp"
 #include <vector>
 #include <lua.hpp>
@@ -60,7 +61,7 @@ public:
             luaL_getmetatable(L, metaTableRegistry[&typeid(T *)]);
             lua_setmetatable(L, -2);
         } else {
-            throw std::runtime_error("No such class");
+            throw UnsupportedScriptTypeError("No such class");
         }
     }
 
@@ -72,7 +73,7 @@ public:
             luaL_getmetatable(L, metaTableRegistry[&typeid(const T *)]);
             lua_setmetatable(L, -2);
         } else {
-            throw std::runtime_error("No such class");
+            throw UnsupportedScriptTypeError("No such class");
         }
     }
 
@@ -100,7 +101,7 @@ private:
 
             _extend<B, Os...>(metaField);
         } else {
-            throw std::runtime_error("Inheritance only works with table indexes");
+            throw UnsupportedPrototypeExtensionError("Inheritance only works with table indexes");
         }
     }
 };
@@ -112,7 +113,7 @@ static int luaMetaConstructor(lua_State *L) {
     lua_CFunction constructor = lua_tocfunction(L, lua_upvalueindex(2));
     constructed = constructor(L);
     if (!constructed) {
-        lua_pushstring(L, "Constructor did not return an object.");
+        lua_pushstring(L, "MetaConstructor: did not return an object.");
         lua_error(L);
     }
     for (int i = 1; i <= constructed; ++i) {
@@ -138,7 +139,7 @@ static int luaMetaIndex(lua_State *L) {
         return 1;
     }
 
-    lua_pushstring(L, ("No such property " + std::string(property)).c_str());
+    lua_pushfstring(L, "PrettyClass: No such getter '%s'", property);
     lua_error(L);
     return 0;
 }
@@ -154,7 +155,7 @@ static int luaMetaNewIndex(lua_State *L) {
     if (prototype->setters.find(property) != prototype->setters.end())
         return prototype->setters[property](L);
 
-    lua_pushstring(L, ("No such property " + std::string(property)).c_str());
+    lua_pushfstring(L, "PrettyClass: No such setter '%s'", property);
     lua_error(L);
     return 0;
 }

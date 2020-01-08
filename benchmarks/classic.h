@@ -20,6 +20,7 @@
 #ifndef TLW_CLASSIC_H
 #define TLW_CLASSIC_H
 
+#include <cstring>
 #include "examples.h"
 
 class ClassicBenchmarkRunner : public BenchmarkRunner {
@@ -48,16 +49,16 @@ public:
 };
 
 int classicPropertyGet(lua_State *L) {
-    std::string prop = lua_tostring(L, 2);
+    const char * prop = lua_tostring(L, 2);
     lua_remove(L, 2);
-    if (prop == "number") {
+    if (strcmp(prop, "number") == 0) {
 #ifdef STRICT_ARGUMENTS
         if (lua_gettop(L) != 1) {
-            lua_pushstring(L, "Expected a class");
+            lua_pushstring(L, "Expected a class.");
             lua_error(L);
         }
         if (!lua_isuserdata(L, 1)) {
-            lua_pushstring(L, "Not a user datum");
+            lua_pushfstring(L, "First argument is not a user datum. %s was given", luaL_typename(L, 1));
             lua_error(L);
         }
 #endif
@@ -66,26 +67,26 @@ int classicPropertyGet(lua_State *L) {
         lua_pushnumber(L, object->number);
         return 1;
     }
-    lua_pushstring(L, "No such property to get");
+    lua_pushfstring(L, "No such property to get '%s'", prop);
     lua_error(L);
     return 0;
 }
 
 int classicPropertySet(lua_State *L) {
-    std::string prop = lua_tostring(L, 2);
+    const char * prop = lua_tostring(L, 2);
     lua_remove(L, 2);
-    if (prop == "number") {
+    if (strcmp(prop, "number") == 0) {
 #ifdef STRICT_ARGUMENTS
         if (lua_gettop(L) != 2) {
-            lua_pushstring(L, "Expected a class");
+            lua_pushfstring(L, "Expected a class and number.");
             lua_error(L);
         }
         if (!lua_isuserdata(L, 1)) {
-            lua_pushstring(L, "Not a user datum");
+            lua_pushfstring(L, "First argument is not a user datum. %s was given", luaL_typename(L, 1));
             lua_error(L);
         }
         if (!lua_isnumber(L, 2)) {
-            lua_pushstring(L, "Expected a number!");
+            lua_pushfstring(L, "Expected a number. %s was given", luaL_typename(L, 2));
             lua_error(L);
         }
 #endif
@@ -95,22 +96,22 @@ int classicPropertySet(lua_State *L) {
         object->number = n;
         return 0;
     }
-    lua_pushstring(L, "No such property to set");
+    lua_pushfstring(L, "No such property to set '%s'", prop);
     lua_error(L);
     return 0;
 }
 
 int classicGet(lua_State *L) {
-    std::string prop = lua_tostring(L, 2);
+    const char * prop = lua_tostring(L, 2);
     lua_remove(L, 2);
-    if (prop == "number") {
+    if (strcmp(prop, "number") == 0) {
 #ifdef STRICT_ARGUMENTS
         if (lua_gettop(L) != 1) {
-            lua_pushstring(L, "Expected a class");
+            lua_pushstring(L, "Expected a class. %s was given");
             lua_error(L);
         }
         if (!lua_isuserdata(L, 1)) {
-            lua_pushstring(L, "Not a user datum");
+            lua_pushfstring(L, "First argument is not a user datum. %s given", luaL_typename(L, 1));
             lua_error(L);
         }
 #endif
@@ -119,26 +120,26 @@ int classicGet(lua_State *L) {
         lua_pushnumber(L, object->getNumber());
         return 1;
     }
-    lua_pushstring(L, "No such property to get");
+    lua_pushfstring(L, "No such property to get '%s'", prop);
     lua_error(L);
     return 0;
 }
 
 int classicSet(lua_State *L) {
-    std::string prop = lua_tostring(L, 2);
+    const char * prop = lua_tostring(L, 2);
     lua_remove(L, 2);
-    if (prop == "number") {
+    if (strcmp(prop, "number") == 0) {
 #ifdef STRICT_ARGUMENTS
         if (lua_gettop(L) != 2) {
-            lua_pushstring(L, "Expected a class");
+            lua_pushstring(L, "Expected a class and number.");
             lua_error(L);
         }
         if (!lua_isuserdata(L, 1)) {
-            lua_pushstring(L, "Not a user datum");
+            lua_pushfstring(L, "First argument is not a user datum. %s given", luaL_typename(L, 1));
             lua_error(L);
         }
         if (!lua_isnumber(L, 2)) {
-            lua_pushstring(L, "Expected a number!");
+            lua_pushfstring(L, "Expected a number. %s was given", luaL_typename(L, 2));
             lua_error(L);
         }
 #endif
@@ -148,7 +149,7 @@ int classicSet(lua_State *L) {
         object->setNumber(n);
         return 0;
     }
-    lua_pushstring(L, "No such property to set");
+    lua_pushfstring(L, "No such property to set '%s'", prop);
     lua_error(L);
     return 0;
 }
@@ -156,11 +157,11 @@ int classicSet(lua_State *L) {
 int classicNormalGet(lua_State *L) {
 #ifdef STRICT_ARGUMENTS
     if (lua_gettop(L) != 1) {
-        lua_pushstring(L, "Expected a class");
+        lua_pushstring(L, "Expected a class.");
         lua_error(L);
     }
     if (!lua_isuserdata(L, 1)) {
-        lua_pushstring(L, "Not a user datum");
+        lua_pushfstring(L, "First argument is not a user datum. %s given", luaL_typename(L, 1));
         lua_error(L);
     }
 #endif
@@ -177,11 +178,11 @@ int classicNormalSet(lua_State *L) {
         lua_error(L);
     }
     if (!lua_isuserdata(L, 1)) {
-        lua_pushstring(L, "Not a user datum");
+        lua_pushfstring(L, "First argument is not a user datum. %s given", luaL_typename(L, 1));
         lua_error(L);
     }
     if (!lua_isnumber(L, 2)) {
-        lua_pushstring(L, "Expected a number!");
+        lua_pushfstring(L, "Expected a number. %s given", luaL_typename(L, 2));
         lua_error(L);
     }
 #endif

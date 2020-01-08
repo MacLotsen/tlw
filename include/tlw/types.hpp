@@ -117,9 +117,7 @@ public:
     void operator()() {
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         if (lua_pcall(L, 0, 0, 0)) {
-            std::string err = lua_tostring(L, -1);
-            lua_pop(L, 1);
-            throw std::runtime_error(err);
+            throw ScriptFunctionError(L);
         }
     }
 };
@@ -133,7 +131,7 @@ public:
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         (..., TypedStack<Args>::push(L, args));
         if (lua_pcall(L, sizeof...(Args), 1, 0)) {
-            throw std::runtime_error(lua_tostring(L, -1));
+            throw ScriptFunctionError(L);
         }
         return TypedStack<R>::pop(L);
     }
@@ -148,7 +146,7 @@ public:
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         (..., TypedStack<Args>::push(L, args));
         if (lua_pcall(L, sizeof...(Args), sizeof...(Rs), 0)) {
-            throw std::runtime_error(lua_tostring(L, -1));
+            throw ScriptFunctionError(L);
         }
         return TypedStack<Rs...>::pop(L);
     }
@@ -162,7 +160,7 @@ public:
     R operator()() {
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         if (lua_pcall(L, 0, 1, 0)) {
-            throw std::runtime_error(lua_tostring(L, -1));
+            throw ScriptFunctionError(L);
         }
         return TypedStack<R>::pop(L);
     }
@@ -176,7 +174,7 @@ public:
     LuaFunction(const LuaFunction<std::tuple<Rs...>()> &f) : LuaRef(f) {}
     std::tuple<Rs...> operator()() {
         if (lua_gettop(L)) {
-            throw std::runtime_error(lua_tostring(L, -1));
+            throw ScriptFunctionArgumentError(lua_tostring(L, -1));
         }
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         if (lua_pcall(L, 0, sizeof...(Rs), 0)) {
@@ -195,7 +193,7 @@ public:
         lua_rawgeti(L, LUA_REGISTRYINDEX, index);
         (..., TypedStack<Args>::push(L, args));
         if (lua_pcall(L, sizeof...(Args), 0, 0)) {
-            throw std::runtime_error(lua_tostring(L, -1));
+            throw ScriptFunctionError(L);
         }
     }
 };

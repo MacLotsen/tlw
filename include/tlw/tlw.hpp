@@ -20,6 +20,7 @@
 #ifndef TLW_API_HPP
 #define TLW_API_HPP
 
+#include "errors.hpp"
 #include "stack.hpp"
 #include "metatable.hpp"
 #include "types.hpp"
@@ -46,7 +47,7 @@ public:
 
     LuaFunction<> file(const char *path) {
         if (luaL_loadfile(L, path)) {
-            throw std::runtime_error(lua_tostring(L, -1));
+            throw ScriptError(L);
         }
         return TypedStack<LuaFunction<>>::pop(L);
     }
@@ -54,7 +55,7 @@ public:
     template<typename T>
     T file(const char *path) {
         if (luaL_loadfile(L, path)) {
-            throw std::runtime_error(lua_tostring(L, -1));
+            throw ScriptError(L);
         }
         return TypedStack<T>::pop(L);
     }
@@ -66,7 +67,7 @@ public:
 
     LuaFunction<> src(const char *src) {
         if (luaL_loadstring(L, src)) {
-            throw std::runtime_error(lua_tostring(L, -1));
+            throw ScriptError(L);
         }
         return TypedStack<LuaFunction<>>::pop(L);
     }
@@ -74,7 +75,7 @@ public:
     template<typename T>
     T src(const char *src) {
         if (luaL_loadstring(L, src)) {
-            throw std::runtime_error(lua_tostring(L, -1));
+            throw ScriptError(L);
         }
         return TypedStack<T>::pop(L);
     }

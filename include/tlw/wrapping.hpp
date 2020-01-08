@@ -64,38 +64,51 @@ template<typename C, typename R, typename ...Args>
 using cclass_many_to_one_t = R (C::*)(Args...) const;
 
 template<typename LAST>
-static std::string typesToString() {
-    return typeid(LAST).name();
+static void typesToString(char * buffer) {
+    sprintf(buffer, "%s %s", buffer, typeid(LAST).name());
 }
 
 template<typename FIRST, typename SECOND, typename ...Args>
-static std::string typesToString() {
-    return std::string(typeid(FIRST).name()) + ", " + typesToString<SECOND, Args...>();
+static void typesToString(char * buffer) {
+    sprintf(buffer, "%s %s,", buffer, typeid(FIRST).name());
+    typesToString<SECOND, Args...>(buffer);
 }
 
-static std::string getTypesOnStack(lua_State *L) {
-    std::string scratch = "";
+template<typename ...Args>
+static char * getExpectedTypes() {
+    char * buffer = new char[160];
+    typesToString<Args...>(buffer);
+    return buffer;
+}
+
+static char * getTypesOnStack(lua_State *L) {
+    char *buffer = new char[160];
     int n = lua_gettop(L);
     for (int i = 1; i <= n; ++i) {
-        scratch += luaL_typename(L, i);
-        if (i != n) {
-            scratch += ", ";
-        }
+        if (i == n)
+            sprintf(buffer, "%s %s", buffer, luaL_typename(L, i));
+        else
+            sprintf(buffer, "%s %s,", buffer, luaL_typename(L, i));
     }
-    return scratch;
+    return buffer;
 }
 
 template<typename ...Args>
 static void errorUnmatchedArguments(lua_State *L) {
-    std::string errorMessage = "Expected: " + typesToString<Args...>() + ". Types " + getTypesOnStack(L) + " were given";
-    lua_pushstring(L, errorMessage.c_str());
+    char *cppTypes = getExpectedTypes<Args...>();
+    char *luaTypes = getTypesOnStack(L);
+    lua_pushfstring(L, "Expected %s. %s were given.", cppTypes, luaTypes);
     lua_error(L);
+    delete cppTypes;
+    delete luaTypes;
 }
 
 static void expectNoArguments(lua_State *L) {
     if (lua_gettop(L)) {
-        lua_pushstring(L, (std::string("Expected no arguments. ") + getTypesOnStack(L) + " given.").c_str());
+        char * luaTypes = getTypesOnStack(L);
+        lua_pushfstring(L, "Expected no arguments. %s given", luaTypes);
         lua_error(L);
+        delete luaTypes;
     }
 }
 

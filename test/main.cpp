@@ -91,6 +91,7 @@ int main(int argc, char **argv) {
             .add<MethodExample>(methodPrototype)
             .add<const MethodExample>(constMethodPrototype)
             .add<NumberExample>(numberPrototype)
+            .add<const NumberExample>(numberPrototype)
             .add<StringExample>(strPrototype)
             .add<ClassExample>(classExamplePrototype)
             .add<const ClassExample>(constClassExamplePrototype)

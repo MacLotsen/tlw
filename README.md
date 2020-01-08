@@ -61,9 +61,11 @@ It'll test all stack operations, including argument checks when built in Debug,
 like double, int, string, classes, e.t.c.
 
 The creation of class concepts is roughly covered in the tests also.
-To execute the tests, simply run `./tlw-tests` in the build directory.
+To execute the tests, simply run `./tlw-tests` in the ouput directory.
 
 ## Running the benchmarks
+
+To run the benchmarks go to the output directory and run `./tlw-benchmarks`.
 
 The benchmarks are showing the difference in time between TLW concrete implementations
 and Lua implementations.
@@ -142,7 +144,7 @@ As you can see the script is obtained in the same manner as the function.
 The function signature is very imported in this example, as the signature
 has to meet the actual script file or function.
 
-Note that for a multi return function/script you can use an `std::tuple`.
+Note that for a multi return function/script you can use a `std::tuple`.
 
 ### Exposing globals
 

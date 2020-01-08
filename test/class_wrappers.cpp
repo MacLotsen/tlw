@@ -20,29 +20,37 @@
 #include "test.h"
 
 TEST(ClassTest, testNormalClass) {
-    ClassExample example {5.0};
+    ClassExample example{5.0};
     lua.setObject("example", &example)
-        .src("example.number = 6.0")();
+            .src("example.number = 6.0")();
     ASSERT_EQ(6.0, example.number);
 }
 
 TEST(ClassTest, testConstClass) {
-    const ClassExample example {5.0};
+    const ClassExample example{5.0};
     lua.setObject("example", &example)
-    .src("result = example.number")();
+            .src("result = example.number")();
     ASSERT_EQ(5.0, lua.get<double>("result"));
 }
 
 TEST(ClassTest, testConstRefClass) {
-    const ClassExample example {5.0};
+    const ClassExample example{5.0};
     lua.setObject("example", example)
             .src("result = example.number")();
     ASSERT_EQ(5.0, lua.get<double>("result"));
 }
 
 TEST(ClassTest, testRefClass) {
-    ClassExample example {5.0};
+    ClassExample example{5.0};
     lua.setObject("example", &example)
             .src("example.number = 6.0")();
     ASSERT_EQ(6.0, example.number);
+}
+
+TEST(ClassTest, testPrivateMetaTable) {
+    ClassExample example{5.0};
+
+    auto f = lua.setObject("example", &example).src<LuaFunction<const char *()>>("return getmetatable(example)");
+
+    ASSERT_NO_THROW(auto msg = f(););
 }

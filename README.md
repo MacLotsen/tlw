@@ -222,7 +222,6 @@ If you're against the use of macro's this one is avoided by typing the following
 ...
 ```
 
-
 ### Exposing pretty classes
 
 This section will cover the pretty outcome of a `PrettyClassPrototype`.
@@ -319,13 +318,40 @@ Also if using the same signature it'll replace the prototype name for that signa
 My advice is to add consistently normal classes with its name and constant classes with a `Const` prefix.
 Though you can basically use whatever you'd like, as long as you aren't introducing ambiguity on the type and name.
 
+### Class Inheritance
+
+It's possible to inherit some classes, though,
+this will only work with the normal `ClassPrototype`
+and **not** for `PrettyClassPrototype`.
+So be careful when mixing those class types, or you'll end up refactoring the whole codebase.
+
+Let's assume that there's a `BaseClass` and `DerivativeClass` exposed to the lua instance.
+Setting the inheritance will look like the following:
+
+```cpp
+Lua lua;
+...
+lua.extend<DerivativeClass, BaseClass>();
+```
+
+Note that the order of types do matter.
+
+If you've a more complex inheritance to set, you can pass multiple types to extend like so `lua.extend<ConcretestClass, ConcreteClass, AbstractClass>()`.
+
 ## Contributing
 
 Please feel free to address an issue or create a pull request directly.
 
 ## Versioning
 
-We use [SemVer](http://semver.org/) for versioning. For the versions available, see the [tags on this repository](https://github.com/MacLotsen/tlw/tags). 
+The version of this library uses 3 number positions separated by dots.
+Optionally it'll have a post fix with the number of commits after tag leading with a short hash of the commit.
+
+For example:
+ - 0.0.1
+ - 0.0.1-11-g8fdd034
+ 
+So the second example is eleven commits ahead of the version with a short hash of `g8fdd034`.
 
 ## Authors
 

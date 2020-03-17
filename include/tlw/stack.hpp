@@ -294,6 +294,32 @@ public:
 };
 
 template<>
+class TypedStack<int64_t> {
+public:
+    inline static bool expect(lua_State *L, int i) {
+        return lua_isnumber(L, i);
+    }
+
+    inline static bool expect(lua_State *L) {
+        return expect(L, -1);
+    }
+
+    inline static int64_t get(lua_State *L, int i) {
+        return lua_tointeger(L, i);
+    }
+
+    inline static int64_t pop(lua_State *L) {
+        auto value = get(L, -1);
+        lua_pop(L, 1);
+        return value;
+    }
+
+    inline static void push(lua_State *L, int64_t n) {
+        lua_pushinteger(L, n);
+    }
+};
+
+template<>
 class TypedStack<float> {
 public:
     inline static bool expect(lua_State *L, int i) {

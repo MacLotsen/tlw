@@ -542,11 +542,11 @@ public:
     }
 
     inline static T get(lua_State *L, int i) {
-        return get(L, i, gen_seq<sizeof...(Args)>());
+        return get(L, i, tlw::gen_seq<sizeof...(Args)>());
     }
 
     template<int ...Is>
-    inline static T get(lua_State *L, int i, seq<Is...>) {
+    inline static T get(lua_State *L, int i, tlw::seq<Is...>) {
         return {fetch<Args>(L, i, Is + 1)...};
     }
 
@@ -564,11 +564,11 @@ public:
 
     inline static void push(lua_State *L, const T &t) {
         lua_newtable(L);
-        push(L, t, gen_seq<sizeof...(Args)>());
+        push(L, t, tlw::gen_seq<sizeof...(Args)>());
     }
 
     template<int ...Is>
-    inline static void push(lua_State *L, const T &t, seq<Is...>) {
+    inline static void push(lua_State *L, const T &t, tlw::seq<Is...>) {
         (..., insert<Args>(L, std::get<Is>(t), -2, Is));
     }
 
@@ -583,13 +583,13 @@ template<typename T1, typename T2, typename ...Ts>
 class TypedStack<T1, T2, Ts...> {
 public:
     template<int ...Is>
-    inline static bool expect(lua_State *L, seq<Is...>) {
+    inline static bool expect(lua_State *L, tlw::seq<Is...>) {
         return TypedStack<T1>::expect(L, 1) && TypedStack<T2>::expect(L, 2) &&
                (... && TypedStack<Ts>::expect(L, Is + 3));
     }
 
     inline static bool expect(lua_State *L) {
-        return expect(L, gen_seq<sizeof...(Ts)>());
+        return expect(L, tlw::gen_seq<sizeof...(Ts)>());
     }
 
     inline static std::tuple<T1, T2, Ts...> pop(lua_State *L) {
@@ -605,11 +605,11 @@ public:
     }
 
     inline static std::tuple<T1, T2, Ts...> get(lua_State *L) {
-        return all(L, gen_seq<sizeof...(Ts)>());
+        return all(L, tlw::gen_seq<sizeof...(Ts)>());
     }
 
     template<int ...Is>
-    inline static std::tuple<T1, T2, Ts...> all(lua_State *L, seq<Is...>) {
+    inline static std::tuple<T1, T2, Ts...> all(lua_State *L, tlw::seq<Is...>) {
         return {TypedStack<T1>::get(L, 1), TypedStack<T2>::get(L, 2), TypedStack<Ts>::get(L, Is + 3)...};
     }
 };

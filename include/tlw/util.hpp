@@ -20,16 +20,32 @@
 #ifndef TLW_UTIL_H
 #define TLW_UTIL_H
 
-template<int... Is>
-struct seq {
-};
+namespace tlw {
 
-template<int N, int... Is>
-struct gen_seq : gen_seq<N - 1, N - 1, Is...> {
-};
+    template<typename ...>
+    struct pointer_type {
+        static constexpr bool valid = false;
+        using value_type = void;
+    };
 
-template<int... Is>
-struct gen_seq<0, Is...> : seq<Is...> {
-};
+    template<typename T>
+    struct pointer_type<T*> {
+        static constexpr bool valid = true;
+        using value_type = T;
+    };
+
+    template<int... Is>
+    struct seq {
+    };
+
+    template<int N, int... Is>
+    struct gen_seq : gen_seq<N - 1, N - 1, Is...> {
+    };
+
+    template<int... Is>
+    struct gen_seq<0, Is...> : seq<Is...> {
+    };
+
+}
 
 #endif //TLW_UTIL_H

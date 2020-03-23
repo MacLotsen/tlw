@@ -17,7 +17,7 @@
 
 find_package(GTest)
 
-set(SOURCE_FILES main.cpp stack.cpp method_wrappers.cpp functional_wrappers.cpp class_wrappers.cpp)
+set(SOURCE_FILES main.cpp stack.cpp method_wrappers.cpp functional_wrappers.cpp class_wrappers.cpp new_types.cpp)
 
 add_executable(tlw-tests ${SOURCE_FILES})
 target_link_libraries(tlw-tests ${GTEST_LIBRARY} pthread tlw)

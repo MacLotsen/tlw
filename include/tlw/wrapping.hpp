@@ -139,10 +139,10 @@ class LuaCFunctionInvoker<void(Args...)> {
     using T = void(*)(Args...);
 public:
     inline static void invoke(lua_State *L, T f) {
-        invoke(L, f, gen_seq<sizeof...(Args)>());
+        invoke(L, f, tlw::gen_seq<sizeof...(Args)>());
     }
     template<int ...Is>
-    inline static void invoke(lua_State *L, T f, seq<Is...>) {
+    inline static void invoke(lua_State *L, T f, tlw::seq<Is...>) {
         f(TypedStack<Args>::get(L, Is + 1)...);
         lua_settop(L, 0);
     }
@@ -153,10 +153,10 @@ class LuaCFunctionInvoker<R(Args...)> {
     using T = R(*)(Args...);
 public:
     inline static R invoke(lua_State *L, T f) {
-        return invoke(L, f, gen_seq<sizeof...(Args)>());
+        return invoke(L, f, tlw::gen_seq<sizeof...(Args)>());
     }
     template<int ...Is>
-    inline static R invoke(lua_State *L, T f, seq<Is...>) {
+    inline static R invoke(lua_State *L, T f, tlw::seq<Is...>) {
         R r = f(TypedStack<Args>::get(L, Is + 1)...);
         lua_settop(L, 0);
         TypedStack<R>::push(L, r);
@@ -172,10 +172,10 @@ class LuaCMethodInvoker<C(void(Args...))> {
     using T = void(C::*)(Args...);
 public:
     inline static void invoke(lua_State *L, C *klass, T f) {
-        invoke(L, klass, f, gen_seq<sizeof...(Args)>());
+        invoke(L, klass, f, tlw::gen_seq<sizeof...(Args)>());
     }
     template<int ...Is>
-    inline static void invoke(lua_State *L, C *klass, T f, seq<Is...>) {
+    inline static void invoke(lua_State *L, C *klass, T f, tlw::seq<Is...>) {
         (klass->*f)(TypedStack<Args>::get(L, Is + 1)...);
         lua_settop(L, 0);
     }
@@ -186,10 +186,10 @@ class LuaCMethodInvoker<C(R(Args...))> {
     using T = R(C::*)(Args...);
 public:
     inline static R invoke(lua_State *L, C *klass, T f) {
-        return invoke(L, klass, f, gen_seq<sizeof...(Args)>());
+        return invoke(L, klass, f, tlw::gen_seq<sizeof...(Args)>());
     }
     template<int ...Is>
-    inline static R invoke(lua_State *L, C *klass, T f, seq<Is...>) {
+    inline static R invoke(lua_State *L, C *klass, T f, tlw::seq<Is...>) {
         R r = (klass->*f)(TypedStack<Args>::get(L, Is + 1)...);
         lua_settop(L, 0);
         TypedStack<R>::push(L, r);

@@ -17,27 +17,12 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_CONSTR_EXAMPLE_H
-#define TLW_CONSTR_EXAMPLE_H
+#include "user_test.h"
 
-#include <tlw/wrapping.hpp>
-
-class ConstructorExample {
-public:
-    inline static std::vector<ConstructorExample *> examples;
-    inline static const char * script = "local e1 = ConstructorExample()\n"
-                                        "local e2 = ConstructorExample()\n"
-                                        "local e3 = ConstructorExample()\n"
-                                        "local e4 = ConstructorExample()\n"
-                                        "local e5 = ConstructorExample()";
-
-    ConstructorExample() {
-        examples.push_back(this);
-    }
-
-    inline static ConstructorExample *create() {
-        return new ConstructorExample;
-    }
-};
-
-#endif //TLW_CONSTR_EXAMPLE_H
+TEST_F(user_test, test_move_value) {
+    tlw::define<tlw::example>("example_value");
+    tlw::example value;
+    s.push(std::move(value));
+    ASSERT_FALSE(tlw::type_inspector<tlw::nil_t>::inspect(L));
+    ASSERT_TRUE(tlw::type_inspector<tlw::user_data_t<const tlw::example *>>::inspect(L));
+}

@@ -22,8 +22,8 @@
 
 #include <lua.hpp>
 #include <functional>
-#include "stack.hpp"
-#include "util.hpp"
+#include "_stack.hpp"
+#include "tlw/detail/util.hpp"
 
 using function_none_to_none_t = void (*)();
 

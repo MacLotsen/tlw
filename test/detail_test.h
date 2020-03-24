@@ -17,23 +17,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TEST_H
-#define TLW_TEST_H
+#ifndef TLW_DETAIL_TEST_H
+#define TLW_DETAIL_TEST_H
 
-#include <gtest/gtest.h>
-#include <tlw/tlw.hpp>
-#include "constr_example.h"
-#include "destr_example.h"
-#include "func_example.h"
-#include "getter_example.h"
-#include "setter_example.h"
-#include "method_example.h"
-#include "number_example.h"
-#include "prop_example.h"
-#include "script_example.h"
-#include "str_example.h"
-#include "class_examples.h"
+#include "base_test.h"
 
-extern Lua lua;
+class detail_test : public base_test {
+protected:
+    static inline const bool magic_bool = true;
+    static inline const double magic_number = 5.5;
+    static inline const char *magic_string = "TLW";
+    static inline const auto magic_user_datum = tlw::example();
+    static int noop(lua_State *) { return 0; }
+};
 
-#endif //TLW_TEST_H
+#endif //TLW_DETAIL_TEST_H

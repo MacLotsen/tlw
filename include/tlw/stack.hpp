@@ -20,631 +20,83 @@
 #ifndef TLW_STACK_HPP
 #define TLW_STACK_HPP
 
-#include "util.hpp"
-#include "metatable.hpp"
-#include <lua.hpp>
-#include <vector>
+namespace tlw {
 
-class Lua;
+    class stack {
+        lua_State *L;
+    public:
+        explicit stack() noexcept : stack(nullptr) {}
 
-inline static MetaTableRegistry &getMetaTableRegistry(lua_State *L) {
-    lua_pushliteral(L, "classes");
-    lua_gettable(L, LUA_REGISTRYINDEX);
-    return *(MetaTableRegistry*) lua_touserdata(L, -1);
+        explicit stack(lua_State *L) noexcept : L(L) {}
+
+        stack(stack &&) = delete;
+
+        stack(const stack &other) noexcept {
+            if (other) {
+                L = other.L;
+            }
+        }
+
+        stack &operator=(const stack &other) noexcept {
+            if (other) {
+                L = other.L;
+            }
+            return *this;
+        }
+
+        explicit operator bool() const noexcept {
+            return L != nullptr;
+        }
+
+        template<class T>
+        constexpr void push(T value) {
+            if constexpr(pointer_type<T>::valid) {
+                stack_traits<T>::push(L, value);
+            } else {
+                stack_traits<T>::push(L, std::move(value));
+            }
+        }
+
+        template<class T>
+        constexpr T peek(int idx) {
+            return stack_traits<T>::peek(L, idx);
+        }
+
+        template<class T>
+        constexpr T pop() {
+            T val = peek<T>(-1);
+            lua_pop(L, 1);
+            return val;
+        }
+
+        template<class T>
+        constexpr T pick(int idx) {
+            T val = peek<T>(idx);
+            lua_remove(L, idx);
+            return val;
+        }
+
+        template<typename ...Ts>
+        constexpr void place(Ts ...values) {
+            (..., push<Ts>(values));
+        }
+
+        template<class ...Ts>
+        constexpr std::tuple<Ts...> grab() {
+            int begin = lua_gettop(L) + 1 - sizeof...(Ts);
+            int idx = begin;
+            auto values = std::tuple{ordered_peek<Ts>(idx)...};
+            lua_settop(L, begin - 1);
+            return values;
+        }
+
+    private:
+        template<class T>
+        constexpr T ordered_peek(int &idx) {
+            return peek<T>(idx++);
+        }
+
+    };
 }
-
-template<typename ...T>
-class TypedStack {
-
-};
-
-template<typename T>
-class TypedStack<const T> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isuserdata(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static const T &get(lua_State *L, int i) {
-        T **ptp = (T **) lua_touserdata(L, i);
-        return **ptp;
-    }
-
-    inline static const T &pop(lua_State *L) {
-        auto value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, const T& o) {
-        getMetaTableRegistry(L).createObject(&o);
-    }
-};
-
-template<typename T>
-class TypedStack<const T&> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isuserdata(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static const T &get(lua_State *L, int i) {
-        auto ptp = (const T **) lua_touserdata(L, i);
-        return **ptp;
-    }
-
-    inline static const T &pop(lua_State *L) {
-        const T& value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, const T &o) {
-        getMetaTableRegistry(L).createObject(&o);
-    }
-};
-
-template<typename T>
-class TypedStack<T&> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isuserdata(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static T &get(lua_State *L, int i) {
-        T **ptp = (T **) lua_touserdata(L, i);
-        return **ptp;
-    }
-
-    inline static T &pop(lua_State *L) {
-        auto value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, T &o) {
-        getMetaTableRegistry(L).createObject(&o);
-    }
-};
-
-template<typename T>
-class TypedStack<T *> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isuserdata(L, i) || lua_islightuserdata(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static T *get(lua_State *L, int i) {
-        T **ptp = (T **) lua_touserdata(L, i);
-        return *ptp;
-    }
-
-    inline static T *pop(lua_State *L) {
-        auto value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, T *o) {
-        getMetaTableRegistry(L).createObject(o);
-    }
-};
-
-template<>
-class TypedStack<bool> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isboolean(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static bool get(lua_State *L, int i) {
-        return lua_toboolean(L, i);
-    }
-
-    inline static bool pop(lua_State *L) {
-        auto b = get(L, -1);
-        lua_pop(L, 1);
-        return b;
-    }
-
-    inline static void push(lua_State *L, const bool &o) {
-        lua_pushboolean(L, o);
-    }
-};
-
-template<>
-class TypedStack<const bool &> {
-public:
-    inline static void push(lua_State *L, const bool &o) {
-        lua_pushboolean(L, o);
-    }
-};
-
-
-template<>
-class TypedStack<const unsigned long> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isnumber(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static const unsigned long get(lua_State *L, int i) {
-        return (const unsigned long) lua_tointeger(L, i);
-    }
-
-    inline static const unsigned long pop(lua_State *L) {
-        auto value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, const unsigned long n) {
-        lua_pushinteger(L, n);
-    }
-};
-
-template<>
-class TypedStack<const unsigned long&> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isnumber(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static const unsigned long get(lua_State *L, int i) {
-        return (const unsigned long) lua_tointeger(L, i);
-    }
-
-    inline static const unsigned long pop(lua_State *L) {
-        auto value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, const unsigned long &n) {
-        lua_pushinteger(L, n);
-    }
-};
-
-template<>
-class TypedStack<int> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isnumber(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static int get(lua_State *L, int i) {
-        return int(lua_tointeger(L, i));
-    }
-
-    inline static int pop(lua_State *L) {
-        auto value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, int n) {
-        lua_pushinteger(L, n);
-    }
-};
-
-template<>
-class TypedStack<unsigned int> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isnumber(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static unsigned int get(lua_State *L, int i) {
-        return lua_tointeger(L, i);
-    }
-
-    inline static unsigned int pop(lua_State *L) {
-        auto value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, unsigned int n) {
-        lua_pushinteger(L, n);
-    }
-};
-
-template<>
-class TypedStack<const int &> {
-public:
-    inline static void push(lua_State *L, const int &n) {
-        lua_pushinteger(L, n);
-    }
-};
-
-template<>
-class TypedStack<int64_t> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isnumber(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static int64_t get(lua_State *L, int i) {
-        return lua_tointeger(L, i);
-    }
-
-    inline static int64_t pop(lua_State *L) {
-        auto value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, int64_t n) {
-        lua_pushinteger(L, n);
-    }
-};
-
-template<>
-class TypedStack<float> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isnumber(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static float get(lua_State *L, int i) {
-        if (lua_isnumber(L, i)) {
-            return float(lua_tonumber(L, i));
-        }
-        lua_pushfstring(L, "Expected a number. %s given", luaL_typename(L, i));
-        lua_error(L);
-        return 0;
-    }
-
-    inline static float pop(lua_State *L) {
-        auto value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, float n) {
-        lua_pushnumber(L, n);
-    }
-};
-
-template<>
-class TypedStack<const float &> {
-public:
-    inline static void push(lua_State *L, const float &n) {
-        lua_pushnumber(L, n);
-    }
-};
-
-template<>
-class TypedStack<double> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isnumber(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static double get(lua_State *L, int i) {
-        return lua_tonumber(L, i);
-    }
-
-    inline static double pop(lua_State *L) {
-        auto value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, double n) {
-        lua_pushnumber(L, n);
-    }
-};
-
-template<>
-class TypedStack<const double &> {
-public:
-    inline static void push(lua_State *L, const double &n) {
-        lua_pushnumber(L, n);
-    }
-};
-
-template<>
-class TypedStack<const char *> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isstring(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static const char *get(lua_State *L, int i) {
-        return lua_tostring(L, i);
-    }
-
-    inline static const char *pop(lua_State *L) {
-        auto r = get(L, -1);
-        lua_pop(L, 1);
-        return r;
-    }
-
-    inline static void push(lua_State *L, const char *o) {
-        lua_pushstring(L, o);
-    }
-};
-
-template<>
-class TypedStack<char *> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isstring(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static char *get(lua_State *L, int i) {
-        return const_cast<char *>(TypedStack<const char *>::get(L, i));
-    }
-
-    inline static char *pop(lua_State *L) {
-        auto value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, const char *o) {
-        TypedStack<const char *>::push(L, o);
-    }
-};
-
-template<>
-class TypedStack<std::string> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isstring(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static std::string get(lua_State *L, int i) {
-        return TypedStack<const char *>::get(L, i);
-    }
-
-    inline static std::string pop(lua_State *L) {
-        auto value = get(L, -1);
-        lua_pop(L, 1);
-        return value;
-    }
-
-    inline static void push(lua_State *L, const std::string &o) {
-        TypedStack<const char *>::push(L, o.c_str());
-    }
-};
-
-template<>
-class TypedStack<const std::string &> {
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_isstring(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static std::string get(lua_State *L, int i) {
-        return TypedStack<const char *>::get(L, i);
-    }
-
-    inline static void push(lua_State *L, const std::string &o) {
-        TypedStack<const char *>::push(L, o.c_str());
-    }
-};
-
-
-template<typename K, typename ...Args>
-class TypedStack<std::vector<K, Args...>> {
-    typedef std::vector<K, Args...> T;
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_istable(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static T get(lua_State *L, int i) {
-        T v;
-        lua_pushnil(L);
-        while (lua_next(L, i > 0 ? i : i - 1)) {
-            v.push_back(TypedStack<typename T::value_type>::pop(L));
-        }
-        return v;
-    }
-
-    inline static T pop(lua_State *L) {
-        T v = get(L, -1);
-        lua_pop(L, 1);
-        return v;
-    }
-
-    inline static void push(lua_State *L, const T &v) {
-        lua_newtable(L);
-        int i = 1;
-        for (auto it = v.begin(); it != v.end(); ++it) {
-            TypedStack<typename T::value_type>::push(L, *it);
-            lua_rawseti(L, -2, i++);
-        }
-    }
-};
-
-
-template<typename ...Args>
-class TypedStack<std::tuple<Args...>> {
-    typedef std::tuple<Args...> T;
-public:
-    inline static bool expect(lua_State *L, int i) {
-        return lua_istable(L, i);
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, -1);
-    }
-
-    inline static T get(lua_State *L, int i) {
-        return get(L, i, tlw::gen_seq<sizeof...(Args)>());
-    }
-
-    template<int ...Is>
-    inline static T get(lua_State *L, int i, tlw::seq<Is...>) {
-        return {fetch<Args>(L, i, Is + 1)...};
-    }
-
-    template<typename E>
-    inline static E fetch(lua_State *L, int tableIndex, int index) {
-        lua_rawgeti(L, tableIndex, index);
-        return TypedStack<E>::pop(L);
-    }
-
-    inline static T pop(lua_State *L) {
-        T values = get(L, -1);
-        lua_pop(L, 1);
-        return values;
-    }
-
-    inline static void push(lua_State *L, const T &t) {
-        lua_newtable(L);
-        push(L, t, tlw::gen_seq<sizeof...(Args)>());
-    }
-
-    template<int ...Is>
-    inline static void push(lua_State *L, const T &t, tlw::seq<Is...>) {
-        (..., insert<Args>(L, std::get<Is>(t), -2, Is));
-    }
-
-    template<typename E>
-    inline static void insert(lua_State *L, E e, int tableIndex, int index) {
-        TypedStack<E>::push(L, e);
-        lua_rawseti(L, tableIndex, index + 1);
-    }
-};
-
-template<typename T1, typename T2, typename ...Ts>
-class TypedStack<T1, T2, Ts...> {
-public:
-    template<int ...Is>
-    inline static bool expect(lua_State *L, tlw::seq<Is...>) {
-        return TypedStack<T1>::expect(L, 1) && TypedStack<T2>::expect(L, 2) &&
-               (... && TypedStack<Ts>::expect(L, Is + 3));
-    }
-
-    inline static bool expect(lua_State *L) {
-        return expect(L, tlw::gen_seq<sizeof...(Ts)>());
-    }
-
-    inline static std::tuple<T1, T2, Ts...> pop(lua_State *L) {
-        auto results = get(L);
-        lua_settop(L, 0);
-        return results;
-    }
-
-    inline static void push(lua_State *L, T1 o1, T2 o2, Ts...os) {
-        TypedStack<T1>::push(L, o1);
-        TypedStack<T2>::push(L, o2);
-        (..., TypedStack<Ts>::push(L, os));
-    }
-
-    inline static std::tuple<T1, T2, Ts...> get(lua_State *L) {
-        return all(L, tlw::gen_seq<sizeof...(Ts)>());
-    }
-
-    template<int ...Is>
-    inline static std::tuple<T1, T2, Ts...> all(lua_State *L, tlw::seq<Is...>) {
-        return {TypedStack<T1>::get(L, 1), TypedStack<T2>::get(L, 2), TypedStack<Ts>::get(L, Is + 3)...};
-    }
-};
-
-
-class Stack {
-protected:
-    lua_State *L;
-public:
-    explicit Stack(lua_State *L) : L(L) {}
-
-    template<typename T>
-    T pop() {
-        return TypedStack<T>::pop(L);
-    }
-
-    template<typename Arg1, typename Arg2, typename ...Args>
-    std::tuple<Arg1, Arg2, Args...> pop() {
-        return TypedStack<Arg1, Arg2, Args...>::pop(L);
-    }
-
-    template<typename T>
-    void push(T o) {
-        TypedStack<T>::push(L, o);
-    }
-
-    template<typename Arg1, typename Arg2, typename ...Args>
-    void push(Arg1 arg1, Arg2 arg2, Args... args) {
-        TypedStack<Arg1, Arg2, Args...>::push(L, arg1, arg2, args...);
-    }
-
-    template<typename ...Ts>
-    bool expect() {
-        return TypedStack<Ts...>::expect(L);
-    }
-};
 
 #endif //TLW_STACK_HPP

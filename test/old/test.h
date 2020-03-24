@@ -17,20 +17,23 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TLW_HPP
-#define TLW_TLW_HPP
+#ifndef TLW_TEST_H
+#define TLW_TEST_H
 
-#include <tlw/type.hpp>
-#include <tlw/detail/type_traits_test.hpp>
-#include <tlw/ref.hpp>
-#include <tlw/function.hpp>
-#include <tlw/table.hpp>
+#include <gtest/gtest.h>
+#include <tlw/old/_tlw.hpp>
+#include "constr_example.h"
+#include "destr_example.h"
+#include "func_example.h"
+#include "getter_example.h"
+#include "setter_example.h"
+#include "method_example.h"
+#include "number_example.h"
+#include "prop_example.h"
+#include "script_example.h"
+#include "str_example.h"
+#include "class_examples.h"
 
-#include <tlw/detail/stack_traits.hpp>
-#include <tlw/stack.hpp>
+extern Lua lua;
 
-#include <tlw/meta_table.hpp>
-#include <tlw/user_def.hpp>
-// TODO state, meta table
-
-#endif //TLW_TLW_HPP
+#endif //TLW_TEST_H

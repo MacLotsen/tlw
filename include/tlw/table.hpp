@@ -17,20 +17,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TLW_HPP
-#define TLW_TLW_HPP
+#ifndef TLW_TABLE_HPP
+#define TLW_TABLE_HPP
 
-#include <tlw/type.hpp>
-#include <tlw/detail/type_traits_test.hpp>
-#include <tlw/ref.hpp>
-#include <tlw/function.hpp>
-#include <tlw/table.hpp>
+namespace tlw {
 
-#include <tlw/detail/stack_traits.hpp>
-#include <tlw/stack.hpp>
+}
 
-#include <tlw/meta_table.hpp>
-#include <tlw/user_def.hpp>
-// TODO state, meta table
-
-#endif //TLW_TLW_HPP
+#endif //TLW_TABLE_HPP

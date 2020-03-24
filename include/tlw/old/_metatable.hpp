@@ -20,8 +20,8 @@
 #ifndef TLW_METATABLE_H
 #define TLW_METATABLE_H
 
-#include "errors.hpp"
-#include "prototype.hpp"
+#include "_errors.hpp"
+#include "_prototype.hpp"
 #include <vector>
 #include <lua.hpp>
 

@@ -17,20 +17,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TLW_HPP
-#define TLW_TLW_HPP
+#ifndef TLW_GETTER_EXAMPLE_H
+#define TLW_GETTER_EXAMPLE_H
 
-#include <tlw/type.hpp>
-#include <tlw/detail/type_traits_test.hpp>
-#include <tlw/ref.hpp>
-#include <tlw/function.hpp>
-#include <tlw/table.hpp>
+#include <utility>
+#include <tlw/old/_wrapping.hpp>
+#include <string>
 
-#include <tlw/detail/stack_traits.hpp>
-#include <tlw/stack.hpp>
+class GetterExample {
+private:
+    std::string property;
+public:
+    inline static const char * script = "return example.property";
+    explicit GetterExample(std::string p) : property(std::move(p)) {}
+    std::string getProperty() { return property; }
+};
 
-#include <tlw/meta_table.hpp>
-#include <tlw/user_def.hpp>
-// TODO state, meta table
-
-#endif //TLW_TLW_HPP
+#endif //TLW_GETTER_EXAMPLE_H

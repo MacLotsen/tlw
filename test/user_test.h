@@ -17,20 +17,25 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TLW_HPP
-#define TLW_TLW_HPP
+#ifndef TLW_USER_TEST_H
+#define TLW_USER_TEST_H
 
-#include <tlw/type.hpp>
-#include <tlw/detail/type_traits_test.hpp>
-#include <tlw/ref.hpp>
-#include <tlw/function.hpp>
-#include <tlw/table.hpp>
+#include "base_test.h"
 
-#include <tlw/detail/stack_traits.hpp>
-#include <tlw/stack.hpp>
+class user_test : public base_test {
+    using example_meta = tlw::meta_table_t<tlw::lua_example_t::type>;
+protected:
+    tlw::stack s;
+    void SetUp() override {
+        base_test::SetUp();
+        s = tlw::stack(L);
+    }
 
-#include <tlw/meta_table.hpp>
-#include <tlw/user_def.hpp>
-// TODO state, meta table
+    void TearDown() override {
+        base_test::TearDown();
+        example_meta::reset();
+        tlw::meta_table_t<tlw::example>::reset();
+    }
+};
 
-#endif //TLW_TLW_HPP
+#endif //TLW_USER_TEST_H

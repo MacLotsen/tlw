@@ -20,8 +20,8 @@
 #ifndef TLW_IMPL_H
 #define TLW_IMPL_H
 
-#include <tlw/types.hpp>
-#include <tlw/wrapping.hpp>
+#include <tlw/old/_types.hpp>
+#include <tlw/old/_wrapping.hpp>
 #include "benchmark.h"
 
 class ImplBenchmarkRunner : public BenchmarkRunner {

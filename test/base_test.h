@@ -17,20 +17,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TLW_HPP
-#define TLW_TLW_HPP
+#ifndef TLW_BASE_TEST_H
+#define TLW_BASE_TEST_H
 
-#include <tlw/type.hpp>
-#include <tlw/detail/type_traits_test.hpp>
-#include <tlw/ref.hpp>
-#include <tlw/function.hpp>
-#include <tlw/table.hpp>
+#include <gtest/gtest.h>
+#include <tlw/tlw.hpp>
 
-#include <tlw/detail/stack_traits.hpp>
-#include <tlw/stack.hpp>
+#include "examples.h"
 
-#include <tlw/meta_table.hpp>
-#include <tlw/user_def.hpp>
-// TODO state, meta table
 
-#endif //TLW_TLW_HPP
+class base_test : public ::testing::Test {
+protected:
+    lua_State *L = nullptr;
+
+    virtual void SetUp() override {
+        L = luaL_newstate();
+    }
+
+    virtual void TearDown() override {
+        lua_close(L);
+    }
+
+    template<typename ...Ts>
+    void inspect(bool expected) {
+        (..., assert_inspection<Ts>(expected));
+    }
+
+    template<typename T>
+    void assert_inspection(bool expected) {
+        ASSERT_EQ(expected, tlw::type_inspector<T>::inspect(L));
+    }
+};
+
+#endif //TLW_BASE_TEST_H

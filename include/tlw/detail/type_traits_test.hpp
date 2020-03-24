@@ -17,16 +17,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TYPE_TRAITS_H
-#define TLW_TYPE_TRAITS_H
+#ifndef TLW_TYPE_TRAITS_TEST_HPP
+#define TLW_TYPE_TRAITS_TEST_HPP
 
-#include <tlw/util.hpp>
-#include "types.h"
+#include <tlw/detail/util.hpp>
+#include <tlw/type.hpp>
+#include <tlw/ref.hpp>
 
 namespace tlw {
 
     template<typename _lua_type_set>
-    struct lua_type_inspector {
+    struct type_inspector {
         using type = _lua_type_set;
 
         static constexpr bool inspect(lua_State *L) {
@@ -39,7 +40,7 @@ namespace tlw {
     };
 
     template<typename _lua_type_set, class...>
-    struct lua_type_traits {
+    struct type_traits {
         static typename _lua_type_set::type peek(lua_State *L, int idx) {
             throw std::runtime_error("unsupported type");
         }
@@ -49,10 +50,10 @@ namespace tlw {
     };
 
     template<typename _lua_type_set>
-    struct lua_ref_traits {
+    struct ref_traits {
         static typename _lua_type_set::type peek(lua_State *L, int idx) {
             lua_pushvalue(L, idx);
-            auto r = lua_struct_ref(L);
+            auto r = struct_ref(L);
             lua_pop(L, 1);
             return r;
         }
@@ -63,75 +64,75 @@ namespace tlw {
     };
 
     template<typename _lua_type_set, class ..._args>
-    struct lua_ordered_type_traits : public lua_type_traits<_lua_type_set, _args...> {
+    struct ordered_type_traits : public type_traits<_lua_type_set, _args...> {
         static constexpr typename _lua_type_set::type peek(lua_State *L) {
-            return lua_type_traits<_lua_type_set, _args...>::peek(L, -1);
+            return type_traits<_lua_type_set, _args...>::peek(L, -1);
         }
     };
 
     template<>
-    struct lua_type_traits<lua_none_t> {
-        static constexpr typename lua_none_t::type peek(lua_State*, int) {}
+    struct type_traits<none_t> {
+        static constexpr typename none_t::type peek(lua_State*, int) {}
         static constexpr void push(lua_State *) {}
     };
 
     template<>
-    struct lua_type_traits<lua_nil_t> {
-        static constexpr typename lua_nil_t::type peek(lua_State *L, int idx) {
+    struct type_traits<nil_t> {
+        static constexpr typename nil_t::type peek(lua_State *L, int idx) {
             return nullptr;
         }
 
-        static void push(lua_State *L, typename lua_nil_t::type) {
+        static void push(lua_State *L, typename nil_t::type) {
             lua_pushnil(L);
         }
     };
 
     template<>
-    struct lua_type_traits<lua_bool_t> {
-        static typename lua_bool_t::type peek(lua_State *L, int idx) {
+    struct type_traits<bool_t> {
+        static typename bool_t::type peek(lua_State *L, int idx) {
             return lua_toboolean(L, idx) != 0;
         }
-        static void push(lua_State *L, typename lua_bool_t::type value) {
+        static void push(lua_State *L, typename bool_t::type value) {
             lua_pushboolean(L, value);
         }
     };
 
     template<>
-    struct lua_type_traits<lua_number_t> {
-        static typename lua_number_t::type peek(lua_State *L, int idx) {
+    struct type_traits<number_t> {
+        static typename number_t::type peek(lua_State *L, int idx) {
             return lua_tonumber(L, idx);
         }
 
-        static void push(lua_State *L, typename lua_number_t::type value) {
+        static void push(lua_State *L, typename number_t::type value) {
             lua_pushnumber(L, value);
         }
     };
 
     template<>
-    struct lua_type_traits<lua_string_t> {
-        static typename lua_string_t::type peek(lua_State *L, int idx) {
+    struct type_traits<string_t> {
+        static typename string_t::type peek(lua_State *L, int idx) {
             return lua_tostring(L, idx);
         }
 
-        static void push(lua_State *L, typename lua_string_t::type value) {
+        static void push(lua_State *L, typename string_t::type value) {
             lua_pushstring(L, value);
         }
     };
 
     template<>
-    struct lua_type_traits<lua_table_t> : public lua_ref_traits<lua_table_t> {
-        using lua_ref_traits<lua_table_t>::peek;
-        using lua_ref_traits<lua_table_t>::push;
+    struct type_traits<table_t> : public ref_traits<table_t> {
+        using ref_traits<table_t>::peek;
+        using ref_traits<table_t>::push;
     };
 
     template<>
-    struct lua_type_traits<lua_function_t> : public lua_ref_traits<lua_function_t> {
-        using lua_ref_traits<lua_function_t>::peek;
-        using lua_ref_traits<lua_function_t>::push;
+    struct type_traits<function_t> : public ref_traits<function_t> {
+        using ref_traits<function_t>::peek;
+        using ref_traits<function_t>::push;
     };
 
     template<class _user_type>
-    struct lua_type_traits<lua_user_data_t<_user_type>> {
+    struct type_traits<user_data_t<_user_type>> {
         static _user_type peek(lua_State *L, int idx) {
             auto user_data = (_user_type *) lua_touserdata(L, idx);
             return *user_data;
@@ -148,4 +149,4 @@ namespace tlw {
     };
 }
 
-#endif //TLW_TYPE_TRAITS_H
+#endif //TLW_TYPE_TRAITS_TEST_HPP

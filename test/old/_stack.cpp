@@ -18,8 +18,8 @@
  */
 
 #include <gtest/gtest.h>
-#include <tlw/types.hpp>
-#include "tlw/stack.hpp"
+#include <tlw/old/_types.hpp>
+#include "tlw/old/_stack.hpp"
 
 
 TEST(StackTest, testValueTypes) {

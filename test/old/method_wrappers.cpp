@@ -17,7 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include <tlw/types.hpp>
+#include <tlw/old/_types.hpp>
 #include "test.h"
 
 

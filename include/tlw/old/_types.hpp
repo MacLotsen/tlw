@@ -17,10 +17,10 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TYPES_HPP
-#define TLW_TYPES_HPP
+#ifndef TLW__TYPES_HPP
+#define TLW__TYPES_HPP
 
-#include "stack.hpp"
+#include "_stack.hpp"
 
 class LuaRef {
     friend TypedStack<LuaRef>;
@@ -278,4 +278,4 @@ public:
     }
 };
 
-#endif //TLW_TYPES_HPP
+#endif //TLW__TYPES_HPP

@@ -17,20 +17,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TLW_HPP
-#define TLW_TLW_HPP
+#include "detail_test.h"
 
-#include <tlw/type.hpp>
-#include <tlw/detail/type_traits_test.hpp>
-#include <tlw/ref.hpp>
-#include <tlw/function.hpp>
-#include <tlw/table.hpp>
+TEST_F(detail_test, test_stack) {
+    tlw::stack s(L);
+    tlw::define<const tlw::example *>("example");
 
-#include <tlw/detail/stack_traits.hpp>
-#include <tlw/stack.hpp>
+    s.push(magic_bool);
+    ASSERT_EQ(magic_bool, s.peek<bool>(-1));
+    s.push(magic_number);
+    ASSERT_EQ(magic_number, s.peek<double>(-1));
+    s.push(magic_string);
+    ASSERT_STREQ(magic_string, s.peek<const char *>(-1));
+    s.push(&magic_user_datum);
+    ASSERT_EQ(&magic_user_datum, s.peek<decltype(&magic_user_datum)>(-1));
 
-#include <tlw/meta_table.hpp>
-#include <tlw/user_def.hpp>
-// TODO state, meta table
-
-#endif //TLW_TLW_HPP
+    auto stack_values = s.grab<const char *, decltype(&magic_user_datum)>();
+    ASSERT_EQ(magic_bool, s.peek<bool>(1));
+    ASSERT_EQ(magic_number, s.peek<double>(2));
+    ASSERT_STREQ(magic_string, std::get<0>(stack_values));
+    ASSERT_EQ(&magic_user_datum, std::get<1>(stack_values));
+}

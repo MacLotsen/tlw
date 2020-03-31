@@ -16,7 +16,7 @@
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 cmake_minimum_required(VERSION 3.10)
-project(TLW)
+project(tlw)
 
 execute_process(
         COMMAND git describe --tags --always
@@ -47,7 +47,7 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     target_compile_definitions(tlw INTERFACE STRICT_ARGUMENTS)
 endif ()
 
-set_target_properties(tlw PROPERTIES EXPORT_NAME TLW)
+set_target_properties(tlw PROPERTIES EXPORT_NAME tlw)
 
 install(TARGETS tlw
         EXPORT tlw-targets
@@ -60,9 +60,9 @@ install(DIRECTORY include/
 
 install(EXPORT tlw-targets
         FILE TLWTargets.cmake
-        DESTINATION lib/cmake/TLW)
+        DESTINATION lib/cmake/tlw)
 
-set(CMAKE_CONFIG_DIR lib/cmake/TLW)
+set(CMAKE_CONFIG_DIR lib/cmake/tlw)
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
@@ -93,7 +93,7 @@ install(FILES
         DESTINATION ${CMAKE_CONFIG_DIR})
 
 export(EXPORT tlw-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/TLWTargets.cmake)
-export(PACKAGE TLW)
+export(PACKAGE tlw)
 
 if (BUILD_TEST)
     add_subdirectory(test)

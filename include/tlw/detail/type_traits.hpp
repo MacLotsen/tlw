@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TYPE_TRAITS_TEST_HPP
-#define TLW_TYPE_TRAITS_TEST_HPP
+#ifndef TLW_TYPE_TRAITS_HPP
+#define TLW_TYPE_TRAITS_HPP
 
 #include <tlw/detail/util.hpp>
 #include <tlw/type.hpp>
@@ -44,6 +44,7 @@ namespace tlw {
         static typename _lua_type_set::type peek(lua_State *L, int idx) {
             throw std::runtime_error("unsupported type");
         }
+
         static void push(lua_State *L, typename _lua_type_set::type value) {
             throw std::runtime_error("unsupported type");
         }
@@ -53,7 +54,7 @@ namespace tlw {
     struct ref_traits {
         static typename _lua_type_set::type peek(lua_State *L, int idx) {
             lua_pushvalue(L, idx);
-            auto r = struct_ref(L);
+            auto r = struct_ref(state(L));
             lua_pop(L, 1);
             return r;
         }
@@ -72,7 +73,8 @@ namespace tlw {
 
     template<>
     struct type_traits<none_t> {
-        static constexpr typename none_t::type peek(lua_State*, int) {}
+        static constexpr typename none_t::type peek(lua_State *, int) {}
+
         static constexpr void push(lua_State *) {}
     };
 
@@ -92,6 +94,7 @@ namespace tlw {
         static typename bool_t::type peek(lua_State *L, int idx) {
             return lua_toboolean(L, idx) != 0;
         }
+
         static void push(lua_State *L, typename bool_t::type value) {
             lua_pushboolean(L, value);
         }
@@ -131,6 +134,15 @@ namespace tlw {
         using ref_traits<function_t>::push;
     };
 
+    template<>
+    struct type_traits<cfunction_t> : public ref_traits<function_t> {
+        using ref_traits<function_t>::peek;
+
+        static void push(lua_State *L, typename cfunction_t::type value) {
+            lua_pushcfunction(L, value);
+        }
+    };
+
     template<class _user_type>
     struct type_traits<user_data_t<_user_type>> {
         static _user_type peek(lua_State *L, int idx) {
@@ -147,6 +159,37 @@ namespace tlw {
             }
         }
     };
+
+    template<class _light_user_type>
+    struct type_traits<light_user_data_t<_light_user_type>> {
+        static _light_user_type peek(lua_State *L, int idx) {
+            auto user_data = (_light_user_type *) lua_touserdata(L, idx);
+            return *user_data;
+        }
+
+        static void push(lua_State *L, _light_user_type value) {
+            if constexpr (const_type<typename pointer_type<_light_user_type>::value_type>::valid) {
+                luaL_error(L, "Cannot push a const value as light user data");
+            } else {
+                lua_pushlightuserdata(L, &value);
+            }
+        }
+    };
+
+    template<class _light_user_type>
+    struct type_traits<light_user_data_t<_light_user_type *>> {
+        static _light_user_type *peek(lua_State *L, int idx) {
+            return (_light_user_type *) lua_touserdata(L, idx);
+        }
+
+        static void push(lua_State *L, _light_user_type *value) {
+            if constexpr (const_type<typename pointer_type<_light_user_type>::value_type>::valid) {
+                luaL_error(L, "Cannot push a const value as light user data");
+            } else {
+                lua_pushlightuserdata(L, value);
+            }
+        }
+    };
 }
 
-#endif //TLW_TYPE_TRAITS_TEST_HPP
+#endif //TLW_TYPE_TRAITS_HPP

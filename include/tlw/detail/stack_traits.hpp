@@ -20,7 +20,10 @@
 #ifndef TLW_STACK_TRAITS_HPP
 #define TLW_STACK_TRAITS_HPP
 
+#include <tlw/detail/type_traits.hpp>
+#include <tlw/function.hpp>
 #include <tlw/meta_table.hpp>
+#include <utility>
 
 namespace tlw {
 
@@ -37,6 +40,17 @@ namespace tlw {
 
         static constexpr typename _lua_type::type peek(lua_State *L, int idx) {
             return type_traits<_lua_type>::peek(L, idx);
+        }
+    };
+
+    template<typename _lua_type>
+    struct struct_stack_traits {
+        static void push(lua_State *L, typename _lua_type::type value) {
+            ref_traits<_lua_type>::push(L, std::move(value));
+        }
+
+        static typename _lua_type::type peek(lua_State *L, int idx) {
+            return ref_traits<_lua_type>::peek(L, idx);
         }
     };
 
@@ -79,34 +93,39 @@ namespace tlw {
     struct stack_traits<string_t::type> : public primitive_stack_traits<string_t> {
     };
 
-    template<class T>
-    struct stack_traits<T> {
-        using _user_data_t = user_data_t<T>;
-        using _light_user_data_t = light_user_data_t<T>;
+    template<>
+    struct stack_traits<cfunction_t::type> : public primitive_stack_traits<cfunction_t> {
+    };
 
-        static void push(lua_State *L, T value) {
-            if (meta_table_t<typename _user_data_t::type>::name) {
-                if constexpr (pointer_type<T>::valid) {
+    template<>
+    struct stack_traits<table_t> : public struct_stack_traits<table_t> {
+
+    };
+
+    template<class _type>
+    struct stack_traits<_type> {
+        using _user_data_t = user_data_t<_type>;
+        using _light_user_data_t = light_user_data_t<_type>;
+
+        static void push(lua_State *L, _type value) {
+            if (meta_table_registry<typename _user_data_t::type>::name) {
+                if constexpr (pointer_type<_type>::valid) {
                     type_traits<_user_data_t>::push(L, value);
                 } else {
                     type_traits<_user_data_t>::push(L, std::move(value));
                 }
-                if (luaL_newmetatable(L, meta_table_t<typename _user_data_t::type>::name)) {
-                    // TODO create meta table
-                }
-                lua_setmetatable(L, -2);
+                luaL_setmetatable(L, meta_table_registry<typename _user_data_t::type>::name);
             } else {
-//                lua_type_traits<_light_user_data_t>()(L, value);
+                type_traits<_light_user_data_t>::push(L, value);
             }
         }
 
-        static T peek(lua_State *L, int idx) {
-            if (meta_table_t<T>::name) {
+        static _type peek(lua_State *L, int idx) {
+            if (meta_table_registry<_type>::name) {
                 return type_traits<_user_data_t>::peek(L, idx);
             } else {
-//                return lua_type_traits<_light_user_data_t>()(L, idx);
+                return type_traits<_light_user_data_t>::peek(L, idx);
             }
-            return nullptr;
         }
     };
 }

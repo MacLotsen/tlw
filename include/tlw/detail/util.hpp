@@ -22,16 +22,29 @@
 
 namespace tlw {
 
-    template<typename ...>
+    template<typename _type, typename ...>
     struct pointer_type {
         static constexpr bool valid = false;
-        using value_type = void;
+        using value_type = _type;
     };
 
-    template<typename T>
-    struct pointer_type<T*> {
+    template<typename _type>
+    struct pointer_type<_type*> {
         static constexpr bool valid = true;
-        using value_type = T;
+        using value_type = _type;
+    };
+
+    template<typename _type, typename ...>
+    struct const_type {
+        static constexpr bool valid = false;
+        using value_type = _type;
+
+    };
+
+    template<typename _type>
+    struct const_type<const _type> {
+        static constexpr bool valid = true;
+        using value_type = _type;
     };
 
     template<int... Is>

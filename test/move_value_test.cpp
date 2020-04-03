@@ -20,7 +20,8 @@
 #include "user_test.h"
 
 TEST_F(user_test, test_move_value) {
-    tlw::define<tlw::example>("example_value");
+    tlw::define<tlw::example>("example_value")
+            .finish();
     tlw::example value;
     s.push(std::move(value));
     ASSERT_FALSE(tlw::type_inspector<tlw::nil_t>::inspect(L));

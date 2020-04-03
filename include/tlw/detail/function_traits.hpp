@@ -17,26 +17,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_USER_TEST_H
-#define TLW_USER_TEST_H
+#ifndef TLW_FUNCTION_TRAITS_HPP
+#define TLW_FUNCTION_TRAITS_HPP
 
-#include "base_test.h"
+#include <tlw/detail/stack_traits.hpp>
+#include <tlw/function.hpp>
 
-class user_test : public base_test {
-    using example_meta = tlw::meta_table_registry<tlw::lua_example_t::type>;
-protected:
-    tlw::stack s;
-    void SetUp() override {
-        base_test::SetUp();
-        s = tlw::stack(L);
-    }
+namespace tlw {
 
-    void TearDown() override {
-        base_test::TearDown();
-        example_meta::reset();
-        tlw::meta_table_registry<tlw::example>::reset();
-        s = tlw::stack();
-    }
-};
+    template<typename _r, typename ..._args>
+    struct stack_traits<function<_r(_args...)>> : public struct_stack_traits<function_t> {
+        using fn_t = function<_r(_args...)>;
+        using struct_stack_traits::push;
 
-#endif //TLW_USER_TEST_H
+        constexpr static fn_t peek(lua_State *L, int idx) {
+            return fn_t(std::move(struct_stack_traits::peek(L, idx)));
+        }
+    };
+
+}
+
+#endif //TLW_FUNCTION_TRAITS_HPP

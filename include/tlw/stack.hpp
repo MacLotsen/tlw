@@ -20,14 +20,19 @@
 #ifndef TLW_STACK_HPP
 #define TLW_STACK_HPP
 
+#include <tlw/state.hpp>
+#include <tlw/detail/stack_traits.hpp>
+#include <tlw/detail/function_traits.hpp>
+#include <utility>
+
 namespace tlw {
 
     class stack {
-        lua_State *L;
+        state L;
     public:
-        explicit stack() noexcept : stack(nullptr) {}
+        explicit stack() noexcept : stack(state::invalid_state()) {}
 
-        explicit stack(lua_State *L) noexcept : L(L) {}
+        explicit stack(state L) noexcept : L(std::move(L)) {}
 
         stack(stack &&) = delete;
 
@@ -45,33 +50,29 @@ namespace tlw {
         }
 
         explicit operator bool() const noexcept {
-            return L != nullptr;
+            return static_cast<bool>(L);
         }
 
         template<class T>
         constexpr void push(T value) {
-            if constexpr(pointer_type<T>::valid) {
-                stack_traits<T>::push(L, value);
-            } else {
-                stack_traits<T>::push(L, std::move(value));
-            }
+            stack_traits<T>::push(L, std::move(value));
         }
 
         template<class T>
-        constexpr T peek(int idx) {
+        constexpr T get(int idx) {
             return stack_traits<T>::peek(L, idx);
         }
 
         template<class T>
         constexpr T pop() {
-            T val = peek<T>(-1);
+            T val = get<T>(-1);
             lua_pop(L, 1);
             return val;
         }
 
         template<class T>
         constexpr T pick(int idx) {
-            T val = peek<T>(idx);
+            T val = get<T>(idx);
             lua_remove(L, idx);
             return val;
         }
@@ -85,15 +86,16 @@ namespace tlw {
         constexpr std::tuple<Ts...> grab() {
             int begin = lua_gettop(L) + 1 - sizeof...(Ts);
             int idx = begin;
-            auto values = std::tuple{ordered_peek<Ts>(idx)...};
+            auto values = std::tuple{ordered_get<Ts>(idx)...};
             lua_settop(L, begin - 1);
             return values;
         }
 
     private:
+
         template<class T>
-        constexpr T ordered_peek(int &idx) {
-            return peek<T>(idx++);
+        constexpr T ordered_get(int &idx) {
+            return get<T>(idx++);
         }
 
     };

@@ -22,35 +22,55 @@
 
 namespace tlw {
 
+    struct example_tracker {
+        static inline int custom_created = 0;
+        static inline int created = 0;
+        static inline int copied = 0;
+        static inline int moved = 0;
+        static inline int deleted = 0;
+
+        static void clear() {
+            custom_created = created = copied = moved = deleted = 0;
+        }
+    };
+
     struct example {
+        static inline const float invalid = std::numeric_limits<float>::max();
         float val;
 
-        explicit example() noexcept : val(5.5) {
-            printf("example created\n");
+        explicit example() noexcept : val(invalid) {
+            example_tracker::created++;
         }
 
         example(const example &e) : val(e.val) {
-            printf("example copied\n");
+            example_tracker::copied++;
         }
 
-        example(example &&e) noexcept : val(std::exchange(e.val, 0)) {
-            printf("example moved\n");
+        example(example &&e) noexcept : val(std::exchange(e.val, invalid)) {
+            example_tracker::moved++;
         }
 
         explicit example(float val) : val(val) {
-            printf("example created with %g\n", val);
+            example_tracker::custom_created++;
         }
 
-        example operator=(example &&e) noexcept {
-            return example(std::move(e));
+        example& operator=(example &&e) noexcept {
+            val = std::exchange(e.val, invalid);
+            return *this;
         }
 
-        example operator=(const example &e) {
-            return example(e);
-        }
+        example& operator=(const example &e) = default;
 
         virtual ~example() {
-            printf("example destroyed\n");
+            example_tracker::deleted++;
+        }
+
+        explicit operator bool() const {
+            return val != invalid;
+        }
+
+        void print() const {
+            printf("The value is %f", val);
         }
     };
 

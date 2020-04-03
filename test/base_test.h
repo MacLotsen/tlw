@@ -28,14 +28,15 @@
 
 class base_test : public ::testing::Test {
 protected:
-    lua_State *L = nullptr;
+    tlw::state L = tlw::state::invalid_state();
 
     virtual void SetUp() override {
-        L = luaL_newstate();
+        L = tlw::state();
     }
 
     virtual void TearDown() override {
-        lua_close(L);
+        L = tlw::state::invalid_state();
+        tlw::example_tracker::clear();
     }
 
     template<typename ...Ts>

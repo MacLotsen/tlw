@@ -24,8 +24,6 @@
 
 namespace tlw {
 
-    class struct_ref;
-
     template<typename _c_type, int _lua_type>
     struct type_set {
         using type = _c_type;

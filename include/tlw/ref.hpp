@@ -20,17 +20,19 @@
 #ifndef TLW_REF_HPP
 #define TLW_REF_HPP
 
+#include <tlw/state.hpp>
+
 namespace tlw {
     
     struct struct_ref {
         constexpr static const int invalid = LUA_NOREF;
         
-        lua_State *L;
+        state L;
         int r_idx;
 
         struct_ref() : L(nullptr), r_idx(invalid) {}
 
-        explicit struct_ref(lua_State *L) : L(L), r_idx(luaL_ref(L, LUA_REGISTRYINDEX)) {}
+        explicit struct_ref(const state &L) : L(L), r_idx(luaL_ref(L, LUA_REGISTRYINDEX)) {}
 
         struct_ref(const struct_ref &other) noexcept : L(other.L) {
             if (other) {
@@ -41,7 +43,7 @@ namespace tlw {
             }
         }
 
-        struct_ref(struct_ref &&other) noexcept : L(other.L), r_idx(std::exchange(other.r_idx, invalid)) {}
+        struct_ref(struct_ref &&other) noexcept : L(std::move(other.L)), r_idx(std::exchange(other.r_idx, invalid)) {}
 
         ~struct_ref() {
             if (*this) {
@@ -50,7 +52,7 @@ namespace tlw {
         }
 
         explicit operator bool() const noexcept {
-            return r_idx != invalid;
+            return r_idx != invalid && r_idx != LUA_REFNIL;
         }
     };
     

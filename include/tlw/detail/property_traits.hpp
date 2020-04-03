@@ -1,0 +1,61 @@
+/*
+ * Typed Lua Wrapping
+ * Copyright (C) 2019  Erik Nijenhuis
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License
+ * as published by the Free Software Foundation; either version 2
+ * of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+ */
+
+#ifndef TLW_PROPERTY_TRAITS_HPP
+#define TLW_PROPERTY_TRAITS_HPP
+
+#include <tlw/detail/util.hpp>
+#include <tlw/stack.hpp>
+#include <unordered_map>
+
+namespace tlw {
+
+    template<typename _user_type, typename _prop_type, typename ...>
+    struct property_traits {
+        using prop_type = _prop_type pointer_type<_user_type>::value_type::*;
+        static inline std::unordered_map<std::string_view, prop_type> properties = {};
+
+        static int get(lua_State *L) {
+            stack s = stack(state(L));
+            auto prop = s.pop<const char *>();
+            auto ud = s.pop<_user_type>();
+            s.push<_prop_type>(ud->*properties[prop]);
+            return 1;
+        }
+
+        static int set(lua_State *L) {
+            stack s = stack(state(L));
+
+            if constexpr (const_type<typename pointer_type<_user_type>::value_type>::valid) {
+                lua_pushstring(L, "Error: user type is read only");
+                lua_error(L);
+            } else {
+                auto val = s.pop<_prop_type>();
+                auto prop = s.pop<const char *>();
+                auto ud = s.pop<typename const_type<_user_type>::value_type>();
+                ud->*properties[prop] = val;
+            }
+
+            return 0;
+        }
+    };
+
+}
+
+#endif //TLW_PROPERTY_TRAITS_HPP

@@ -21,29 +21,36 @@
 #define TLW_META_TABLE_HPP
 
 #include <unordered_map>
+#include <tlw/type.hpp>
+#include <functional>
 
 namespace tlw {
 
     template<class _lua_user_type>
-    struct meta_table_t {
+    struct meta_table_registry {
         using type = _lua_user_type;
         inline static const char *name = nullptr;
-        inline static cfunction_t::type ctor = nullptr;
-        inline static cfunction_t::type dtor = nullptr;
-        inline static cfunction_t::type index = nullptr;
-        inline static cfunction_t::type new_index = nullptr;
-        inline static std::unordered_map<const char *, cfunction_t::type> methods{};
-        inline static std::unordered_map<const char *, cfunction_t::type> properties{};
-        inline static std::unordered_map<const char *, cfunction_t::type> operators{};
+        inline static void (*expose)(state L);
 
         static void reset() {
             name = nullptr;
-            ctor = dtor = index = new_index = nullptr;
-            methods.clear();
-            properties.clear();
-            operators.clear();
+            expose = nullptr;
         }
     };
+
+    template<class _user_type>
+    struct meta_table {
+        static inline const char * name = nullptr;
+        static inline cfunction_t::type ctor = nullptr;
+        static inline cfunction_t::type dtor = nullptr;
+//        static inline cfunction_t::type index = nullptr;
+//        static inline cfunction_t::type new_index = nullptr;
+        static inline std::unordered_map<std::string_view, cfunction_t::type> methods{};
+        static inline std::unordered_map<std::string_view, cfunction_t::type> setters{};
+        static inline std::unordered_map<std::string_view, cfunction_t::type> getters{};
+        static inline std::unordered_map<std::string_view, cfunction_t::type> operators{};
+    };
+
 }
 
 #endif //TLW_META_TABLE_HPP

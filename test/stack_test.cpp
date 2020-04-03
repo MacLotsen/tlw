@@ -21,20 +21,28 @@
 
 TEST_F(detail_test, test_stack) {
     tlw::stack s(L);
-    tlw::define<const tlw::example *>("example");
+    tlw::define<const tlw::example *>("example")
+            .finish();
 
     s.push(magic_bool);
-    ASSERT_EQ(magic_bool, s.peek<bool>(-1));
+    ASSERT_EQ(magic_bool, s.get<bool>(-1));
     s.push(magic_number);
-    ASSERT_EQ(magic_number, s.peek<double>(-1));
+    ASSERT_EQ(magic_number, s.get<double>(-1));
     s.push(magic_string);
-    ASSERT_STREQ(magic_string, s.peek<const char *>(-1));
+    ASSERT_STREQ(magic_string, s.get<const char *>(-1));
     s.push(&magic_user_datum);
-    ASSERT_EQ(&magic_user_datum, s.peek<decltype(&magic_user_datum)>(-1));
+    ASSERT_EQ(&magic_user_datum, s.get<decltype(&magic_user_datum)>(-1));
 
     auto stack_values = s.grab<const char *, decltype(&magic_user_datum)>();
-    ASSERT_EQ(magic_bool, s.peek<bool>(1));
-    ASSERT_EQ(magic_number, s.peek<double>(2));
-    ASSERT_STREQ(magic_string, std::get<0>(stack_values));
-    ASSERT_EQ(&magic_user_datum, std::get<1>(stack_values));
+    ASSERT_EQ(magic_bool, s.get<bool>(1));
+    ASSERT_EQ(magic_number, s.get<double>(2));
+    auto [str, ud] = stack_values;
+    ASSERT_STREQ(magic_string, str);
+    ASSERT_EQ(&magic_user_datum, ud);
+
+    s.push(noop);
+    assert_inspection<tlw::function_t>(true);
+    auto f = s.pop<tlw::function<void()>>();
+    ASSERT_TRUE(f) << "Function must be valid";
+    ASSERT_NO_THROW(f());
 }

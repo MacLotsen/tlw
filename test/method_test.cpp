@@ -17,26 +17,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_USER_TEST_H
-#define TLW_USER_TEST_H
+#include "user_test.h"
 
-#include "base_test.h"
+TEST_F(user_test, test_const_method) {
+    tlw::define<const tlw::example *>("example")
+            .method("print", &tlw::example::print)
+            .finish();
+    tlw::meta_table_registry<const tlw::example *>::expose(L);
+    const tlw::example e(5.5);
+    s.push(&e);
+    lua_setglobal(L, "e");
 
-class user_test : public base_test {
-    using example_meta = tlw::meta_table_registry<tlw::lua_example_t::type>;
-protected:
-    tlw::stack s;
-    void SetUp() override {
-        base_test::SetUp();
-        s = tlw::stack(L);
+    if (luaL_dostring(L, "e.print()")) {
+        FAIL() << "Failed to execute script '" << lua_tostring(L, -1) << "'";
     }
-
-    void TearDown() override {
-        base_test::TearDown();
-        example_meta::reset();
-        tlw::meta_table_registry<tlw::example>::reset();
-        s = tlw::stack();
-    }
-};
-
-#endif //TLW_USER_TEST_H
+}

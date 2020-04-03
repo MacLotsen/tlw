@@ -30,21 +30,31 @@ namespace tlw {
     };
 
     template<typename ..._args>
-    struct function<void(_args...)> : struct_ref {
+    struct function<void(_args...)> : public struct_ref {
+        using fn_type = function<void(_args...)>;
+
+        function(struct_ref &&other) : struct_ref(std::move(other)) {}
+
         void operator()(_args ...args) {
-            stack_traits<struct_ref *>::push(L, this);
+            stack_traits<fn_type>::push(L, *this);
             (..., stack_traits<_args>::push(L, args));
             if (lua_pcall(L, sizeof...(_args), 0, 0)) {
                 throw std::runtime_error("Failed to call lua function.");
             }
-            lua_settop(L, 0);
+            if constexpr (sizeof...(_args)) {
+                lua_pop(L, sizeof...(_args));
+            }
         }
     };
 
     template<typename _r, typename ..._args>
-    struct function<_r(_args...)> : struct_ref {
+    struct function<_r(_args...)> : public struct_ref {
+        using fn_type = function<_r(_args...)>;
+
+        function(struct_ref &&other) : struct_ref(std::move(other)) {}
+
         _r operator()(_args ...args) {
-            stack_traits<struct_ref *>::push(L, this);
+            stack_traits<fn_type>::push(L, this);
             (..., stack_traits<_args>::push(L, args));
             if (lua_pcall(L, sizeof...(_args), 1, 0)) {
                 throw std::runtime_error("Failed to call lua function.");

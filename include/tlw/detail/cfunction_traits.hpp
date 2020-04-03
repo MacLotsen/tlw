@@ -17,26 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_USER_TEST_H
-#define TLW_USER_TEST_H
+#ifndef TLW_CFUNCTION_TRAITS_H
+#define TLW_CFUNCTION_TRAITS_H
 
-#include "base_test.h"
-
-class user_test : public base_test {
-    using example_meta = tlw::meta_table_registry<tlw::lua_example_t::type>;
-protected:
-    tlw::stack s;
-    void SetUp() override {
-        base_test::SetUp();
-        s = tlw::stack(L);
-    }
-
-    void TearDown() override {
-        base_test::TearDown();
-        example_meta::reset();
-        tlw::meta_table_registry<tlw::example>::reset();
-        s = tlw::stack();
-    }
-};
-
-#endif //TLW_USER_TEST_H
+#endif //TLW_CFUNCTION_TRAITS_H

@@ -20,17 +20,14 @@
 #ifndef TLW_TLW_HPP
 #define TLW_TLW_HPP
 
-#include <tlw/type.hpp>
-#include <tlw/detail/type_traits_test.hpp>
+#include <tlw/state.hpp>
 #include <tlw/ref.hpp>
 #include <tlw/function.hpp>
 #include <tlw/table.hpp>
-
-#include <tlw/detail/stack_traits.hpp>
+#include <tlw/type.hpp>
+#include <tlw/detail/type_traits.hpp>
 #include <tlw/stack.hpp>
-
 #include <tlw/meta_table.hpp>
 #include <tlw/user_def.hpp>
-// TODO state, meta table
 
 #endif //TLW_TLW_HPP

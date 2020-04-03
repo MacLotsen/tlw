@@ -27,6 +27,7 @@ class user_test : public base_test {
 protected:
     tlw::stack s;
     void SetUp() override {
+        tlw::meta_table_registry<tlw::example>::reset();
         base_test::SetUp();
         s = tlw::stack(L);
     }
@@ -34,7 +35,6 @@ protected:
     void TearDown() override {
         base_test::TearDown();
         example_meta::reset();
-        tlw::meta_table_registry<tlw::example>::reset();
         s = tlw::stack();
     }
 };

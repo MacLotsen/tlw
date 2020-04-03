@@ -20,10 +20,10 @@
 #include "user_test.h"
 
 TEST_F(user_test, test_property) {
-    tlw::define<tlw::example *>("example")
+    tlw::define<tlw::example>("example")
             .prop("val", &tlw::example::val)
             .finish();
-    tlw::meta_table_registry<tlw::example *>::expose(L);
+    tlw::meta_table_registry<tlw::example>::expose(L);
     tlw::example e(5.5);
     s.push(&e);
     lua_setglobal(L, "example1");
@@ -41,12 +41,32 @@ TEST_F(user_test, test_property) {
     ASSERT_EQ(4.5, e.val);
 }
 
-TEST_F(user_test, test_const_property) {
-    tlw::define<const tlw::example *>("example")
+TEST_F(user_test, test_property_with_const_ud) {
+    tlw::define<tlw::example>("example")
             .prop("val", &tlw::example::val)
             .finish();
-    tlw::meta_table_registry<const tlw::example *>::expose(L);
+    tlw::meta_table_registry<tlw::example>::expose(L);
     const tlw::example e(5.5);
+    s.push(&e);
+    lua_setglobal(L, "example1");
+
+    if (luaL_dostring(L, "return example1.val")) {
+        FAIL() << "Failed to execute script '" << lua_tostring(L, -1) << "'";
+    }
+
+    ASSERT_EQ(5.5, s.pop<float>());
+
+    if (!luaL_dostring(L, "example1.val = 4.5")) {
+        FAIL() << "Script must throw an error since it's const (read only)";
+    }
+}
+
+TEST_F(user_test, test_const_property) {
+    tlw::define<tlw::example>("example")
+            .prop("val", &tlw::example::initial)
+            .finish();
+    tlw::meta_table_registry<tlw::example>::expose(L);
+    tlw::example e(5.5);
     s.push(&e);
     lua_setglobal(L, "example1");
 

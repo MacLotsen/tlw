@@ -154,6 +154,8 @@ namespace tlw {
             auto user_data = (_user_type *) lua_newuserdata(L, sizeof(_user_type *));
             if constexpr (pointer_type<_user_type>::valid) {
                 *user_data = value;
+            } else if constexpr(const_type<_user_type>::valid) {
+                *user_data = value;
             } else {
                 *user_data = std::move(value);
             }

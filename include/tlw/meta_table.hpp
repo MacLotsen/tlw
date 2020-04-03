@@ -26,29 +26,45 @@
 
 namespace tlw {
 
-    template<class _lua_user_type>
+    template<class _user_type>
+    struct meta_table {
+        using user_type = _user_type;
+        static inline const char * name = nullptr;
+        static inline cfunction_t::type ctor = nullptr;
+        static inline cfunction_t::type dtor = nullptr;
+        static inline std::unordered_map<std::string_view, cfunction_t::type> methods{};
+        static inline std::unordered_map<std::string_view, cfunction_t::type> setters{};
+        static inline std::unordered_map<std::string_view, cfunction_t::type> getters{};
+        static inline std::unordered_map<std::string_view, cfunction_t::type> operators{};
+        
+        static void reset() {
+            reset(false);
+        }
+
+        static void reset(bool cleanup) {
+            if (cleanup && name)
+                delete [] name;
+            name = nullptr;
+            ctor = dtor = nullptr;
+            methods.clear();
+            setters.clear();
+            getters.clear();
+            operators.clear();
+        }
+    };
+
+    template<class _user_type>
     struct meta_table_registry {
-        using type = _lua_user_type;
+        using type = _user_type;
         inline static const char *name = nullptr;
         inline static void (*expose)(state L);
 
         static void reset() {
             name = nullptr;
             expose = nullptr;
+            meta_table<_user_type>::reset();
+            meta_table<const _user_type>::reset(true);
         }
-    };
-
-    template<class _user_type>
-    struct meta_table {
-        static inline const char * name = nullptr;
-        static inline cfunction_t::type ctor = nullptr;
-        static inline cfunction_t::type dtor = nullptr;
-//        static inline cfunction_t::type index = nullptr;
-//        static inline cfunction_t::type new_index = nullptr;
-        static inline std::unordered_map<std::string_view, cfunction_t::type> methods{};
-        static inline std::unordered_map<std::string_view, cfunction_t::type> setters{};
-        static inline std::unordered_map<std::string_view, cfunction_t::type> getters{};
-        static inline std::unordered_map<std::string_view, cfunction_t::type> operators{};
     };
 
 }

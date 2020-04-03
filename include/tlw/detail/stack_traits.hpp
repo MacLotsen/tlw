@@ -74,11 +74,19 @@ namespace tlw {
     };
 
     template<>
-    struct stack_traits<number_t::type> : public primitive_stack_traits<number_t> {
+    struct stack_traits<double> : public primitive_stack_traits<number_t> {
+    };
+
+    template<>
+    struct stack_traits<const double> : public primitive_stack_traits<number_t> {
     };
 
     template<>
     struct stack_traits<float> : public primitive_stack_traits<number_t> {
+    };
+
+    template<>
+    struct stack_traits<const float> : public primitive_stack_traits<number_t> {
     };
 
     template<>
@@ -104,24 +112,25 @@ namespace tlw {
 
     template<class _type>
     struct stack_traits<_type> {
+        using _base_type = typename pointer_type<_type>::value_type;
         using _user_data_t = user_data_t<_type>;
         using _light_user_data_t = light_user_data_t<_type>;
 
         static void push(lua_State *L, _type value) {
-            if (meta_table_registry<typename _user_data_t::type>::name) {
+            if (meta_table_registry<_base_type>::name) {
                 if constexpr (pointer_type<_type>::valid) {
                     type_traits<_user_data_t>::push(L, value);
                 } else {
                     type_traits<_user_data_t>::push(L, std::move(value));
                 }
-                luaL_setmetatable(L, meta_table_registry<typename _user_data_t::type>::name);
+                luaL_setmetatable(L, meta_table_registry<_base_type>::name);
             } else {
                 type_traits<_light_user_data_t>::push(L, value);
             }
         }
 
         static _type peek(lua_State *L, int idx) {
-            if (meta_table_registry<_type>::name) {
+            if (meta_table_registry<_base_type>::name) {
                 return type_traits<_user_data_t>::peek(L, idx);
             } else {
                 return type_traits<_light_user_data_t>::peek(L, idx);

@@ -20,10 +20,10 @@
 #include "user_test.h"
 
 TEST_F(user_test, test_constructor) {
-    tlw::define<const tlw::example *>("example")
+    tlw::define<tlw::example>("example")
             .ctor<>()
             .finish();
-    tlw::meta_table_registry<const tlw::example *>::expose(L);
+    tlw::meta_table_registry<tlw::example>::expose(L);
     lua_getglobal(L, "example");
     if (lua_pcall(L, 0, 1, 0)) {
         FAIL() << "Failed to call constructor";
@@ -34,10 +34,10 @@ TEST_F(user_test, test_constructor) {
 }
 
 TEST_F(user_test, test_constructor_with_parameters) {
-    tlw::define<const tlw::example *>("example")
+    tlw::define<tlw::example>("example")
             .ctor<float>()
             .finish();
-    tlw::meta_table_registry<const tlw::example *>::expose(L);
+    tlw::meta_table_registry<tlw::example>::expose(L);
     lua_getglobal(L, "example");
     s.push(5.5);
     if (lua_pcall(L, 1, 1, 0)) {
@@ -52,14 +52,14 @@ TEST_F(user_test, test_destructor) {
     luaopen_base(L);
     lua_settop(L, 0);
 
-    tlw::define<const tlw::example *>("example")
+    tlw::define<tlw::example>("example")
             .dtor()
             .finish();
-    tlw::meta_table_registry<const tlw::example *>::expose(L);
+    tlw::meta_table_registry<tlw::example>::expose(L);
 
     ASSERT_EQ(0, lua_gettop(L));
     const tlw::example *example = new tlw::example(5.5);
-    s.push<const tlw::example *>(example);
+    s.push(example);
     lua_setglobal(L, "example1");
 
     if (luaL_loadstring(L, "example1 = nil\ncollectgarbage()")) {

@@ -170,7 +170,7 @@ int main(int argc, char** argv) {
 ```
 
 There are various types that can be exposed/fetched. For example:
- * `T*` Which will either result in a user datum, or if the class isn't known it will result in a light user datum.
+ * `_type*` Which will either result in a user datum, or if the class isn't known it will result in a light user datum.
  * Primitives: `bool`, `int`, `unsigned int`, `float`, `double`
  * Strings: `char *`, `const char *`, `std::string`
  * List: `std::vector`

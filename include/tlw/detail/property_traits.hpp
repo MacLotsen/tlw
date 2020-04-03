@@ -28,13 +28,13 @@ namespace tlw {
 
     template<typename _user_type, typename _prop_type, typename ...>
     struct property_traits {
-        using prop_type = _prop_type pointer_type<_user_type>::value_type::*;
+        using prop_type = _prop_type _user_type::*;
         static inline std::unordered_map<std::string_view, prop_type> properties = {};
 
         static int get(lua_State *L) {
             stack s = stack(state(L));
             auto prop = s.pop<const char *>();
-            auto ud = s.pop<_user_type>();
+            auto ud = s.pop<_user_type *>();
             s.push<_prop_type>(ud->*properties[prop]);
             return 1;
         }
@@ -42,17 +42,18 @@ namespace tlw {
         static int set(lua_State *L) {
             stack s = stack(state(L));
 
-            if constexpr (const_type<typename pointer_type<_user_type>::value_type>::valid) {
-                lua_pushstring(L, "Error: user type is read only");
-                lua_error(L);
-            } else {
-                auto val = s.pop<_prop_type>();
-                auto prop = s.pop<const char *>();
-                auto ud = s.pop<typename const_type<_user_type>::value_type>();
-                ud->*properties[prop] = val;
-            }
+            auto val = s.pop<_prop_type>();
+            auto prop = s.pop<const char *>();
+            auto ud = s.pop<_user_type*>();
+            ud->*properties[prop] = val;
 
             return 0;
+        }
+
+        static int invalid_set(lua_State *L) {
+            auto prop = stack_traits<const char *>::peek(L, 2);
+            lua_settop(L, 0);
+            luaL_error(L, "Error: property '%s' is read only", prop);
         }
     };
 

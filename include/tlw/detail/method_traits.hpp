@@ -76,6 +76,7 @@ namespace tlw {
     template<typename _user_type>
     struct method_traits<void (_user_type::*)() const> {
         using method_type = void (_user_type::*)() const;
+        static constexpr const bool read_only = true;
         static inline std::unordered_map<std::string_view, method_type> methods = {};
 
         static int provide(lua_State *L) {

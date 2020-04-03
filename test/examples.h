@@ -37,20 +37,21 @@ namespace tlw {
     struct example {
         static inline const float invalid = std::numeric_limits<float>::max();
         float val;
+        const float initial;
 
-        explicit example() noexcept : val(invalid) {
+        explicit example() noexcept : val(invalid), initial(invalid) {
             example_tracker::created++;
         }
 
-        example(const example &e) : val(e.val) {
+        example(const example &e) : val(e.val), initial(e.initial) {
             example_tracker::copied++;
         }
 
-        example(example &&e) noexcept : val(std::exchange(e.val, invalid)) {
+        example(example &&e) noexcept : val(std::exchange(e.val, invalid)), initial(e.initial) {
             example_tracker::moved++;
         }
 
-        explicit example(float val) : val(val) {
+        explicit example(float val) : val(val), initial(val) {
             example_tracker::custom_created++;
         }
 

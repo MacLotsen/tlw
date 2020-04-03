@@ -53,49 +53,49 @@ namespace tlw {
             return static_cast<bool>(L);
         }
 
-        template<class T>
-        constexpr void push(T value) {
-            stack_traits<T>::push(L, std::move(value));
+        template<class _type>
+        constexpr void push(_type value) {
+            stack_traits<_type>::push(L, std::move(value));
         }
 
-        template<class T>
-        constexpr T get(int idx) {
-            return stack_traits<T>::peek(L, idx);
+        template<class _type>
+        constexpr _type get(int idx) {
+            return stack_traits<_type>::peek(L, idx);
         }
 
-        template<class T>
-        constexpr T pop() {
-            T val = get<T>(-1);
+        template<class _type>
+        constexpr _type pop() {
+            _type val = get<_type>(-1);
             lua_pop(L, 1);
             return val;
         }
 
-        template<class T>
-        constexpr T pick(int idx) {
-            T val = get<T>(idx);
+        template<class _type>
+        constexpr _type pick(int idx) {
+            _type val = get<_type>(idx);
             lua_remove(L, idx);
             return val;
         }
 
-        template<typename ...Ts>
-        constexpr void place(Ts ...values) {
-            (..., push<Ts>(values));
+        template<typename ..._types>
+        constexpr void place(_types ...values) {
+            (..., push<_types>(values));
         }
 
-        template<class ...Ts>
-        constexpr std::tuple<Ts...> grab() {
-            int begin = lua_gettop(L) + 1 - sizeof...(Ts);
+        template<class ..._types>
+        constexpr std::tuple<_types...> grab() {
+            int begin = lua_gettop(L) + 1 - sizeof...(_types);
             int idx = begin;
-            auto values = std::tuple{ordered_get<Ts>(idx)...};
+            auto values = std::tuple{ordered_get<_types>(idx)...};
             lua_settop(L, begin - 1);
             return values;
         }
 
     private:
 
-        template<class T>
-        constexpr T ordered_get(int &idx) {
-            return get<T>(idx++);
+        template<class _type>
+        constexpr _type ordered_get(int &idx) {
+            return get<_type>(idx++);
         }
 
     };

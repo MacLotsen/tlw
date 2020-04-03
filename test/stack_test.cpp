@@ -21,7 +21,7 @@
 
 TEST_F(detail_test, test_stack) {
     tlw::stack s(L);
-    tlw::define<const tlw::example *>("example")
+    tlw::define<tlw::example>("example")
             .finish();
 
     s.push(magic_bool);

@@ -19,16 +19,18 @@
 
 #include "user_test.h"
 
+static const char * script = "e.print()";
+
 TEST_F(user_test, test_const_method) {
-    tlw::define<const tlw::example *>("example")
+    tlw::define<tlw::example>("example")
             .method("print", &tlw::example::print)
             .finish();
-    tlw::meta_table_registry<const tlw::example *>::expose(L);
+    tlw::meta_table_registry<tlw::example>::expose(L);
     const tlw::example e(5.5);
     s.push(&e);
     lua_setglobal(L, "e");
 
-    if (luaL_dostring(L, "e.print()")) {
+    if (luaL_dostring(L, script)) {
         FAIL() << "Failed to execute script '" << lua_tostring(L, -1) << "'";
     }
 }

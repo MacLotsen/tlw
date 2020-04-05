@@ -70,6 +70,8 @@ namespace tlw {
             expose = nullptr;
             meta_table<_user_type>::reset();
             meta_table<const _user_type>::reset(true);
+            meta_table<_user_type*>::reset(true);
+            meta_table<const _user_type*>::reset(true);
         }
     };
 

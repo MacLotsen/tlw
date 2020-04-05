@@ -140,20 +140,20 @@ namespace tlw {
         }
 
         static void push(lua_State *L, _type value) {
-            if (meta_table_registry<_base_type>::name) {
+            if (meta_table_registry<_type>::name) {
                 if constexpr (pointer_type<_type>::valid) {
                     type_traits<_user_data_t>::push(L, value);
                 } else {
                     type_traits<_user_data_t>::push(L, std::move(value));
                 }
-                luaL_setmetatable(L, meta_table_registry<_base_type>::name);
+                luaL_setmetatable(L, meta_table_registry<_type>::name);
             } else {
                 type_traits<_light_user_data_t>::push(L, value);
             }
         }
 
         static _type peek(lua_State *L, int idx) {
-            if (meta_table_registry<_base_type>::name) {
+            if (meta_table_registry<_type>::name) {
                 return type_traits<_user_data_t>::peek(L, idx);
             } else {
                 return type_traits<_light_user_data_t>::peek(L, idx);

@@ -58,9 +58,9 @@ namespace tlw {
             auto f = mt::getters[prop];
             if (!f) {
                 f = mt::methods[prop];
-            }
-            if (!f) {
-                luaL_error(L, "Error: no such field '%s'", prop);
+                if (!f) {
+                    luaL_error(L, "Error: no such field '%s'", prop);
+                }
             }
             return f(L);
         }
@@ -85,23 +85,40 @@ namespace tlw {
         using _builder_type = meta_table_builder<_user_type, _traditional>;
         using mt = meta_table<_user_type>;
         using ro_mt = meta_table<const _user_type>;
+        using p_mt = meta_table<_user_type *>;
+        using rop_mt = meta_table<const _user_type *>;
 
         template<typename _property_type>
         using property_type = _property_type _user_type::*;
 
         explicit meta_table_builder(const char *name) noexcept {
             mt::name = name;
+
             size_t length = strlen(name) + 7;
-            char * const_name = new char[length];
-            strcpy(const_name, "const_");
+            char *const_name = new char[length];
+            strcpy(const_name, "const ");
             strcat(const_name, name);
-            const_name[length-1] = '\0';
             ro_mt::name = const_name;
+
+            length = strlen(name) + 2;
+            char *p_name = new char[length];
+            strcpy(p_name, name);
+            p_name[length - 2] = '*';
+            p_name[length - 1] = '\0';
+            p_mt::name = p_name;
+
+            length = strlen(name) + 8;
+            char *constp_name = new char[length];
+            strcpy(constp_name, "const ");
+            strcat(constp_name, name);
+            constp_name[length - 2] = '*';
+            constp_name[length - 1] = '\0';
+            rop_mt::name = constp_name;
         }
 
         template<typename ..._args>
         _builder_type &ctor() {
-            using _ct = ctor_traits<_user_type*, _args...>;
+            using _ct = ctor_traits<_user_type *, _args...>;
             if (mt::constructors.find(sizeof...(_args)) == mt::constructors.end()) {
                 mt::constructors[sizeof...(_args)] = ctor_set();
             }
@@ -111,13 +128,13 @@ namespace tlw {
         }
 
         _builder_type &dtor() {
-            mt::dtor = [](lua_State *L) -> int {
-                delete stack_traits<_user_type*>::peek(L, -1);
+            p_mt::dtor = [](lua_State *L) -> int {
+                delete stack_traits<_user_type *>::peek(L, -1);
                 lua_pop(L, 1);
                 return 0;
             };
-            ro_mt::dtor = [](lua_State *L) -> int {
-                delete stack_traits<const _user_type*>::peek(L, -1);
+            rop_mt::dtor = [](lua_State *L) -> int {
+                delete stack_traits<const _user_type *>::peek(L, -1);
                 lua_pop(L, 1);
                 return 0;
             };
@@ -127,22 +144,36 @@ namespace tlw {
         template<typename _prop_type>
         _builder_type &prop(const char *name, property_type<_prop_type> property) {
             property_traits<_user_type, _prop_type>::properties[name] = property;
-            mt::getters[name] = ro_mt::getters[name] = property_traits<_user_type, _prop_type>::get;
+            property_traits<const _user_type, _prop_type>::properties[name] = property;
+            property_traits<_user_type *, _prop_type>::properties[name] = property;
+            property_traits<const _user_type *, _prop_type>::properties[name] = property;
+
+            mt::getters[name] = property_traits<_user_type, _prop_type>::get;
+            ro_mt::getters[name] = property_traits<const _user_type, _prop_type>::get;
+            p_mt::getters[name] = property_traits<_user_type *, _prop_type>::get;
+            rop_mt::getters[name] = property_traits<const _user_type *, _prop_type>::get;
+
             if constexpr (const_type<_prop_type>::valid) {
-                mt::setters[name] = ro_mt::setters[name] = property_traits<_user_type, _prop_type>::invalid_set;
+                mt::setters[name] = property_traits<_user_type, _prop_type>::invalid_set;
+                ro_mt::setters[name] = property_traits<const _user_type, _prop_type>::invalid_set;
+                p_mt::setters[name] = property_traits<_user_type *, _prop_type>::invalid_set;
+                rop_mt::setters[name] = property_traits<const _user_type *, _prop_type>::invalid_set;
             } else {
                 mt::setters[name] = property_traits<_user_type, _prop_type>::set;
-                ro_mt::setters[name] = property_traits<_user_type, _prop_type>::invalid_set;
+                ro_mt::setters[name] = property_traits<const _user_type, _prop_type>::invalid_set;
+                p_mt::setters[name] = property_traits<_user_type *, _prop_type>::set;
+                rop_mt::setters[name] = property_traits<const _user_type *, _prop_type>::invalid_set;
             }
+
             return *this;
         }
 
         template<typename _method_type>
         _builder_type &method(const char *name, _method_type method) {
             method_traits<_method_type>::methods[name] = method;
-            mt::methods[name] = method_traits<_method_type>::provide;
+            p_mt::methods[name] = method_traits<_method_type>::provide;
             if (method_traits<_method_type>::read_only) {
-                ro_mt::methods[name] = method_traits<_method_type>::provide;
+                rop_mt::methods[name] = method_traits<_method_type>::provide;
             }
             return *this;
         }
@@ -150,13 +181,17 @@ namespace tlw {
         void finish() {
             meta_table_registry<_user_type>::name = mt::name;
             meta_table_registry<const _user_type>::name = ro_mt::name;
+            meta_table_registry<_user_type *>::name = p_mt::name;
+            meta_table_registry<const _user_type *>::name = rop_mt::name;
             // The const user definition will be exposed by the normal user definition
             meta_table_registry<_user_type>::expose = _expose;
         }
 
         static void _expose(state L) {
-            _expose<mt>(L);
-            _expose<ro_mt>(L);
+            _expose < mt > (L);
+            _expose < ro_mt > (L);
+            _expose < p_mt > (L);
+            _expose < rop_mt > (L);
         }
 
         template<typename _mt>

@@ -23,7 +23,7 @@ set(SOURCE_FILES main.cpp
         stack_test.cpp
         constructor_test.cpp
         move_value_test.cpp
-        property_test.cpp method_test.cpp)
+        property_test.cpp method_test.cpp signature_test.cpp)
 
 add_executable(tlw-tests ${SOURCE_FILES})
 target_link_libraries(tlw-tests ${GTEST_LIBRARY} pthread tlw)

@@ -34,7 +34,7 @@ namespace tlw {
         static int get(lua_State *L) {
             stack s = stack(state(L));
             auto prop = s.pop<const char *>();
-            auto ud = s.pop<_user_type *>();
+            auto ud = s.pop<_user_type*>();
             s.push<_prop_type>(ud->*properties[prop]);
             return 1;
         }

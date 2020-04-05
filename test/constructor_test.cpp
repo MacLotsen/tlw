@@ -71,6 +71,15 @@ TEST_F(user_test, test_multi_constructor) {
     created_example = tlw::type_traits<tlw::lua_example_t>::peek(L, -1);
     ASSERT_EQ(tlw::example::invalid, created_example->val);
     delete created_example;
+
+    lua_getglobal(L, "example");
+    s.push(5.5);
+    s.push("a string");
+    if (!lua_pcall(L, 2, 1, 0)) {
+        FAIL() << "No such constructor was defined for float, string.";
+    }
+    // Pop the error message
+    lua_pop(L, 1);
 }
 
 TEST_F(user_test, test_destructor) {

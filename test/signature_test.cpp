@@ -28,12 +28,6 @@ TEST_F(high_end_user_test, test_variable_constructor) {
     tlw::mat4 m1(1.0f);
 
     s.push(std::move(v1));
-    ASSERT_TRUE(tlw::type_inspector<tlw::user_data_t<tlw::vec4>>::inspect(L));
-    lua_getmetatable(L, -1);
-    printf("type %s", luaL_typename(L, -1));
-    lua_pop(L, 1);
-//    lua_getfield(L, -1, "__name");
-//    printf("%s\n", s.pop<const char *>());
     lua_setglobal(L, "v1");
     s.push(m1);
     lua_setglobal(L, "m1");
@@ -48,5 +42,5 @@ TEST_F(high_end_user_test, test_variable_constructor) {
     auto e2 = s.pop<tlw::entity*>();
 
     ASSERT_EQ(1, e1->position.z);
-    ASSERT_EQ(1, e2->model.z[0]);
+    ASSERT_EQ(1, e2->model.z[2]);
 }

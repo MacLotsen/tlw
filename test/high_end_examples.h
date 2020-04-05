@@ -39,14 +39,12 @@ namespace tlw {
         vec4(float x, float y, float z, float w) : x(x), y(y), z(z), w(w) {}
 
         vec4(const vec4 &other) : x(other.x), y(other.y), z(other.z), w(other.w) {
-            printf("Copy vec4\n");
         }
 
         vec4(vec4 &&other) : x(std::exchange(other.x, 0)),
                              y(std::exchange(other.y, 0)),
                              z(std::exchange(other.z, 0)),
                              w(std::exchange(other.w, 0)) {
-            printf("Move vec4\n");
         }
 
         vec4 &operator=(const vec4 &other) {
@@ -54,7 +52,6 @@ namespace tlw {
             y = other.y;
             z = other.z;
             w = other.w;
-            printf("Assign copy vec4\n");
         }
 
         vec4 &operator=(vec4 &&other) noexcept {
@@ -62,7 +59,6 @@ namespace tlw {
             y = std::exchange(other.y, 0);
             z = std::exchange(other.z, 0);
             w = std::exchange(other.w, 0);
-            printf("Assign moved vec4\n");
         }
 
         static float length(const vec4 &v) {

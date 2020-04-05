@@ -151,12 +151,11 @@ namespace tlw {
         }
 
         static void push(lua_State *L, _user_type value) {
-            auto user_data = (_user_type *) lua_newuserdata(L, sizeof(_user_type *));
-            if constexpr (pointer_type<_user_type>::valid) {
-                *user_data = value;
-            } else if constexpr(const_type<_user_type>::valid) {
+            if constexpr (pointer_type<_user_type>::valid || const_type<_user_type>::valid) {
+                auto user_data = (_user_type *) lua_newuserdata(L, sizeof(_user_type *));
                 *user_data = value;
             } else {
+                auto user_data = (_user_type *) lua_newuserdata(L, sizeof(_user_type));
                 *user_data = std::move(value);
             }
         }

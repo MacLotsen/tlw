@@ -28,6 +28,15 @@ namespace tlw {
 
     template<class _user_type, typename ..._args>
     struct ctor_traits {
+        static bool check_args(lua_State *L) {
+            return check_args(L, gen_seq<sizeof...(_args)>());
+        }
+
+        template<int ...Is>
+        static bool check_args(lua_State *L, seq<Is...>) {
+            return (... && stack_traits<_args>::inspect(L, Is + 1));
+        }
+
         static int ctor(lua_State *L) {
             if constexpr (sizeof...(_args)) {
                 auto params = stack(state(L)).grab<_args...>();

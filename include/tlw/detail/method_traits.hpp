@@ -89,6 +89,7 @@ namespace tlw {
                 auto ud = s.get<const _user_type *>(lua_upvalueindex(1));
                 auto m = s.get<method_type>(lua_upvalueindex(2));
                 (ud->*m)();
+                return 0;
             }, 2);
             return 1;
         }

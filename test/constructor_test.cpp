@@ -48,6 +48,31 @@ TEST_F(user_test, test_constructor_with_parameters) {
     delete created_example;
 }
 
+TEST_F(user_test, test_multi_constructor) {
+    tlw::define<tlw::example>("example")
+            .ctor<>()
+            .ctor<float>()
+            .finish();
+    tlw::meta_table_registry<tlw::example>::expose(L);
+    lua_getglobal(L, "example");
+    s.push(5.5);
+    if (lua_pcall(L, 1, 1, 0)) {
+        FAIL() << "Failed to call constructor with argument";
+    }
+    ASSERT_TRUE(tlw::type_inspector<tlw::lua_example_t>::inspect(L));
+    auto created_example = tlw::type_traits<tlw::lua_example_t>::peek(L, -1);
+    ASSERT_EQ(5.5, created_example->val);
+    delete created_example;
+    lua_getglobal(L, "example");
+    if (lua_pcall(L, 0, 1, 0)) {
+        FAIL() << "Failed to call constructor with argument";
+    }
+    ASSERT_TRUE(tlw::type_inspector<tlw::lua_example_t>::inspect(L));
+    created_example = tlw::type_traits<tlw::lua_example_t>::peek(L, -1);
+    ASSERT_EQ(tlw::example::invalid, created_example->val);
+    delete created_example;
+}
+
 TEST_F(user_test, test_destructor) {
     luaopen_base(L);
     lua_settop(L, 0);

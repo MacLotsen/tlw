@@ -26,24 +26,29 @@
 
 namespace tlw {
 
+    using type_safe_ctor = std::tuple<bool (*)(lua_State *), cfunction_t::type>;
+    using ctor_set = std::vector<type_safe_ctor>;
+    using ctor_map = std::unordered_map<int, ctor_set>;
+
     template<class _user_type>
     struct meta_table {
         using user_type = _user_type;
-        static inline const char * name = nullptr;
+        static inline const char *name = nullptr;
+        static inline ctor_map constructors{};
         static inline cfunction_t::type ctor = nullptr;
         static inline cfunction_t::type dtor = nullptr;
         static inline std::unordered_map<std::string_view, cfunction_t::type> methods{};
         static inline std::unordered_map<std::string_view, cfunction_t::type> setters{};
         static inline std::unordered_map<std::string_view, cfunction_t::type> getters{};
         static inline std::unordered_map<std::string_view, cfunction_t::type> operators{};
-        
+
         static void reset() {
             reset(false);
         }
 
         static void reset(bool cleanup) {
             if (cleanup && name)
-                delete [] name;
+                delete[] name;
             name = nullptr;
             ctor = dtor = nullptr;
             methods.clear();
@@ -57,6 +62,7 @@ namespace tlw {
     struct meta_table_registry {
         using type = _user_type;
         inline static const char *name = nullptr;
+
         inline static void (*expose)(state L);
 
         static void reset() {

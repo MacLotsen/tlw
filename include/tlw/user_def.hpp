@@ -27,6 +27,27 @@
 
 namespace tlw {
 
+    template<typename mt>
+    struct __explicit_ctor {
+
+        static int create(lua_State *L) {
+            int top = lua_gettop(L);
+            if (mt::constructors.empty()) {
+                luaL_error(L, "No constructor defined for %s", mt::name);
+            }
+            if (mt::constructors.find(top) == mt::constructors.end()) {
+                luaL_error(L, "No constructor with %d arguments", top);
+            }
+            auto cset = mt::constructors[top];
+            for (auto kv : cset) {
+                if (std::get<0>(kv)(L)) {
+                    return std::get<1>(kv)(L);
+                }
+            }
+        }
+
+    };
+
     template<typename _user_type>
     struct __index {
         using mt = meta_table<_user_type>;
@@ -80,8 +101,13 @@ namespace tlw {
 
         template<typename ..._args>
         _builder_type &ctor() {
-            mt::ctor = ctor_traits<_user_type*, _args...>::ctor;
+            using _ct = ctor_traits<_user_type*, _args...>;
+            if (mt::constructors.find(sizeof...(_args)) == mt::constructors.end()) {
+                mt::constructors[sizeof...(_args)] = ctor_set();
+            }
+            mt::constructors[sizeof...(_args)].push_back(type_safe_ctor(_ct::check_args, _ct::ctor));
             // a const type doesn't need a ctor
+            return *this;
         }
 
         _builder_type &dtor() {
@@ -95,6 +121,7 @@ namespace tlw {
                 lua_pop(L, 1);
                 return 0;
             };
+            return *this;
         }
 
         template<typename _prop_type>
@@ -107,6 +134,7 @@ namespace tlw {
                 mt::setters[name] = property_traits<_user_type, _prop_type>::set;
                 ro_mt::setters[name] = property_traits<_user_type, _prop_type>::invalid_set;
             }
+            return *this;
         }
 
         template<typename _method_type>
@@ -116,6 +144,7 @@ namespace tlw {
             if (method_traits<_method_type>::read_only) {
                 ro_mt::methods[name] = method_traits<_method_type>::provide;
             }
+            return *this;
         }
 
         void finish() {
@@ -133,14 +162,17 @@ namespace tlw {
         template<typename _mt>
         static void _expose(state L) {
             stack s(L);
-            if (_mt::ctor) {
-                lua_register(L, _mt::name, _mt::ctor);
+            if (!_mt::constructors.empty()) {
+                lua_register(L, _mt::name, __explicit_ctor<_mt>::create);
             }
 
-            if (luaL_newmetatable(L, _mt::name)) {
+            if (!luaL_newmetatable(L, _mt::name)) {
                 printf("Warning: meta table already registered\n");
             }
             int mt_ref = lua_gettop(L);
+
+            s.push(_mt::name);
+            lua_setfield(L, mt_ref, "__name");
 
             if (_mt::dtor) {
                 s.push(_mt::dtor);

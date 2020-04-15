@@ -28,7 +28,7 @@ namespace tlw {
 
     template<typename _user_type, typename _prop_type, typename ...>
     struct user_prop {
-        using base_type = typename const_type<typename pointer_type<_user_type>::value_type>::value_type;
+        using base_type = typename cpp_type<_user_type>::value_type;
         using prop_type = _prop_type base_type::*;
         static inline std::unordered_map<std::string_view, prop_type> properties = {};
 
@@ -36,7 +36,7 @@ namespace tlw {
             stack s = stack(state(L));
             auto prop = s.pop<const char *>();
             auto ud = s.pop<_user_type>();
-            if constexpr (pointer_type<_user_type>::valid) {
+            if constexpr (cpp_type<_user_type>::is_pointer) {
                 s.push<_prop_type>(ud->*properties[prop]);
             } else {
                 s.push<_prop_type>(ud.*properties[prop]);
@@ -50,7 +50,7 @@ namespace tlw {
             auto val = s.pop<_prop_type>();
             auto prop = s.pop<const char *>();
             auto ud = s.pop<_user_type>();
-            if constexpr (pointer_type<_user_type>::valid) {
+            if constexpr (cpp_type<_user_type>::is_pointer) {
                 ud->*properties[prop] = val;
             } else {
                 ud.*properties[prop] = val;

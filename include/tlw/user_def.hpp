@@ -143,6 +143,8 @@ namespace tlw {
         using ro_mt = meta_table<const _user_type>;
         using p_mt = meta_table<_user_type *>;
         using rop_mt = meta_table<const _user_type *>;
+        using ror_mt = meta_table<const _user_type &>;
+        using r_mt = meta_table<_user_type &>;
 
         template<typename _property_type>
         using property_type = _property_type _user_type::*;
@@ -163,6 +165,13 @@ namespace tlw {
             p_name[length - 1] = '\0';
             p_mt::name = p_name;
 
+            length = strlen(name) + 2;
+            char *r_name = new char[length];
+            strcpy(r_name, name);
+            r_name[length - 2] = '&';
+            r_name[length - 1] = '\0';
+            r_mt::name = r_name;
+
             length = strlen(name) + 8;
             char *constp_name = new char[length];
             strcpy(constp_name, "const ");
@@ -170,6 +179,14 @@ namespace tlw {
             constp_name[length - 2] = '*';
             constp_name[length - 1] = '\0';
             rop_mt::name = constp_name;
+
+            length = strlen(name) + 8;
+            char *constr_name = new char[length];
+            strcpy(constr_name, "const ");
+            strcat(constr_name, name);
+            constr_name[length - 2] = '&';
+            constr_name[length - 1] = '\0';
+            ror_mt::name = constr_name;
         }
 
         template<typename ..._args>
@@ -209,7 +226,7 @@ namespace tlw {
             p_mt::getters[name] = user_prop<_user_type *, _prop_type>::get;
             rop_mt::getters[name] = user_prop<const _user_type *, _prop_type>::get;
 
-            if constexpr (const_type<_prop_type>::valid) {
+            if constexpr (cpp_type<_prop_type>::is_const) {
                 mt::setters[name] = user_prop<_user_type, _prop_type>::invalid_set;
                 ro_mt::setters[name] = user_prop<const _user_type, _prop_type>::invalid_set;
                 p_mt::setters[name] = user_prop<_user_type *, _prop_type>::invalid_set;

@@ -26,7 +26,7 @@ namespace tlw {
 
     template<class _type>
     struct stack_traits<_type> {
-        using _base_type = typename pointer_type<_type>::value_type;
+        using _base_type = typename cpp_type<_type>::value_type;
         using _user_data_t = user_data_t<_type>;
         using _light_user_data_t = light_user_data_t<_type>;
 
@@ -53,7 +53,7 @@ namespace tlw {
 
         static void push(lua_State *L, _type value) {
             if (meta_table_registry<_type>::name) {
-                if constexpr (pointer_type<_type>::valid) {
+                if constexpr (cpp_type<_type>::is_pointer) {
                     type_traits<_user_data_t>::push(L, value);
                 } else {
                     type_traits<_user_data_t>::push(L, std::move(value));

@@ -144,36 +144,107 @@ namespace tlw {
 
     template<class _user_type>
     struct type_traits<user_data_t<_user_type>> {
-        static _user_type get(lua_State *L, int idx) {
+        static _user_type& get(lua_State *L, int idx) {
             auto user_data = (_user_type *) lua_touserdata(L, idx);
             return *user_data;
         }
 
-        // Split in three
-
         static void push(lua_State *L, _user_type value) {
-            if constexpr (pointer_type<_user_type>::valid) {
-                auto user_data = (_user_type *) lua_newuserdata(L, sizeof(_user_type *));
-                *user_data = value;
-            } else if constexpr (const_type<_user_type>::valid) {
-                auto user_data = (typename const_type<_user_type>::value_type *) lua_newuserdata(L, sizeof(typename const_type<_user_type>::value_type));
-                *user_data = value;
-            } else {
-                auto user_data = (_user_type *) lua_newuserdata(L, sizeof(_user_type));
-                *user_data = std::move(value);
-            }
+            auto user_data = (_user_type *) lua_newuserdata(L, sizeof(_user_type));
+            *user_data = std::move(value);
+        }
+    };
+
+    template<class _user_type>
+    struct type_traits<user_data_t<const _user_type>> {
+        static const _user_type& get(lua_State *L, int idx) {
+            auto user_data = (const _user_type *) lua_touserdata(L, idx);
+            return *user_data;
+        }
+
+        static void push(lua_State *L, const _user_type &value) {
+            auto user_data = (_user_type *) lua_newuserdata(L, sizeof(_user_type));
+            *user_data = value;
+        }
+    };
+
+    template<class _user_type>
+    struct type_traits<user_data_t<_user_type&>> {
+        static _user_type& get(lua_State *L, int idx) {
+            auto user_data = (_user_type **) lua_touserdata(L, idx);
+            return **user_data;
+        }
+
+        static void push(lua_State *L, _user_type &value) {
+            auto user_data = (_user_type *) lua_newuserdata(L, sizeof(_user_type**));
+            *user_data = &value;
+        }
+    };
+
+    template<class _user_type>
+    struct type_traits<user_data_t<const _user_type&>> {
+        static const _user_type& get(lua_State *L, int idx) {
+            auto user_data = (const _user_type **) lua_touserdata(L, idx);
+            return **user_data;
+        }
+
+        static void push(lua_State *L, const _user_type &value) {
+            auto user_data = (const _user_type **) lua_newuserdata(L, sizeof(const _user_type**));
+            *user_data = &value;
+        }
+    };
+
+    template<class _user_type>
+    struct type_traits<user_data_t<_user_type*>> {
+        static _user_type* get(lua_State *L, int idx) {
+            auto user_data = (_user_type **) lua_touserdata(L, idx);
+            return *user_data;
+        }
+
+        static void push(lua_State *L, _user_type* value) {
+            auto user_data = (_user_type **) lua_newuserdata(L, sizeof(_user_type **));
+            *user_data = value;
+        }
+    };
+
+    template<class _user_type>
+    struct type_traits<user_data_t<const _user_type*>> {
+        static const _user_type* get(lua_State *L, int idx) {
+            auto user_data = (const _user_type **) lua_touserdata(L, idx);
+            return *user_data;
+        }
+
+        static void push(lua_State *L, const _user_type* value) {
+            auto user_data = (const _user_type **) lua_newuserdata(L, sizeof(const _user_type **));
+            *user_data = value;
         }
     };
 
     template<class _light_user_type>
     struct type_traits<light_user_data_t<_light_user_type>> {
-        static _light_user_type get(lua_State *L, int idx) {
+        static _light_user_type& get(lua_State *L, int idx) {
             auto user_data = (_light_user_type *) lua_touserdata(L, idx);
             return *user_data;
         }
 
-        static void push(lua_State *L, _light_user_type value) {
-            if constexpr (const_type<typename pointer_type<_light_user_type>::value_type>::valid) {
+        static void push(lua_State *L, _light_user_type& value) {
+            if constexpr (cpp_type<_light_user_type>::is_const) {
+                luaL_error(L, "Cannot push a const value as light user data");
+            } else {
+                lua_pushlightuserdata(L, &value);
+            }
+        }
+    };
+
+    template<class _light_user_type>
+    struct type_traits<light_user_data_t<_light_user_type&>> {
+        static _light_user_type& get(lua_State *L, int idx) {
+            auto user_data = (_light_user_type *) lua_touserdata(L, idx);
+            return *user_data;
+        }
+
+        static void push(lua_State *L, _light_user_type& value) {
+            if constexpr (cpp_type<_light_user_type>::is_const) {
                 luaL_error(L, "Cannot push a const value as light user data");
             } else {
                 lua_pushlightuserdata(L, &value);
@@ -188,7 +259,7 @@ namespace tlw {
         }
 
         static void push(lua_State *L, _light_user_type *value) {
-            if constexpr (const_type<typename pointer_type<_light_user_type>::value_type>::valid) {
+            if constexpr (cpp_type<_light_user_type>::is_const) {
                 luaL_error(L, "Cannot push a const value as light user data");
             } else {
                 lua_pushlightuserdata(L, value);

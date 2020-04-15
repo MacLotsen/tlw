@@ -20,5 +20,13 @@
 #include "high_end_user_test.h"
 
 TEST_F(high_end_user_test, test_overloaded_method) {
+    float n = 5;
+    auto v = tlw::vec4(5.5);
 
+    lua.set("n", n);
+    lua.set("v", v);
+
+    // If something goes wrong we'd expect that the last set method is used
+    ASSERT_NO_THROW(lua.src("v.add(v)")());
+    ASSERT_NO_THROW(lua.src("v.add(n)")());
 }

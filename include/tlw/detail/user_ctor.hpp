@@ -41,15 +41,15 @@ namespace tlw {
             if constexpr (sizeof...(_args)) {
                 auto params = stack(state(L)).grab<_args...>();
                 auto seq = gen_seq<sizeof...(_args)>();
-                if constexpr (pointer_type<_user_type>::valid) {
+                if constexpr (cpp_type<_user_type>::is_pointer) {
                     stack_traits<_user_type>::push(L, create_pointer(params, seq));
                 } else {
                     stack_traits<_user_type>::push(L, create_value(params, seq));
                 }
             } else {
-                if constexpr (pointer_type<_user_type>::valid) {
+                if constexpr (cpp_type<_user_type>::is_pointer) {
                     stack_traits<_user_type>::push(L,
-                                                   new typename pointer_type<_user_type>::value_type());
+                                                   new typename cpp_type<_user_type>::value_type());
                 } else {
                     stack_traits<_user_type>::push(L, _user_type());
                 }
@@ -59,12 +59,12 @@ namespace tlw {
 
         template<int ...Ns>
         constexpr static _user_type create_pointer(std::tuple<_args...> t, seq<Ns...>) {
-            return new typename pointer_type<_user_type>::value_type(std::get<Ns>(t)...);
+            return new typename cpp_type<_user_type>::value_type(std::get<Ns>(t)...);
         }
 
         template<int ...Ns>
         constexpr static _user_type create_value(std::tuple<_args...> t, seq<Ns...>) {
-            return _user_type(std::get<Ns>(t)...);
+            return typename cpp_type<_user_type>::value_type (std::get<Ns>(t)...);
         }
     };
 

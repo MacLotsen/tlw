@@ -49,7 +49,7 @@ namespace tlw {
                 stack s = stack(state(L));
                 auto ud = s.get<_user_type>(lua_upvalueindex(1));
                 auto m = s.get<method_t>(lua_upvalueindex(2));
-                if constexpr (pointer_type<_user_type>::valid) {
+                if constexpr (cpp_type<_user_type>::is_pointer) {
                     (ud->*m)();
                 } else {
                     (ud.*m)();
@@ -69,7 +69,7 @@ namespace tlw {
         static int provide(lua_State *L) {
             stack s = stack(state(L));
             auto prop = s.pop<const char *>();
-            if constexpr (const_type<typename pointer_type<_user_type>::value_type >::valid) {
+            if constexpr (cpp_type<_user_type>::is_const) {
                 luaL_error(L, "%s is read only and method %s isn't marked const either.", meta_table<_user_type>::name, prop);
                 return 0;
             } else {
@@ -79,7 +79,7 @@ namespace tlw {
                     stack s = stack(state(L));
                     auto ud = s.get<_user_type>(lua_upvalueindex(1));
                     auto m = s.get<method_t>(lua_upvalueindex(2));
-                    if constexpr (pointer_type<_user_type>::valid) {
+                    if constexpr (cpp_type<_user_type>::is_pointer) {
                         (ud->*m)();
                     } else {
                         (ud.*m)();
@@ -110,7 +110,7 @@ namespace tlw {
                 stack s = stack(state(L));
                 auto ud = s.get<_user_type>(lua_upvalueindex(1));
                 auto m = s.get<method_t>(lua_upvalueindex(2));
-                if constexpr (pointer_type<_user_type>::valid) {
+                if constexpr (cpp_type<_user_type>::is_pointer) {
                     s.push((ud->*m)());
                 } else {
                     s.push((ud.*m)());
@@ -130,7 +130,7 @@ namespace tlw {
         static int provide(lua_State *L) {
             stack s = stack(state(L));
             auto prop = s.pop<const char *>();
-            if constexpr (const_type<typename pointer_type<_user_type>::value_type >::valid) {
+            if constexpr (cpp_type<_user_type>::is_const) {
                 luaL_error(L, "%s is read only and method %s isn't marked const either.", meta_table<_user_type>::name, prop);
                 return 0;
             } else {
@@ -140,7 +140,7 @@ namespace tlw {
                     stack s = stack(state(L));
                     auto ud = s.get<_user_type>(lua_upvalueindex(1));
                     auto m = s.get<method_t>(lua_upvalueindex(2));
-                    if constexpr (pointer_type<_user_type>::valid) {
+                    if constexpr (cpp_type<_user_type>::is_pointer) {
                         s.push((ud->*m)());
                     } else {
                         s.push((ud.*m)());
@@ -172,7 +172,7 @@ namespace tlw {
                 auto ud = s.get<_user_type>(lua_upvalueindex(1));
                 auto m = s.get<method_t>(lua_upvalueindex(2));
                 int arg_idx = 0;
-                if constexpr (pointer_type<_user_type>::valid) {
+                if constexpr (cpp_type<_user_type>::is_pointer) {
                     (ud->*m)(get_arg<_args>(s, arg_idx)...);
                 } else {
                     (ud.*m)(get_arg<_args>(s, arg_idx)...);
@@ -194,7 +194,7 @@ namespace tlw {
         static int provide(lua_State *L) {
             stack s = stack(state(L));
             auto prop = s.pop<const char *>();
-            if constexpr (const_type<typename pointer_type<_user_type>::value_type >::valid) {
+            if constexpr (cpp_type<_user_type>::is_const) {
                 luaL_error(L, "%s is read only and method %s isn't marked const either.", meta_table<_user_type>::name, prop);
                 return 0;
             } else {
@@ -205,7 +205,7 @@ namespace tlw {
                     auto ud = s.get<_user_type>(lua_upvalueindex(1));
                     auto m = s.get<method_t>(lua_upvalueindex(2));
                     int arg_idx = 0;
-                    if constexpr (pointer_type<_user_type>::valid) {
+                    if constexpr (cpp_type<_user_type>::is_pointer) {
                         (ud->*m)(get_arg<_args>(s, arg_idx)...);
                     } else {
                         (ud.*m)(get_arg<_args>(s, arg_idx)...);
@@ -238,7 +238,7 @@ namespace tlw {
                 auto ud = s.get<_user_type>(lua_upvalueindex(1));
                 auto m = s.get<method_t>(lua_upvalueindex(2));
                 int arg_idx = 0;
-                if constexpr (pointer_type<_user_type>::valid) {
+                if constexpr (cpp_type<_user_type>::is_pointer) {
                     auto value = (ud->*m)(get_arg<_args>(s, arg_idx)...);
                     lua_pop(L, arg_idx);
                     s.push(value);
@@ -262,7 +262,7 @@ namespace tlw {
         static int provide(lua_State *L) {
             stack s = stack(state(L));
             auto prop = s.pop<const char *>();
-            if constexpr (const_type<typename pointer_type<_user_type>::value_type >::valid) {
+            if constexpr (cpp_type<_user_type>::is_const) {
                 luaL_error(L, "%s is read only and method %s isn't marked const either.", meta_table<_user_type>::name, prop);
                 return 0;
             } else {
@@ -273,7 +273,7 @@ namespace tlw {
                     auto ud = s.get<_user_type>(lua_upvalueindex(1));
                     auto m = s.get<method_t>(lua_upvalueindex(2));
                     int arg_idx = 0;
-                    if constexpr (pointer_type<_user_type>::valid) {
+                    if constexpr (cpp_type<_user_type>::is_pointer) {
                         auto value = (ud->*m)(get_arg<_args>(s, arg_idx)...);
                         lua_pop(L, arg_idx);
                         s.push(value);

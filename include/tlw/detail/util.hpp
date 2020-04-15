@@ -23,27 +23,56 @@
 namespace tlw {
 
     template<typename _type, typename ...>
-    struct pointer_type {
-        static constexpr bool valid = false;
+    struct cpp_type {
+        static constexpr bool is_const = false;
+        static constexpr bool is_value = true;
+        static constexpr bool is_pointer = false;
+        static constexpr bool is_reference = false;
         using value_type = _type;
     };
 
     template<typename _type>
-    struct pointer_type<_type*> {
-        static constexpr bool valid = true;
+    struct cpp_type<const _type> {
+        static constexpr bool is_const = true;
+        static constexpr bool is_value = true;
+        static constexpr bool is_pointer = false;
+        static constexpr bool is_reference = false;
         using value_type = _type;
-    };
-
-    template<typename _type, typename ...>
-    struct const_type {
-        static constexpr bool valid = false;
-        using value_type = _type;
-
     };
 
     template<typename _type>
-    struct const_type<const _type> {
-        static constexpr bool valid = true;
+    struct cpp_type<_type&> {
+        static constexpr bool is_const = false;
+        static constexpr bool is_value = false;
+        static constexpr bool is_pointer = false;
+        static constexpr bool is_reference = true;
+        using value_type = _type;
+    };
+
+    template<typename _type>
+    struct cpp_type<const _type&> {
+        static constexpr bool is_const = true;
+        static constexpr bool is_value = false;
+        static constexpr bool is_pointer = false;
+        static constexpr bool is_reference = true;
+        using value_type = _type;
+    };
+
+    template<typename _type>
+    struct cpp_type<_type*> {
+        static constexpr bool is_const = false;
+        static constexpr bool is_value = false;
+        static constexpr bool is_pointer = true;
+        static constexpr bool is_reference = false;
+        using value_type = _type;
+    };
+
+    template<typename _type>
+    struct cpp_type<const _type*> {
+        static constexpr bool is_const = true;
+        static constexpr bool is_value = false;
+        static constexpr bool is_pointer = true;
+        static constexpr bool is_reference = false;
         using value_type = _type;
     };
 

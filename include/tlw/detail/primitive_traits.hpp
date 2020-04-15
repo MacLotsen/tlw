@@ -25,6 +25,7 @@ namespace tlw {
 
     template<typename _lua_type>
     struct primitive_stack_traits : public type_inspector<_lua_type> {
+        using type_inspector<_lua_type>::inspect;
 
         static constexpr void push(lua_State *L, typename _lua_type::type value) {
             type_traits<_lua_type>::push(L, value);

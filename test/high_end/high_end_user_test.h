@@ -45,7 +45,7 @@ protected:
     }
 
     static void load_vec4(const tlw::state &L) {
-        tlw::define<tlw::vec4>("vec4")
+        auto lib_vec4 = tlw::define<tlw::vec4>("vec4")
                 .ctor<>()
                 .ctor<float>()
                 .ctor<float, float, float>()
@@ -54,14 +54,15 @@ protected:
                 .prop("y", &tlw::vec4::y)
                 .prop("z", &tlw::vec4::z)
                 .prop("w", &tlw::vec4::w)
-                .method<tlw::vec4&(float)>("add", &tlw::vec4::addition)
-                .method<tlw::vec4&(const tlw::vec4&)>("add", &tlw::vec4::addition)
+                .method<tlw::vec4 &(float)>("add", &tlw::vec4::addition)
+                .method < tlw::vec4 &(const tlw::vec4&)>("add", &tlw::vec4::addition)
                 .finish();
-        tlw::meta_table_registry<tlw::vec4>::expose(L);
+
+        lib_vec4(L);
     }
 
     static void load_mat4(const tlw::state &L) {
-        tlw::define<tlw::mat4>("mat4")
+        auto lib_mat4 = tlw::define<tlw::mat4>("mat4")
                 .ctor<>()
                 .ctor<float>()
                 .ctor<float, float, float, float,
@@ -69,15 +70,17 @@ protected:
                         float, float, float, float,
                         float, float, float, float>()
                 .finish();
-        tlw::meta_table_registry<tlw::mat4>::expose(L);
+
+        lib_mat4(L);
     }
 
     static void load_entity(const tlw::state &L) {
-        tlw::define<tlw::entity>("entity")
+        auto lib_entity = tlw::define<tlw::entity>("entity")
                 .ctor<tlw::vec4>()
                 .ctor<tlw::mat4>()
                 .finish();
-        tlw::meta_table_registry<tlw::entity>::expose(L);
+
+        lib_entity(L);
     }
 };
 

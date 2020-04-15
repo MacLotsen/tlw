@@ -27,8 +27,6 @@ namespace tlw {
         return s.get<_type>(++idx);
     }
 
-
-
     template<typename ...>
     struct user_method {
 
@@ -37,57 +35,44 @@ namespace tlw {
     template<typename _user_type, typename _base_type>
     struct user_method<_user_type, void (_base_type::*)() const> {
         using method_t = void (_base_type::*)() const;
-        static constexpr const bool read_only = true;
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static int provide(lua_State *L) {
-            stack s = stack(state(L));
-            auto prop = s.pop<const char *>();
-            auto ud = s.get<_user_type>(1);
-            s.push(&methods[prop]);
-            lua_pushcclosure(L, [](lua_State *L) -> int {
-                stack s = stack(state(L));
-                auto ud = s.get<_user_type>(lua_upvalueindex(1));
-                auto m = s.get<method_t>(lua_upvalueindex(2));
-                if constexpr (cpp_type<_user_type>::is_pointer) {
-                    (ud->*m)();
-                } else {
-                    (ud.*m)();
-                }
-                return 0;
-            }, 2);
-            return 1;
+        static bool test(lua_State *L) {
+            return lua_gettop(L) == 0;
+        }
+
+        static int provide(stack &s, _user_type ud, const char *prop) {
+            auto m = methods[prop];
+            if constexpr (cpp_type<_user_type>::is_pointer) {
+                (ud->*m)();
+            } else {
+                (ud.*m)();
+            }
+            return 0;
         }
     };
 
     template<typename _user_type, typename _base_type>
     struct user_method<_user_type, void (_base_type::*)()> {
         using method_t = void (_base_type::*)();
-        static constexpr const bool read_only = false;
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static int provide(lua_State *L) {
-            stack s = stack(state(L));
-            auto prop = s.pop<const char *>();
+        static bool test(lua_State *L) {
+            return lua_gettop(L) == 0;
+        }
+
+        static int provide(stack &s, _user_type ud, const char *prop) {
+            auto m = methods[prop];
             if constexpr (cpp_type<_user_type>::is_const) {
-                luaL_error(L, "%s is read only and method %s isn't marked const either.", meta_table<_user_type>::name, prop);
-                return 0;
+                return -1;
             } else {
-                auto ud = s.get<_user_type>(1);
-                s.push(&methods[prop]);
-                lua_pushcclosure(L, [](lua_State *L) -> int {
-                    stack s = stack(state(L));
-                    auto ud = s.get<_user_type>(lua_upvalueindex(1));
-                    auto m = s.get<method_t>(lua_upvalueindex(2));
-                    if constexpr (cpp_type<_user_type>::is_pointer) {
-                        (ud->*m)();
-                    } else {
-                        (ud.*m)();
-                    }
-                    return 0;
-                }, 2);
-                return 1;
+                if constexpr (cpp_type<_user_type>::is_pointer) {
+                    (ud->*m)();
+                } else {
+                    (ud.*m)();
+                }
             }
+            return 0;
         }
     };
 
@@ -98,25 +83,19 @@ namespace tlw {
     template<typename _user_type, typename _base_type, typename _r>
     struct user_method<_user_type, _r (_base_type::*)() const> {
         using method_t = _r (_base_type::*)() const;
-        static constexpr const bool read_only = true;
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static int provide(lua_State *L) {
-            stack s = stack(state(L));
-            auto prop = s.pop<const char *>();
-            auto ud = s.get<_user_type>(1);
-            s.push(&methods[prop]);
-            lua_pushcclosure(L, [](lua_State *L) -> int {
-                stack s = stack(state(L));
-                auto ud = s.get<_user_type>(lua_upvalueindex(1));
-                auto m = s.get<method_t>(lua_upvalueindex(2));
-                if constexpr (cpp_type<_user_type>::is_pointer) {
-                    s.push((ud->*m)());
-                } else {
-                    s.push((ud.*m)());
-                }
-                return 1;
-            }, 2);
+        static bool test(lua_State *L) {
+            return lua_gettop(L) == 0;
+        }
+
+        static int provide(stack &s, _user_type ud, const char *prop) {
+            auto m = methods[prop];
+            if constexpr (cpp_type<_user_type>::is_pointer) {
+                s.push((ud->*m)());
+            } else {
+                s.push((ud.*m)());
+            }
             return 1;
         }
     };
@@ -124,31 +103,24 @@ namespace tlw {
     template<typename _user_type, typename _base_type, typename _r>
     struct user_method<_user_type, _r (_base_type::*)()> {
         using method_t = _r (_base_type::*)();
-        static constexpr const bool read_only = false;
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static int provide(lua_State *L) {
-            stack s = stack(state(L));
-            auto prop = s.pop<const char *>();
+        static bool test(lua_State *L) {
+            return lua_gettop(L) == 0;
+        }
+
+        static int provide(stack &s, _user_type ud, const char *prop) {
+            auto m = methods[prop];
             if constexpr (cpp_type<_user_type>::is_const) {
-                luaL_error(L, "%s is read only and method %s isn't marked const either.", meta_table<_user_type>::name, prop);
-                return 0;
+                return -1;
             } else {
-                auto ud = s.get<_user_type>(1);
-                s.push(&methods[prop]);
-                lua_pushcclosure(L, [](lua_State *L) -> int {
-                    stack s = stack(state(L));
-                    auto ud = s.get<_user_type>(lua_upvalueindex(1));
-                    auto m = s.get<method_t>(lua_upvalueindex(2));
-                    if constexpr (cpp_type<_user_type>::is_pointer) {
-                        s.push((ud->*m)());
-                    } else {
-                        s.push((ud.*m)());
-                    }
-                    return 1;
-                }, 2);
-                return 1;
+                if constexpr (cpp_type<_user_type>::is_pointer) {
+                    s.push((ud->*m)());
+                } else {
+                    s.push((ud.*m)());
+                }
             }
+            return 1;
         }
     };
 
@@ -159,28 +131,27 @@ namespace tlw {
     template<typename _user_type, typename _base_type, typename ..._args>
     struct user_method<_user_type, void (_base_type::*)(_args...) const> {
         using method_t = void (_base_type::*)(_args...) const;
-        static constexpr const bool read_only = true;
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static int provide(lua_State *L) {
-            stack s = stack(state(L));
-            auto prop = s.pop<const char *>();
-            auto ud = s.get<_user_type>(1);
-            s.push(&methods[prop]);
-            lua_pushcclosure(L, [](lua_State *L) -> int {
-                stack s = stack(state(L));
-                auto ud = s.get<_user_type>(lua_upvalueindex(1));
-                auto m = s.get<method_t>(lua_upvalueindex(2));
-                int arg_idx = 0;
-                if constexpr (cpp_type<_user_type>::is_pointer) {
-                    (ud->*m)(get_arg<_args>(s, arg_idx)...);
-                } else {
-                    (ud.*m)(get_arg<_args>(s, arg_idx)...);
-                }
-                lua_settop(L, 0);
-                return 0;
-            }, 2);
-            return 1;
+        static bool test(lua_State *L) {
+            return test(L, gen_seq<sizeof...(_args)>());
+        }
+
+        template<int ...Is>
+        static bool test(lua_State *L, seq<Is...>) {
+            return (... && stack_traits<_args>::inspect(L, Is + 1));
+        }
+
+        static int provide(stack &s, _user_type ud, const char *prop) {
+            auto m = methods[prop];
+            int arg_idx = 0;
+            if constexpr (cpp_type<_user_type>::is_pointer) {
+                (ud->*m)(get_arg<_args>(s, arg_idx)...);
+            } else {
+                (ud.*m)(get_arg<_args>(s, arg_idx)...);
+            }
+            s.clear();
+            return 0;
         }
     };
 
@@ -188,33 +159,31 @@ namespace tlw {
     template<typename _user_type, typename _base_type, typename ..._args>
     struct user_method<_user_type, void (_base_type::*)(_args...)> {
         using method_t = void (_base_type::*)(_args...);
-        static constexpr const bool read_only = false;
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static int provide(lua_State *L) {
-            stack s = stack(state(L));
-            auto prop = s.pop<const char *>();
+        static bool test(lua_State *L) {
+            return test(L, gen_seq<sizeof...(_args)>());
+        }
+
+        template<int ...Is>
+        static bool test(lua_State *L, seq<Is...>) {
+            return (... && stack_traits<_args>::inspect(L, Is + 1));
+        }
+
+        static int provide(stack &s, _user_type ud, const char *prop) {
+            auto m = methods[prop];
+            int arg_idx = 0;
             if constexpr (cpp_type<_user_type>::is_const) {
-                luaL_error(L, "%s is read only and method %s isn't marked const either.", meta_table<_user_type>::name, prop);
-                return 0;
+                return -1;
             } else {
-                auto ud = s.get<_user_type>(1);
-                s.push(&methods[prop]);
-                lua_pushcclosure(L, [](lua_State *L) -> int {
-                    stack s = stack(state(L));
-                    auto ud = s.get<_user_type>(lua_upvalueindex(1));
-                    auto m = s.get<method_t>(lua_upvalueindex(2));
-                    int arg_idx = 0;
-                    if constexpr (cpp_type<_user_type>::is_pointer) {
-                        (ud->*m)(get_arg<_args>(s, arg_idx)...);
-                    } else {
-                        (ud.*m)(get_arg<_args>(s, arg_idx)...);
-                    }
-                    lua_settop(L, 0);
-                    return 0;
-                }, 2);
-                return 1;
+                if constexpr (cpp_type<_user_type>::is_pointer) {
+                    (ud->*m)(get_arg<_args>(s, arg_idx)...);
+                } else {
+                    (ud.*m)(get_arg<_args>(s, arg_idx)...);
+                }
             }
+            s.clear();
+            return 0;
         }
     };
 
@@ -225,30 +194,29 @@ namespace tlw {
     template<typename _user_type, typename _base_type, typename _r, typename ..._args>
     struct user_method<_user_type, _r (_base_type::*)(_args...) const> {
         using method_t = _r (_base_type::*)(_args...) const;
-        static constexpr const bool read_only = true;
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static int provide(lua_State *L) {
-            stack s = stack(state(L));
-            auto prop = s.pop<const char *>();
-            auto ud = s.get<_user_type>(1);
-            s.push(&methods[prop]);
-            lua_pushcclosure(L, [](lua_State *L) -> int {
-                stack s = stack(state(L));
-                auto ud = s.get<_user_type>(lua_upvalueindex(1));
-                auto m = s.get<method_t>(lua_upvalueindex(2));
-                int arg_idx = 0;
-                if constexpr (cpp_type<_user_type>::is_pointer) {
-                    auto value = (ud->*m)(get_arg<_args>(s, arg_idx)...);
-                    lua_pop(L, arg_idx);
-                    s.push(value);
-                } else {
-                    auto value = (ud.*m)(get_arg<_args>(s, arg_idx)...);
-                    lua_pop(L, arg_idx);
-                    s.push(value);
-                }
-                return 1;
-            }, 2);
+        static bool test(lua_State *L) {
+            return test(L, gen_seq<sizeof...(_args)>());
+        }
+
+        template<int ...Is>
+        static bool test(lua_State *L, seq<Is...>) {
+            return (... && stack_traits<_args>::inspect(L, Is + 1));
+        }
+
+        static int provide(stack &s, _user_type ud, const char *prop) {
+            auto m = s.get<method_t>(lua_upvalueindex(2));
+            int arg_idx = 0;
+            if constexpr (cpp_type<_user_type>::is_pointer) {
+                auto value = (ud->*m)(get_arg<_args>(s, arg_idx)...);
+                s.clear();
+                s.push(value);
+            } else {
+                auto value = (ud.*m)(get_arg<_args>(s, arg_idx)...);
+                s.clear();
+                s.push(value);
+            }
             return 1;
         }
     };
@@ -256,36 +224,34 @@ namespace tlw {
     template<typename _user_type, typename _base_type, typename _r, typename ..._args>
     struct user_method<_user_type, _r (_base_type::*)(_args...)> {
         using method_t = _r (_base_type::*)(_args...);
-        static constexpr const bool read_only = false;
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static int provide(lua_State *L) {
-            stack s = stack(state(L));
-            auto prop = s.pop<const char *>();
+        static bool test(lua_State *L) {
+            return test(L, gen_seq<sizeof...(_args)>());
+        }
+
+        template<int ...Is>
+        static bool test(lua_State *L, seq<Is...>) {
+            return (... && stack_traits<_args>::inspect(L, Is + 1));
+        }
+
+        static int provide(stack &s, _user_type ud, const char *prop) {
+            auto m = methods[prop];
+            int arg_idx = 0;
             if constexpr (cpp_type<_user_type>::is_const) {
-                luaL_error(L, "%s is read only and method %s isn't marked const either.", meta_table<_user_type>::name, prop);
-                return 0;
+                return -1;
             } else {
-                auto ud = s.get<_user_type>(1);
-                s.push(&methods[prop]);
-                lua_pushcclosure(L, [](lua_State *L) -> int {
-                    stack s = stack(state(L));
-                    auto ud = s.get<_user_type>(lua_upvalueindex(1));
-                    auto m = s.get<method_t>(lua_upvalueindex(2));
-                    int arg_idx = 0;
-                    if constexpr (cpp_type<_user_type>::is_pointer) {
-                        auto value = (ud->*m)(get_arg<_args>(s, arg_idx)...);
-                        lua_pop(L, arg_idx);
-                        s.push(value);
-                    } else {
-                        auto value = (ud.*m)(get_arg<_args>(s, arg_idx)...);
-                        lua_pop(L, arg_idx);
-                        s.push(value);
-                    }
-                    return 1;
-                }, 2);
-                return 1;
+                if constexpr (cpp_type<_user_type>::is_pointer) {
+                    auto value = (ud->*m)(get_arg<_args>(s, arg_idx)...);
+                    s.clear();
+                    s.push(value);
+                } else {
+                    auto value = (ud.*m)(get_arg<_args>(s, arg_idx)...);
+                    s.clear();
+                    s.push(value);
+                }
             }
+            return 1;
         }
     };
 }

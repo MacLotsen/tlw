@@ -103,6 +103,51 @@ namespace tlw {
 
     };
 
+    template<typename mt>
+    struct __explicit_method {
+
+        static int invoke(lua_State *L) {
+            stack s = stack(state(L));
+            auto ud = s.get<typename mt::user_type>(1);
+            auto prop = s.get<const char *>(2);
+
+            lua_pushcclosure(L, [] (lua_State *L)->int {
+                stack s = stack(state(L));
+                auto ud = s.get<typename mt::user_type>(lua_upvalueindex(1));
+                auto prop = s.get<const char *>(lua_upvalueindex(2));
+
+                int top = lua_gettop(L);
+                if (mt::methods.empty()) {
+                    luaL_error(L, "No methods defined for %s", mt::name);
+                }
+
+                if (mt::methods.find(prop) == mt::methods.end()) {
+                    luaL_error(L, "No method %s defined for %s", prop, mt::name);
+                }
+
+                if (mt::methods[prop].find(top) == mt::methods[prop].end()) {
+                    luaL_error(L, "No method %s.%s with %d arguments", mt::name, prop, top);
+                }
+
+                auto mset = mt::methods[prop][top];
+                for (auto kv : mset) {
+                    if (std::get<0>(kv)(L)) {
+                        auto returns = std::get<1>(kv)(s, ud, prop);
+                        if (returns < 0) {
+                            luaL_error(L, "Method %s.%s is readonly", mt::name, prop);
+                            return 0;
+                        }
+                        return returns;
+                    }
+                }
+                luaL_error(L, "No suitable method found with %d arguments", top);
+                return 0;
+            }, 2);
+
+            return 1;
+        }
+
+    };
 
     template<typename _user_type>
     struct __index {
@@ -113,7 +158,7 @@ namespace tlw {
             auto prop = s.get<const char *>(2);
             auto f = mt::getters[prop];
             if (!f) {
-                f = mt::methods[prop];
+                f = __explicit_method<mt>::invoke;
                 if (!f) {
                     luaL_error(L, "Error: no such field '%s'", prop);
                 }
@@ -241,47 +286,53 @@ namespace tlw {
             return *this;
         }
 
-//        template<typename _method_type>
-//        static inline void register_method(const char *name, _method_type method) {
-//            using um = user_method<_method_type>;
-//            using mtype = method_type<_method_type>;
-//            if (um::methods.find(name) != user_method<_method_type>::methods.end()) {
-//                um::methods[name] = arg_counted_function_overloads();
-//            }
-//            if (um::methods[name].find(mtype::arg_count) != um::methods[name].end()) {
-//                um::methods[name][mtype::arg_count] = type_safe_function_overloads();
-//            }
-//            um::methods[name][mtype::arg_count].push_back(std::tuple{user_method<_method_type>::check_args, method});
-//        }
+        template<typename mt, typename _method_type>
+        constexpr static inline void _register_method(const char *prop, _method_type method) {
+            using um = user_method<typename mt::user_type, _method_type>;
+            using mtype = method_type<_method_type>;
+            if (mt::methods.find(prop) == mt::methods.end()) {
+                mt::methods[prop] = arg_counted_overloads<type_safe_method_overloads<typename mt::user_type>>();
+            }
+            if (mt::methods[prop].find(mtype::arg_count) == mt::methods[prop].end()) {
+                mt::methods[prop][mtype::arg_count] = type_safe_method_overloads<typename mt::user_type>();
+            }
+
+            mt::methods[prop][mtype::arg_count].push_back(type_safe_method<typename mt::user_type>(&um::test, &um::provide));
+        }
 
         template<typename _ret_args_type>
-        _builder_type &method(const char *name, typename user_method_def<_ret_args_type>::template method_type<_user_type> _method) {
+        constexpr _builder_type &method(const char *name, typename user_method_def<_ret_args_type>::template method_type<_user_type> _method) {
             return method<decltype(_method)>(name, _method);
         }
 
         template<typename _method_type>
-        _builder_type &method(const char *name, _method_type method) {
-//            register_method(name, method);
+        constexpr _builder_type &method(const char *name, _method_type method) {
             user_method<_user_type, _method_type>::methods[name] = method;
             user_method<const _user_type, _method_type>::methods[name] = method;
             user_method<_user_type *, _method_type>::methods[name] = method;
             user_method<const _user_type *, _method_type>::methods[name] = method;
-            mt::methods[name] = user_method<_user_type, _method_type>::provide;
-            p_mt::methods[name] = user_method<_user_type *, _method_type>::provide;
-            if (user_method<_user_type, _method_type>::read_only) {
-                ro_mt::methods[name] = user_method<const _user_type, _method_type>::provide;
-                rop_mt::methods[name] = user_method<const _user_type *, _method_type>::provide;
-            }
+            _register_method<mt>(name, method);
+            _register_method<ro_mt>(name, method);
+            _register_method<p_mt>(name, method);
+            _register_method<rop_mt>(name, method);
+//            mt::methods[name] = user_method<_user_type, _method_type>::provide;
+//            p_mt::methods[name] = user_method<_user_type *, _method_type>::provide;
+//            if (user_method<_user_type, _method_type>::read_only) {
+//                ro_mt::methods[name] = user_method<const _user_type, _method_type>::provide;
+//                rop_mt::methods[name] = user_method<const _user_type *, _method_type>::provide;
+//            }
             return *this;
         }
 
-        void finish() {
+        lib_load_t finish() {
             meta_table_registry<_user_type>::name = mt::name;
             meta_table_registry<const _user_type>::name = ro_mt::name;
             meta_table_registry<_user_type *>::name = p_mt::name;
             meta_table_registry<const _user_type *>::name = rop_mt::name;
+            meta_table_registry<_user_type&>::name = r_mt::name;
+            meta_table_registry<const _user_type&>::name = ror_mt::name;
             // The const user definition will be exposed by the normal user definition
-            meta_table_registry<_user_type>::expose = _expose;
+            return meta_table_registry<_user_type>::expose = _expose;
         }
 
         static void _expose(state L) {
@@ -289,6 +340,8 @@ namespace tlw {
             _expose < ro_mt > (L);
             _expose < p_mt > (L);
             _expose < rop_mt > (L);
+            _expose < r_mt > (L);
+            _expose < ror_mt > (L);
         }
 
         template<typename _mt>

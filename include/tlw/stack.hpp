@@ -91,6 +91,10 @@ namespace tlw {
             return values;
         }
 
+        void clear() {
+            lua_settop(L, 0);
+        }
+
     private:
 
         template<class _type>

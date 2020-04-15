@@ -21,12 +21,13 @@
 
 TEST_F(high_end_user_test, test_overloaded_method) {
     float n = 5;
-    auto v = tlw::vec4(5.5);
+    auto v1 = tlw::vec4(5.5);
+    const tlw::vec4 v2 = tlw::vec4(4.4);
 
     lua.set("n", n);
-    lua.set("v", v);
+    lua.set("v1", v1);
+    lua.set<const tlw::vec4&>("v2", v2);
 
-    // If something goes wrong we'd expect that the last set method is used
-    ASSERT_NO_THROW(lua.src("v.add(v)")());
-    ASSERT_NO_THROW(lua.src("v.add(n)")());
+    ASSERT_NO_THROW(lua.src("v1.add(v2)")());
+    ASSERT_NO_THROW(lua.src("v1.add(n)")());
 }

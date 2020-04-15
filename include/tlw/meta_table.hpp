@@ -26,15 +26,17 @@
 
 namespace tlw {
 
-    using type_safe_ctor = std::tuple<bool (*)(lua_State *), cfunction_t::type>;
-    using ctor_set = std::vector<type_safe_ctor>;
-    using ctor_map = std::unordered_map<int, ctor_set>;
+    using argument_matcher = bool (*)(lua_State *);
+    using type_safe_function = std::tuple<argument_matcher, cfunction_t::type>;
+    using type_safe_function_overloads = std::vector<type_safe_function>;
+    using arg_counted_function_overloads = std::unordered_map<int, type_safe_function_overloads>;
+    using type_safe_named_function_overloads = std::unordered_map<std::string_view, arg_counted_function_overloads>;
 
     template<class _user_type>
     struct meta_table {
         using user_type = _user_type;
         static inline const char *name = nullptr;
-        static inline ctor_map constructors{};
+        static inline arg_counted_function_overloads constructors{};
         static inline cfunction_t::type ctor = nullptr;
         static inline cfunction_t::type dtor = nullptr;
         static inline std::unordered_map<std::string_view, cfunction_t::type> methods{};

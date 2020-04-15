@@ -17,25 +17,36 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TLW_HPP
-#define TLW_TLW_HPP
-
-#include <lua.hpp>
-#include <tlw/state.hpp>
-#include <tlw/reference.hpp>
-#include <tlw/type.hpp>
-#include <tlw/detail/type_traits.hpp>
-#include <tlw/detail/stack_traits.hpp>
-#include <tlw/detail/primitive_traits.hpp>
-#include <tlw/detail/function_traits.hpp>
-#include <tlw/detail/user_traits.hpp>
-#include <tlw/function.hpp>
-#include <tlw/table.hpp>
-#include <tlw/stack.hpp>
-#include <tlw/meta_table.hpp>
-#include <tlw/user_def.hpp>
-#include <tlw/any.hpp>
-#include <tlw/_lua.hpp>
+#include "high_end_user_test.h"
 
 
-#endif //TLW_TLW_HPP
+TEST_F(high_end_user_test, test_any_value) {
+    float n1 = 5.5;
+    const char *s1 = "string";
+
+    lua.set("n1", n1);
+    lua.set("s1", s1);
+
+    const char *s2 = lua["s1"];
+    ASSERT_STREQ(s1, s2);
+    float n2 = lua["n1"];
+    ASSERT_EQ(n1, n2);
+
+    tlw::define<tlw::example>("example_value")
+            .finish();
+
+    tlw::meta_table_registry<tlw::example>::expose(L);
+    tlw::example val1(5.5);
+    lua.set("ud", std::move(val1));
+
+    tlw::example val2 = lua["ud"];
+    if (val2)
+        val2.print();
+
+    luaL_dostring(L, "t1 = { { 'Hallo' } }");
+
+    tlw::table t = lua["t1"][1];
+    const char *str2 = t[1];
+
+    ASSERT_STREQ("Hallo", str2);
+}

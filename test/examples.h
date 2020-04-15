@@ -71,7 +71,7 @@ namespace tlw {
         }
 
         void print() const {
-            printf("The value is %f", val);
+            printf("The value is %f\n", val);
         }
     };
 

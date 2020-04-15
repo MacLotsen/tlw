@@ -47,6 +47,59 @@ namespace tlw {
         using value_type = _type;
     };
 
+    template<typename ...>
+    struct method_type {
+
+    };
+
+    template<typename _class, typename _r, typename ..._args>
+    struct method_type<_r (_class::*)(_args...)> {
+        constexpr static inline bool read_only = false;
+        constexpr static inline int arg_count = sizeof...(_args);
+    };
+
+    template<typename _class, typename ..._args>
+    struct method_type<void (_class::*)(_args...)> {
+        constexpr static inline bool read_only = false;
+        constexpr static inline int arg_count = sizeof...(_args);
+    };
+
+    template<typename _class, typename _r>
+    struct method_type<_r (_class::*)()> {
+        constexpr static inline bool read_only = false;
+        constexpr static inline int arg_count = 0;
+    };
+
+    template<typename _class>
+    struct method_type<void (_class::*)()> {
+        constexpr static inline bool read_only = false;
+        constexpr static inline int arg_count = 0;
+    };
+
+    template<typename _class, typename _r, typename ..._args>
+    struct method_type<_r (_class::*)(_args...) const> {
+        constexpr static inline bool read_only = true;
+        constexpr static inline int arg_count = sizeof...(_args);
+    };
+
+    template<typename _class, typename ..._args>
+    struct method_type<void (_class::*)(_args...) const> {
+        constexpr static inline bool read_only = true;
+        constexpr static inline int arg_count = sizeof...(_args);
+    };
+
+    template<typename _class, typename _r>
+    struct method_type<_r (_class::*)() const> {
+        constexpr static inline bool read_only = true;
+        constexpr static inline int arg_count = 0;
+    };
+
+    template<typename _class>
+    struct method_type<void (_class::*)() const> {
+        constexpr static inline bool read_only = true;
+        constexpr static inline int arg_count = 0;
+    };
+
     template<int... Is>
     struct seq {
     };

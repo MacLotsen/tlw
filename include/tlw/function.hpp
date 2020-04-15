@@ -25,18 +25,49 @@
 namespace tlw {
 
     template<typename ...>
-    struct function : public struct_ref {
+    struct function : public reference {
 
     };
 
+    template<>
+    struct function<void()> : public reference {
+        using fn_type = function<void()>;
+
+        function(reference &&other) : reference(std::move(other)) {}
+
+        void operator()() {
+            stack_traits<function_t>::push(L, *this);
+            if (lua_pcall(L, 0, 0, 0)) {
+                throw std::runtime_error("Failed to call lua function.");
+            }
+        }
+    };
+
+    template<typename _r>
+    struct function<_r()> : public reference {
+        using fn_type = function<_r()>;
+
+        function(reference &&other) : reference(std::move(other)) {}
+
+        _r operator()() {
+            stack_traits<function_t>::push(L, *this);
+            if (lua_pcall(L, 0, 1, 0)) {
+                throw std::runtime_error("Failed to call lua function.");
+            }
+            _r r = stack_traits<_r>::get(L, -1);
+            lua_pop(L, 1);
+            return r;
+        }
+    };
+
     template<typename ..._args>
-    struct function<void(_args...)> : public struct_ref {
+    struct function<void(_args...)> : public reference {
         using fn_type = function<void(_args...)>;
 
-        function(struct_ref &&other) : struct_ref(std::move(other)) {}
+        function(reference &&other) : reference(std::move(other)) {}
 
         void operator()(_args ...args) {
-            stack_traits<fn_type>::push(L, *this);
+            stack_traits<function_t>::push(L, *this);
             (..., stack_traits<_args>::push(L, args));
             if (lua_pcall(L, sizeof...(_args), 0, 0)) {
                 throw std::runtime_error("Failed to call lua function.");
@@ -48,18 +79,18 @@ namespace tlw {
     };
 
     template<typename _r, typename ..._args>
-    struct function<_r(_args...)> : public struct_ref {
+    struct function<_r(_args...)> : public reference {
         using fn_type = function<_r(_args...)>;
 
-        function(struct_ref &&other) : struct_ref(std::move(other)) {}
+        function(reference &&other) : reference(std::move(other)) {}
 
         _r operator()(_args ...args) {
-            stack_traits<fn_type>::push(L, this);
+            stack_traits<function_t>::push(L, *this);
             (..., stack_traits<_args>::push(L, args));
             if (lua_pcall(L, sizeof...(_args), 1, 0)) {
                 throw std::runtime_error("Failed to call lua function.");
             }
-            _r r = stack_traits<_r>::peek(L, -1);
+            _r r = stack_traits<_r>::get(L, -1);
             lua_pop(L, 1);
             return r;
         }

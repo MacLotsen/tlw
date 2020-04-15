@@ -60,7 +60,7 @@ namespace tlw {
 
         template<class _type>
         constexpr _type get(int idx) {
-            return stack_traits<_type>::peek(L, idx);
+            return stack_traits<_type>::get(L, idx);
         }
 
         template<class _type>

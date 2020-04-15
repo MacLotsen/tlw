@@ -20,10 +20,11 @@
 #ifndef TLW_USER_DEF_HPP
 #define TLW_USER_DEF_HPP
 
+#include <lua.hpp>
 #include <tlw/meta_table.hpp>
-#include <tlw/detail/ctor_traits.hpp>
-#include <tlw/detail/property_traits.hpp>
-#include <tlw/detail/method_traits.hpp>
+#include <tlw/detail/user_ctor.hpp>
+#include <tlw/detail/user_prop.hpp>
+#include <tlw/detail/user_method.hpp>
 
 namespace tlw {
 
@@ -44,9 +45,12 @@ namespace tlw {
                     return std::get<1>(kv)(L);
                 }
             }
+            luaL_error(L, "No suitable constructor found with %d arguments", top);
+            return 0;
         }
 
     };
+
 
     template<typename _user_type>
     struct __index {
@@ -118,23 +122,23 @@ namespace tlw {
 
         template<typename ..._args>
         _builder_type &ctor() {
-            using _ct = ctor_traits<_user_type *, _args...>;
+            using _ct = user_ctor<_user_type *, _args...>;
             if (mt::constructors.find(sizeof...(_args)) == mt::constructors.end()) {
-                mt::constructors[sizeof...(_args)] = ctor_set();
+                mt::constructors[sizeof...(_args)] = type_safe_function_overloads();
             }
-            mt::constructors[sizeof...(_args)].push_back(type_safe_ctor(_ct::check_args, _ct::ctor));
-            // a const type doesn't need a ctor
+            mt::constructors[sizeof...(_args)].push_back(type_safe_function(_ct::check_args, _ct::ctor));
+            // a const primitive doesn't need a ctor
             return *this;
         }
 
         _builder_type &dtor() {
             p_mt::dtor = [](lua_State *L) -> int {
-                delete stack_traits<_user_type *>::peek(L, -1);
+                delete stack_traits<_user_type *>::get(L, -1);
                 lua_pop(L, 1);
                 return 0;
             };
             rop_mt::dtor = [](lua_State *L) -> int {
-                delete stack_traits<const _user_type *>::peek(L, -1);
+                delete stack_traits<const _user_type *>::get(L, -1);
                 lua_pop(L, 1);
                 return 0;
             };
@@ -143,37 +147,56 @@ namespace tlw {
 
         template<typename _prop_type>
         _builder_type &prop(const char *name, property_type<_prop_type> property) {
-            property_traits<_user_type, _prop_type>::properties[name] = property;
-            property_traits<const _user_type, _prop_type>::properties[name] = property;
-            property_traits<_user_type *, _prop_type>::properties[name] = property;
-            property_traits<const _user_type *, _prop_type>::properties[name] = property;
+            user_prop<_user_type, _prop_type>::properties[name] = property;
+            user_prop<const _user_type, _prop_type>::properties[name] = property;
+            user_prop<_user_type *, _prop_type>::properties[name] = property;
+            user_prop<const _user_type *, _prop_type>::properties[name] = property;
 
-            mt::getters[name] = property_traits<_user_type, _prop_type>::get;
-            ro_mt::getters[name] = property_traits<const _user_type, _prop_type>::get;
-            p_mt::getters[name] = property_traits<_user_type *, _prop_type>::get;
-            rop_mt::getters[name] = property_traits<const _user_type *, _prop_type>::get;
+            mt::getters[name] = user_prop<_user_type, _prop_type>::get;
+            ro_mt::getters[name] = user_prop<const _user_type, _prop_type>::get;
+            p_mt::getters[name] = user_prop<_user_type *, _prop_type>::get;
+            rop_mt::getters[name] = user_prop<const _user_type *, _prop_type>::get;
 
             if constexpr (const_type<_prop_type>::valid) {
-                mt::setters[name] = property_traits<_user_type, _prop_type>::invalid_set;
-                ro_mt::setters[name] = property_traits<const _user_type, _prop_type>::invalid_set;
-                p_mt::setters[name] = property_traits<_user_type *, _prop_type>::invalid_set;
-                rop_mt::setters[name] = property_traits<const _user_type *, _prop_type>::invalid_set;
+                mt::setters[name] = user_prop<_user_type, _prop_type>::invalid_set;
+                ro_mt::setters[name] = user_prop<const _user_type, _prop_type>::invalid_set;
+                p_mt::setters[name] = user_prop<_user_type *, _prop_type>::invalid_set;
+                rop_mt::setters[name] = user_prop<const _user_type *, _prop_type>::invalid_set;
             } else {
-                mt::setters[name] = property_traits<_user_type, _prop_type>::set;
-                ro_mt::setters[name] = property_traits<const _user_type, _prop_type>::invalid_set;
-                p_mt::setters[name] = property_traits<_user_type *, _prop_type>::set;
-                rop_mt::setters[name] = property_traits<const _user_type *, _prop_type>::invalid_set;
+                mt::setters[name] = user_prop<_user_type, _prop_type>::set;
+                ro_mt::setters[name] = user_prop<const _user_type, _prop_type>::invalid_set;
+                p_mt::setters[name] = user_prop<_user_type *, _prop_type>::set;
+                rop_mt::setters[name] = user_prop<const _user_type *, _prop_type>::invalid_set;
             }
 
             return *this;
         }
 
+//        template<typename _method_type>
+//        static inline void register_method(const char *name, _method_type method) {
+//            using um = user_method<_method_type>;
+//            using mtype = method_type<_method_type>;
+//            if (um::methods.find(name) != user_method<_method_type>::methods.end()) {
+//                um::methods[name] = arg_counted_function_overloads();
+//            }
+//            if (um::methods[name].find(mtype::arg_count) != um::methods[name].end()) {
+//                um::methods[name][mtype::arg_count] = type_safe_function_overloads();
+//            }
+//            um::methods[name][mtype::arg_count].push_back(std::tuple{user_method<_method_type>::check_args, method});
+//        }
+
         template<typename _method_type>
         _builder_type &method(const char *name, _method_type method) {
-            method_traits<_method_type>::methods[name] = method;
-            p_mt::methods[name] = method_traits<_method_type>::provide;
-            if (method_traits<_method_type>::read_only) {
-                rop_mt::methods[name] = method_traits<_method_type>::provide;
+//            register_method(name, method);
+            user_method<_user_type, _method_type>::methods[name] = method;
+            user_method<const _user_type, _method_type>::methods[name] = method;
+            user_method<_user_type*, _method_type>::methods[name] = method;
+            user_method<const _user_type*, _method_type>::methods[name] = method;
+            mt::methods[name] = user_method<_user_type, _method_type>::provide;
+            p_mt::methods[name] = user_method<_user_type*, _method_type>::provide;
+            if (user_method<_user_type, _method_type>::read_only) {
+                ro_mt::methods[name] = user_method<const _user_type, _method_type>::provide;
+                rop_mt::methods[name] = user_method<const _user_type*, _method_type>::provide;
             }
             return *this;
         }

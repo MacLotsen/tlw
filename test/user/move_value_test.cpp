@@ -17,25 +17,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TLW_HPP
-#define TLW_TLW_HPP
-
-#include <lua.hpp>
-#include <tlw/state.hpp>
-#include <tlw/reference.hpp>
-#include <tlw/type.hpp>
-#include <tlw/detail/type_traits.hpp>
-#include <tlw/detail/stack_traits.hpp>
-#include <tlw/detail/primitive_traits.hpp>
-#include <tlw/detail/function_traits.hpp>
-#include <tlw/detail/user_traits.hpp>
-#include <tlw/function.hpp>
-#include <tlw/table.hpp>
-#include <tlw/stack.hpp>
-#include <tlw/meta_table.hpp>
-#include <tlw/user_def.hpp>
-#include <tlw/any.hpp>
-#include <tlw/_lua.hpp>
+#include "user_test.h"
 
 
-#endif //TLW_TLW_HPP
+TEST_F(user_test, test_move_value) {
+    tlw::define<tlw::example>("example_value")
+            .finish();
+    tlw::example value;
+    s.push(std::move(value));
+    ASSERT_FALSE(tlw::type_inspector<tlw::nil_t>::inspect(L));
+    ASSERT_TRUE(tlw::type_inspector<tlw::user_data_t<const tlw::example *>>::inspect(L));
+
+    // Pop trailing value
+    lua_pop(L, 1);
+}

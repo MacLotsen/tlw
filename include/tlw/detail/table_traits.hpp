@@ -17,25 +17,31 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TLW_HPP
-#define TLW_TLW_HPP
+#ifndef TLW_TABLE_TRAITS_H
+#define TLW_TABLE_TRAITS_H
 
-#include <lua.hpp>
-#include <tlw/state.hpp>
-#include <tlw/reference.hpp>
-#include <tlw/type.hpp>
-#include <tlw/detail/type_traits.hpp>
-#include <tlw/detail/stack_traits.hpp>
-#include <tlw/detail/primitive_traits.hpp>
-#include <tlw/detail/function_traits.hpp>
-#include <tlw/detail/user_traits.hpp>
-#include <tlw/function.hpp>
-#include <tlw/table.hpp>
-#include <tlw/stack.hpp>
-#include <tlw/meta_table.hpp>
-#include <tlw/user_def.hpp>
-#include <tlw/any.hpp>
-#include <tlw/_lua.hpp>
+namespace tlw {
 
+    template<typename _type, typename _key>
+    struct table_traits {
+        using key_traits = stack_traits<_key>;
+        using value_traits = stack_traits<_type>;
 
-#endif //TLW_TLW_HPP
+        static _type get(lua_State *L, int idx, _key k) {
+            key_traits::push(L, k);
+            lua_gettable(L, idx);
+            _type val = value_traits::get(L, -1);
+            lua_pop(L, 1);
+            return std::move(val);
+        }
+
+        static void set(lua_State *L, int idx, _key k, _type val) {
+            key_traits::push(L, k);
+            value_traits::push(L, val);
+            lua_settable(L, idx);
+        }
+    };
+
+}
+
+#endif //TLW_TABLE_TRAITS_H

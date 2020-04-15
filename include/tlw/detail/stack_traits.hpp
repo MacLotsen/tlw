@@ -21,9 +21,6 @@
 #define TLW_STACK_TRAITS_HPP
 
 #include <tlw/detail/type_traits.hpp>
-#include <tlw/function.hpp>
-#include <tlw/meta_table.hpp>
-#include <utility>
 
 namespace tlw {
 
@@ -33,133 +30,28 @@ namespace tlw {
     };
 
     template<typename _lua_type>
-    struct primitive_stack_traits : public type_inspector<_lua_type> {
-//        using type_inspector<_lua_type>::inspect;
+    struct reference_stack_traits : public type_inspector<_lua_type> {
 
-        static constexpr void push(lua_State *L, typename _lua_type::type value) {
-            type_traits<_lua_type>::push(L, value);
-        }
-
-        static constexpr typename _lua_type::type peek(lua_State *L, int idx) {
-            return type_traits<_lua_type>::peek(L, idx);
-        }
-    };
-
-    template<typename _lua_type>
-    struct struct_stack_traits : public type_inspector<_lua_type> {
         static void push(lua_State *L, typename _lua_type::type value) {
-            ref_traits<_lua_type>::push(L, std::move(value));
+            reference_traits<_lua_type>::push(L, std::move(value));
         }
 
-        static typename _lua_type::type peek(lua_State *L, int idx) {
-            return ref_traits<_lua_type>::peek(L, idx);
-        }
-    };
-
-    template<>
-    struct stack_traits<none_t::type> : public type_inspector<none_t> {
-        static constexpr void push(lua_State *L) {
-            type_traits<none_t>::push(L);
-        }
-
-        static constexpr none_t::type peek(lua_State *L, int idx) {
-            return type_traits<none_t>::peek(L, idx);
+        static typename _lua_type::type get(lua_State *L, int idx) {
+            return reference_traits<_lua_type>::get(L, idx);
         }
     };
 
     template<>
-    struct stack_traits<nil_t::type> : public primitive_stack_traits<nil_t> {
+    struct stack_traits<table_t> : public reference_stack_traits<table_t> {
+
     };
 
     template<>
-    struct stack_traits<bool_t::type> : public primitive_stack_traits<bool_t> {
-    };
-
-    template<>
-    struct stack_traits<double> : public primitive_stack_traits<number_t> {
-    };
-
-    template<>
-    struct stack_traits<const double> : public primitive_stack_traits<number_t> {
-    };
-
-    template<>
-    struct stack_traits<float> : public primitive_stack_traits<number_t> {
-    };
-
-    template<>
-    struct stack_traits<const float> : public primitive_stack_traits<number_t> {
-    };
-
-    template<>
-    struct stack_traits<int> : public primitive_stack_traits<number_t> {
-    };
-
-    template<>
-    struct stack_traits<long> : public primitive_stack_traits<number_t> {
-    };
-
-    template<>
-    struct stack_traits<string_t::type> : public primitive_stack_traits<string_t> {
-    };
-
-    template<>
-    struct stack_traits<cfunction_t::type> : public primitive_stack_traits<cfunction_t> {
-    };
-
-    template<>
-    struct stack_traits<table_t> : public struct_stack_traits<table_t> {
+    struct stack_traits<function_t> : public reference_stack_traits<function_t> {
 
     };
 
-    template<class _type>
-    struct stack_traits<_type> {
-        using _base_type = typename pointer_type<_type>::value_type;
-        using _user_data_t = user_data_t<_type>;
-        using _light_user_data_t = light_user_data_t<_type>;
 
-        static bool inspect(lua_State *L, int idx) {
-            int type_id = lua_type(L, idx);
-            switch(lua_type(L, idx)) {
-                case LUA_TUSERDATA:
-                    return inspect_metatable(L, idx);
-                case LUA_TLIGHTUSERDATA:
-                    return meta_table<_type>::name == nullptr;
-                default:
-                    return false;
-            }
-        }
-
-        static bool inspect_metatable(lua_State *L, int idx) {
-            int top = lua_gettop(L);
-            lua_getmetatable(L, idx);
-            lua_getfield(L, -1, "__name");
-            bool matches = strcmp(lua_tostring(L, -1), meta_table<_type>::name) == 0;
-            lua_settop(L, top);
-            return matches;
-        }
-
-        static void push(lua_State *L, _type value) {
-            if (meta_table_registry<_type>::name) {
-                if constexpr (pointer_type<_type>::valid) {
-                    type_traits<_user_data_t>::push(L, value);
-                } else {
-                    type_traits<_user_data_t>::push(L, std::move(value));
-                }
-                luaL_setmetatable(L, meta_table_registry<_type>::name);
-            } else {
-                type_traits<_light_user_data_t>::push(L, value);
-            }
-        }
-
-        static _type peek(lua_State *L, int idx) {
-            if (meta_table_registry<_type>::name) {
-                return type_traits<_user_data_t>::peek(L, idx);
-            } else {
-                return type_traits<_light_user_data_t>::peek(L, idx);
-            }
-        }
-    };
 }
 
 #endif //TLW_STACK_TRAITS_HPP

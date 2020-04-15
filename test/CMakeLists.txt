@@ -18,12 +18,12 @@
 find_package(GTest)
 
 set(SOURCE_FILES main.cpp
-        inspector_test.cpp
-        type_traits_test.cpp
-        stack_test.cpp
-        constructor_test.cpp
-        move_value_test.cpp
-        property_test.cpp method_test.cpp signature_test.cpp)
+        detail/inspector_test.cpp
+        detail/type_traits_test.cpp
+        detail/stack_test.cpp
+        user/constructor_test.cpp
+        user/move_value_test.cpp
+        user/property_test.cpp high_end/trivial_methods_test.cpp high_end/overloaded_ctor_test.cpp high_end/any_test.cpp high_end/source_code_test.cpp high_end/overloaded_methods_test.cpp)
 
 add_executable(tlw-tests ${SOURCE_FILES})
 target_link_libraries(tlw-tests ${GTEST_LIBRARY} pthread tlw)

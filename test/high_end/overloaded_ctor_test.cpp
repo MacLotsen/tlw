@@ -17,25 +17,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_TLW_HPP
-#define TLW_TLW_HPP
-
-#include <lua.hpp>
-#include <tlw/state.hpp>
-#include <tlw/reference.hpp>
-#include <tlw/type.hpp>
-#include <tlw/detail/type_traits.hpp>
-#include <tlw/detail/stack_traits.hpp>
-#include <tlw/detail/primitive_traits.hpp>
-#include <tlw/detail/function_traits.hpp>
-#include <tlw/detail/user_traits.hpp>
-#include <tlw/function.hpp>
-#include <tlw/table.hpp>
-#include <tlw/stack.hpp>
-#include <tlw/meta_table.hpp>
-#include <tlw/user_def.hpp>
-#include <tlw/any.hpp>
-#include <tlw/_lua.hpp>
+#include "high_end_user_test.h"
 
 
-#endif //TLW_TLW_HPP
+
+TEST_F(high_end_user_test, test_variable_constructor) {
+    luaL_openlibs(L);
+    lua_settop(L, 0);
+    tlw::vec4 v1(1.0f);
+    tlw::mat4 m1(1.0f);
+
+    lua.set("v1", std::move(v1));
+    lua.set("m1", m1);
+
+    lua.src("print(v1.z) e1 = entity(v1) e2 = entity(m1)")();
+
+    auto e1 = lua.get<tlw::entity*>("e1");
+    auto e2 = lua.get<tlw::entity*>("e2");
+
+    ASSERT_EQ(1, e1->position.z);
+    ASSERT_EQ(1, e2->model.z[2]);
+}

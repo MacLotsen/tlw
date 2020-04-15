@@ -149,6 +149,8 @@ namespace tlw {
             return *user_data;
         }
 
+        // Split in three
+
         static void push(lua_State *L, _user_type value) {
             if constexpr (pointer_type<_user_type>::valid) {
                 auto user_data = (_user_type *) lua_newuserdata(L, sizeof(_user_type *));

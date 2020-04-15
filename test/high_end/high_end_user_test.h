@@ -39,7 +39,9 @@ protected:
     void TearDown() override {
         lua = tlw::lua(tlw::state::invalid_state());
         base_test::TearDown();
-        tlw::meta_table_registry<tlw::example>::reset();
+        tlw::meta_table_registry<tlw::entity>::reset();
+        tlw::meta_table_registry<tlw::vec4>::reset();
+        tlw::meta_table_registry<tlw::mat4>::reset();
     }
 
     static void load_vec4(const tlw::state &L) {
@@ -52,6 +54,8 @@ protected:
                 .prop("y", &tlw::vec4::y)
                 .prop("z", &tlw::vec4::z)
                 .prop("w", &tlw::vec4::w)
+                .method<tlw::vec4&(float)>("add", &tlw::vec4::addition)
+//                .method<tlw::vec4&(const tlw::vec4&)>("add", &tlw::vec4::addition)
                 .finish();
         tlw::meta_table_registry<tlw::vec4>::expose(L);
     }

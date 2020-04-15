@@ -28,6 +28,58 @@
 
 namespace tlw {
 
+    template<typename ...>
+    struct user_method_def {
+    };
+
+    template<>
+    struct user_method_def<void()> {
+        template<typename _user_type>
+        using method_type = void (_user_type::*)();
+    };
+
+    template<>
+    struct user_method_def<void() const> {
+        template<typename _user_type>
+        using method_type = void (_user_type::*)() const;
+    };
+
+    template<typename _r>
+    struct user_method_def<_r()> {
+        template<typename _user_type>
+        using method_type = _r (_user_type::*)();
+    };
+
+    template<typename _r>
+    struct user_method_def<_r() const> {
+        template<typename _user_type>
+        using method_type = _r (_user_type::*)() const;
+    };
+
+    template<typename _r, typename ..._args>
+    struct user_method_def<_r(_args...)> {
+        template<typename _user_type>
+        using method_type = _r (_user_type::*)(_args...);
+    };
+
+    template<typename _r, typename ..._args>
+    struct user_method_def<_r(_args...) const> {
+        template<typename _user_type>
+        using method_type = _r (_user_type::*)(_args...) const;
+    };
+
+    template<typename ..._args>
+    struct user_method_def<void(_args...)> {
+        template<typename _user_type>
+        using method_type = void (_user_type::*)(_args...);
+    };
+
+    template<typename ..._args>
+    struct user_method_def<void(_args...) const> {
+        template<typename _user_type>
+        using method_type = void (_user_type::*)(_args...) const;
+    };
+
     template<typename mt>
     struct __explicit_ctor {
 
@@ -185,18 +237,23 @@ namespace tlw {
 //            um::methods[name][mtype::arg_count].push_back(std::tuple{user_method<_method_type>::check_args, method});
 //        }
 
+        template<typename _ret_args_type>
+        _builder_type &method(const char *name, typename user_method_def<_ret_args_type>::template method_type<_user_type> _method) {
+            return method<decltype(_method)>(name, _method);
+        }
+
         template<typename _method_type>
         _builder_type &method(const char *name, _method_type method) {
 //            register_method(name, method);
             user_method<_user_type, _method_type>::methods[name] = method;
             user_method<const _user_type, _method_type>::methods[name] = method;
-            user_method<_user_type*, _method_type>::methods[name] = method;
-            user_method<const _user_type*, _method_type>::methods[name] = method;
+            user_method<_user_type *, _method_type>::methods[name] = method;
+            user_method<const _user_type *, _method_type>::methods[name] = method;
             mt::methods[name] = user_method<_user_type, _method_type>::provide;
-            p_mt::methods[name] = user_method<_user_type*, _method_type>::provide;
+            p_mt::methods[name] = user_method<_user_type *, _method_type>::provide;
             if (user_method<_user_type, _method_type>::read_only) {
                 ro_mt::methods[name] = user_method<const _user_type, _method_type>::provide;
-                rop_mt::methods[name] = user_method<const _user_type*, _method_type>::provide;
+                rop_mt::methods[name] = user_method<const _user_type *, _method_type>::provide;
             }
             return *this;
         }

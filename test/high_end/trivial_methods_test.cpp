@@ -28,11 +28,11 @@ namespace tlw {
         method_example(float n, const char *s) : number(n), string(s) {}
 
         void read_noop() const {
-            printf("%s %d\n", string, number);
+            printf("%s %f\n", string, number);
         }
 
         void write_noop() {
-            printf("%s %d\n", string, ++number);
+            printf("%s %f\n", string, ++number);
         }
 
         float write_get() {
@@ -48,7 +48,7 @@ namespace tlw {
         }
 
         void read_add(float addition) const {
-            printf("%s: %d + %d = %d\n", string, number, addition, number + addition);
+            printf("%s: %f + %f = %f\n", string, number, addition, number + addition);
         }
 
         float write_get_add(float addition) {

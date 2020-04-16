@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-cmake_minimum_required(VERSION 3.17)
+cmake_minimum_required(VERSION 3.10)
 project(tlw)
 
 execute_process(
@@ -36,7 +36,7 @@ find_package(LuaJIT REQUIRED)
 
 add_library(tlw INTERFACE)
 
-target_compile_features(tlw INTERFACE cxx_std_20)
+target_compile_features(tlw INTERFACE cxx_std_17)
 target_link_libraries(tlw INTERFACE ${LUA_LIBRARY})
 target_include_directories(tlw
         INTERFACE

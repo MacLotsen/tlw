@@ -133,4 +133,6 @@ TEST_F(high_end_user_test, test_method) {
     ASSERT_NO_THROW(test_ra());
     ASSERT_ANY_THROW(test_wga());
     ASSERT_NO_THROW(test_rga());
+
+    tlw::meta_table_registry<tlw::method_example>::reset();
 }

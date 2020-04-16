@@ -178,11 +178,10 @@ namespace tlw {
 
     // TODO mk_struct (different ctor)
     // TODO mk_function
-    // TODO mk_method
 
-    template<class _user_type, bool _traditional>
+    template<class _user_type>
     struct meta_table_builder {
-        using _builder_type = meta_table_builder<_user_type, _traditional>;
+        using _builder_type = meta_table_builder<_user_type>;
         using mt = meta_table<_user_type>;
         using ro_mt = meta_table<const _user_type>;
         using p_mt = meta_table<_user_type *>;
@@ -223,14 +222,6 @@ namespace tlw {
             constp_name[length - 2] = '*';
             constp_name[length - 1] = '\0';
             rop_mt::name = constp_name;
-
-//            length = strlen(name) + 8;
-//            char *constr_name = new char[length];
-//            strcpy(constr_name, "const ");
-//            strcat(constr_name, name);
-//            constr_name[length - 2] = '&';
-//            constr_name[length - 1] = '\0';
-//            ror_mt::name = constr_name;
         }
 
         template<typename ..._args>
@@ -240,7 +231,6 @@ namespace tlw {
                 mt::constructors[sizeof...(_args)] = type_safe_function_overloads();
             }
             mt::constructors[sizeof...(_args)].push_back(type_safe_function(_ct::check_args, _ct::ctor));
-            // a const primitive doesn't need a ctor
             return *this;
         }
 
@@ -262,30 +252,22 @@ namespace tlw {
         constexpr _builder_type &prop(const char *name, property_type<_prop_type> property) {
             user_prop<_user_type, _prop_type>::properties[name] = property;
             user_prop<const _user_type, _prop_type>::properties[name] = property;
-            user_prop<_user_type&, _prop_type>::properties[name] = property;
-            user_prop<const _user_type&, _prop_type>::properties[name] = property;
             user_prop<_user_type *, _prop_type>::properties[name] = property;
             user_prop<const _user_type *, _prop_type>::properties[name] = property;
 
             mt::getters[name] = user_prop<_user_type, _prop_type>::get;
             ro_mt::getters[name] = user_prop<const _user_type, _prop_type>::get;
-//            r_mt::getters[name] = user_prop<_user_type &, _prop_type>::get;
-//            ror_mt::getters[name] = user_prop<const _user_type&, _prop_type>::get;
             p_mt::getters[name] = user_prop<_user_type *, _prop_type>::get;
             rop_mt::getters[name] = user_prop<const _user_type *, _prop_type>::get;
 
             if constexpr (cpp_type<_prop_type>::is_const) {
                 mt::setters[name] = user_prop<_user_type, _prop_type>::invalid_set;
                 ro_mt::setters[name] = user_prop<const _user_type, _prop_type>::invalid_set;
-//                r_mt::setters[name] = user_prop<_user_type &, _prop_type>::invalid_set;
-//                ror_mt::setters[name] = user_prop<const _user_type&, _prop_type>::invalid_set;
                 p_mt::setters[name] = user_prop<_user_type *, _prop_type>::invalid_set;
                 rop_mt::setters[name] = user_prop<const _user_type *, _prop_type>::invalid_set;
             } else {
                 mt::setters[name] = user_prop<_user_type, _prop_type>::set;
                 ro_mt::setters[name] = user_prop<const _user_type, _prop_type>::invalid_set;
-//                r_mt::setters[name] = user_prop<_user_type &, _prop_type>::set;
-//                ror_mt::setters[name] = user_prop<const _user_type&, _prop_type>::set;
                 p_mt::setters[name] = user_prop<_user_type *, _prop_type>::set;
                 rop_mt::setters[name] = user_prop<const _user_type *, _prop_type>::invalid_set;
             }
@@ -321,9 +303,7 @@ namespace tlw {
             _register_method<mt>(name, method);
             _register_method<ro_mt>(name, method);
             _register_method<p_mt>(name, method);
-//            _register_method<r_mt>(name, method);
             _register_method<rop_mt>(name, method);
-//            _register_method<ror_mt>(name, method);
             return *this;
         }
 
@@ -332,9 +312,6 @@ namespace tlw {
             meta_table_registry<const _user_type>::name = ro_mt::name;
             meta_table_registry<_user_type *>::name = p_mt::name;
             meta_table_registry<const _user_type *>::name = rop_mt::name;
-//            meta_table_registry<_user_type&>::name = r_mt::name;
-//            meta_table_registry<const _user_type&>::name = ror_mt::name;
-            // The const user definition will be exposed by the normal user definition
             return meta_table_registry<_user_type>::expose = _expose;
         }
 
@@ -386,8 +363,8 @@ namespace tlw {
         }
     };
 
-    template<class _user_type, bool traditional>
-    constexpr meta_table_builder<_user_type, traditional> define(const char *name) {
+    template<class _user_type>
+    constexpr meta_table_builder<_user_type> define(const char *name) {
         if (meta_table_registry<_user_type>::name) {
             printf("Warning: meta table %s already defined\n", meta_table_registry<_user_type>::name);
             if (strcmp(meta_table_registry<_user_type>::name, name) != 0) {
@@ -396,12 +373,7 @@ namespace tlw {
                        name);
             }
         }
-        return meta_table_builder<_user_type, traditional>(name);
-    }
-
-    template<class _user_type>
-    constexpr meta_table_builder<_user_type, true> define(const char *name) {
-        return define<_user_type, true>(name);
+        return meta_table_builder<_user_type>(name);
     }
 }
 

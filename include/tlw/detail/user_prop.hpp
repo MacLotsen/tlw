@@ -59,10 +59,9 @@ namespace tlw {
             return 0;
         }
 
-        static int invalid_set(lua_State *L) {
-            auto prop = stack_traits<const char *>::get(L, 2);
+        static constexpr int invalid_set(lua_State *L) {
+            luaL_error(L, "Error: property '%s' is read only", stack_traits<const char *>::get(L, 2));
             lua_settop(L, 0);
-            luaL_error(L, "Error: property '%s' is read only", prop);
             return 0;
         }
     };

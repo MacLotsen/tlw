@@ -20,7 +20,7 @@
 #ifndef TLW_TABLE_HPP
 #define TLW_TABLE_HPP
 
-#include <tlw/_table.h>
+#include <tlw/_table.hpp>
 #include <tlw/detail/stack_traits.hpp>
 #include <tlw/detail/table_traits.hpp>
 #include <tlw/table_reference.hpp>
@@ -34,20 +34,18 @@ namespace tlw {
         _table(state L) : L(std::move(L)) {}
 
         template<typename _type, typename _key>
-        _type get(_key k) {
+        constexpr _type get(_key k) {
             return table_traits<_type, _key>::get(L, LUA_GLOBALSINDEX, k);
         }
 
         template<typename _type, typename _key>
-        void set(_key k, _type val) {
+        constexpr void set(_key k, _type val) {
             table_traits<_type, _key>::set(L, LUA_GLOBALSINDEX, k, std::move(val));
         }
 
         template<typename _key>
-        table_reference<_table<true>, _key> operator[](_key k) {
-            lua_getglobal(L, k);
-            auto val = stack_traits<reference>::get(L, -1);
-            lua_pop(L, 1);
+        constexpr table_reference<_table<true>, _key> operator[](_key k) {
+            auto val = get<reference>(k);
             return table_reference<_table<true>, _key>(std::move(val), *this, k);
         }
     };
@@ -65,7 +63,7 @@ namespace tlw {
         }
 
         template<typename _type, typename _key>
-        _type get(_key k) {
+        constexpr _type get(_key k) {
             traits::push(L, *this);
             auto value = table_traits<_type, _key>::get(L, lua_gettop(L), k);
             lua_pop(L, 1);
@@ -73,18 +71,15 @@ namespace tlw {
         }
 
         template<typename _type, typename _key>
-        void set(_key k, _type val) {
+        constexpr void set(_key k, _type val) {
             traits::push(L, *this);
             table_traits<_type, _key>::set(L, lua_gettop(L), k, std::move(val));
             lua_pop(L, 1);
         }
 
         template<typename _key>
-        table_reference<_table<false>, _key> operator[](_key k) {
-            traits::push(L, *this);
-            auto val = table_traits<reference, _key>::get(L, lua_gettop(L), k);
-            lua_pop(L, 1);
-            return table_reference<_table<false>, _key>(val, *this, k);
+        constexpr table_reference<_table<false>, _key> operator[](_key k) {
+            return table_reference<_table<false>, _key>(get<reference>(k), *this, k);
         }
     };
 

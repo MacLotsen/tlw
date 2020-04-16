@@ -25,7 +25,7 @@
 namespace tlw {
     
     struct reference {
-        constexpr static const int invalid = LUA_NOREF;
+        static constexpr const int invalid = LUA_NOREF;
         
         state L;
         int r_idx;
@@ -53,7 +53,7 @@ namespace tlw {
 
         reference& operator=(const tlw::reference&) = default;
 
-        explicit operator bool() const noexcept {
+        constexpr explicit operator bool() const noexcept {
             return r_idx != invalid && r_idx != LUA_REFNIL;
         }
     };

@@ -24,55 +24,55 @@ namespace tlw {
 
     template<typename _type, typename ...>
     struct cpp_type {
-        static constexpr bool is_const = false;
-        static constexpr bool is_value = true;
-        static constexpr bool is_pointer = false;
-        static constexpr bool is_reference = false;
+        static constexpr const bool is_const = false;
+        static constexpr const bool is_value = true;
+        static constexpr const bool is_pointer = false;
+        static constexpr const bool is_reference = false;
         using value_type = _type;
     };
 
     template<typename _type>
     struct cpp_type<const _type> {
-        static constexpr bool is_const = true;
-        static constexpr bool is_value = true;
-        static constexpr bool is_pointer = false;
-        static constexpr bool is_reference = false;
+        static constexpr const bool is_const = true;
+        static constexpr const bool is_value = true;
+        static constexpr const bool is_pointer = false;
+        static constexpr const bool is_reference = false;
         using value_type = _type;
     };
 
     template<typename _type>
     struct cpp_type<_type&> {
-        static constexpr bool is_const = false;
-        static constexpr bool is_value = false;
-        static constexpr bool is_pointer = false;
-        static constexpr bool is_reference = true;
+        static constexpr const bool is_const = false;
+        static constexpr const bool is_value = false;
+        static constexpr const bool is_pointer = false;
+        static constexpr const bool is_reference = true;
         using value_type = _type;
     };
 
     template<typename _type>
     struct cpp_type<const _type&> {
-        static constexpr bool is_const = true;
-        static constexpr bool is_value = false;
-        static constexpr bool is_pointer = false;
-        static constexpr bool is_reference = true;
+        static constexpr const bool is_const = true;
+        static constexpr const bool is_value = false;
+        static constexpr const bool is_pointer = false;
+        static constexpr const bool is_reference = true;
         using value_type = _type;
     };
 
     template<typename _type>
     struct cpp_type<_type*> {
-        static constexpr bool is_const = false;
-        static constexpr bool is_value = false;
-        static constexpr bool is_pointer = true;
-        static constexpr bool is_reference = false;
+        static constexpr const bool is_const = false;
+        static constexpr const bool is_value = false;
+        static constexpr const bool is_pointer = true;
+        static constexpr const bool is_reference = false;
         using value_type = _type;
     };
 
     template<typename _type>
     struct cpp_type<const _type*> {
-        static constexpr bool is_const = true;
-        static constexpr bool is_value = false;
-        static constexpr bool is_pointer = true;
-        static constexpr bool is_reference = false;
+        static constexpr const bool is_const = true;
+        static constexpr const bool is_value = false;
+        static constexpr const bool is_pointer = true;
+        static constexpr const bool is_reference = false;
         using value_type = _type;
     };
 
@@ -83,50 +83,50 @@ namespace tlw {
 
     template<typename _class, typename _r, typename ..._args>
     struct method_type<_r (_class::*)(_args...)> {
-        constexpr static inline bool read_only = false;
-        constexpr static inline int arg_count = sizeof...(_args);
+        static constexpr inline const bool read_only = false;
+        static constexpr inline const int arg_count = sizeof...(_args);
     };
 
     template<typename _class, typename ..._args>
     struct method_type<void (_class::*)(_args...)> {
-        constexpr static inline bool read_only = false;
-        constexpr static inline int arg_count = sizeof...(_args);
+        static constexpr inline const bool read_only = false;
+        static constexpr inline const int arg_count = sizeof...(_args);
     };
 
     template<typename _class, typename _r>
     struct method_type<_r (_class::*)()> {
-        constexpr static inline bool read_only = false;
-        constexpr static inline int arg_count = 0;
+        static constexpr inline const bool read_only = false;
+        static constexpr inline const int arg_count = 0;
     };
 
     template<typename _class>
     struct method_type<void (_class::*)()> {
-        constexpr static inline bool read_only = false;
-        constexpr static inline int arg_count = 0;
+        static constexpr inline const bool read_only = false;
+        static constexpr inline const int arg_count = 0;
     };
 
     template<typename _class, typename _r, typename ..._args>
     struct method_type<_r (_class::*)(_args...) const> {
-        constexpr static inline bool read_only = true;
-        constexpr static inline int arg_count = sizeof...(_args);
+        static constexpr inline const bool read_only = true;
+        static constexpr inline const int arg_count = sizeof...(_args);
     };
 
     template<typename _class, typename ..._args>
     struct method_type<void (_class::*)(_args...) const> {
-        constexpr static inline bool read_only = true;
-        constexpr static inline int arg_count = sizeof...(_args);
+        static constexpr inline const bool read_only = true;
+        static constexpr inline const int arg_count = sizeof...(_args);
     };
 
     template<typename _class, typename _r>
     struct method_type<_r (_class::*)() const> {
-        constexpr static inline bool read_only = true;
-        constexpr static inline int arg_count = 0;
+        static constexpr inline const bool read_only = true;
+        static constexpr inline const int arg_count = 0;
     };
 
     template<typename _class>
     struct method_type<void (_class::*)() const> {
-        constexpr static inline bool read_only = true;
-        constexpr static inline int arg_count = 0;
+        static constexpr inline const bool read_only = true;
+        static constexpr inline const int arg_count = 0;
     };
 
     template<int... Is>

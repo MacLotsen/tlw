@@ -21,7 +21,7 @@
 #define TLW_TABLE_REFERENCE_HPP
 
 #include <lua.hpp>
-#include <tlw/_table.h>
+#include <tlw/_table.hpp>
 #include <tlw/reference.hpp>
 #include <tlw/detail/stack_traits.hpp>
 
@@ -29,7 +29,6 @@ namespace tlw {
 
     template<typename _table_type, typename _key>
     struct table_reference : public reference {
-
         _table_type origin;
         _key at;
 
@@ -42,7 +41,7 @@ namespace tlw {
         }
 
         template<typename _type>
-        operator _type() {
+        constexpr operator _type() {
             using traits = stack_traits<_type>;
             stack_traits<table_reference<_table_type, _key>>::push(L, *this);
             auto val = traits::get(L, -1);
@@ -51,7 +50,7 @@ namespace tlw {
         }
 
         template<typename _key2>
-        table_reference<_table<false>, _key2> operator[](_key2 k) {
+        constexpr table_reference<_table<false>, _key2> operator[](_key2 k) {
             stack_traits<table_reference>::push(L, *this);
 
             if (!type_inspector<table_t>::inspect(L)) {
@@ -59,12 +58,11 @@ namespace tlw {
             }
             auto value = std::move(table_traits<reference, _key2>::get(L, lua_gettop(L), k));
             lua_pop(L, 1);
-            auto this_table = _table<false>(*this);
-            return table_reference<_table<false>, _key2>(value, this_table, k);
+            return table_reference<_table<false>, _key2>(value, _table<false>(*this), k);
         }
 
         template<typename _type>
-        table_reference<_table_type, _key>& operator=(_type other) {
+        constexpr table_reference<_table_type, _key>& operator=(_type other) {
             origin.template set<_type>(at, other);
             return *this;
         }

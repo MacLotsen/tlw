@@ -83,7 +83,7 @@ namespace tlw {
     template<typename mt>
     struct __explicit_ctor {
 
-        static int create(lua_State *L) {
+        static constexpr int create(lua_State *L) {
             int top = lua_gettop(L);
             if (mt::constructors.empty()) {
                 luaL_error(L, "No constructor defined for %s", mt::name);
@@ -106,15 +106,14 @@ namespace tlw {
     template<typename mt>
     struct __explicit_method {
 
-        static int invoke(lua_State *L) {
-            stack s = stack(state(L));
-            auto ud = s.get<typename mt::user_type>(1);
-            auto prop = s.get<const char *>(2);
+        static constexpr int invoke(lua_State *L) {
+            auto ud = stack_traits<typename mt::user_type>::get(L, 1);
+            auto prop = stack_traits<const char *>::get(L, 2);
 
             lua_pushcclosure(L, [] (lua_State *L)->int {
                 stack s = stack(state(L));
-                auto ud = s.get<typename mt::user_type>(lua_upvalueindex(1));
-                auto prop = s.get<const char *>(lua_upvalueindex(2));
+                auto ud = s.get<typename mt::user_type>(lua_upvalueindex(1));//stack_traits<typename mt::user_type>::get(L, lua_upvalueindex(1));
+                auto prop = s.get<const char *>(lua_upvalueindex(2));//stack_traits<const char *>::get(L, lua_upvalueindex(2));
 
                 int top = lua_gettop(L);
                 if (mt::methods.empty()) {
@@ -188,13 +187,13 @@ namespace tlw {
         using ro_mt = meta_table<const _user_type>;
         using p_mt = meta_table<_user_type *>;
         using rop_mt = meta_table<const _user_type *>;
-        using ror_mt = meta_table<const _user_type &>;
-        using r_mt = meta_table<_user_type &>;
+//        using ror_mt = meta_table<const _user_type &>;
+//        using r_mt = meta_table<_user_type &>;
 
         template<typename _property_type>
         using property_type = _property_type _user_type::*;
 
-        explicit meta_table_builder(const char *name) noexcept {
+        constexpr explicit meta_table_builder(const char *name) noexcept {
             mt::name = name;
 
             size_t length = strlen(name) + 7;
@@ -235,7 +234,7 @@ namespace tlw {
         }
 
         template<typename ..._args>
-        _builder_type &ctor() {
+        constexpr _builder_type &ctor() {
             using _ct = user_ctor<_user_type *, _args...>;
             if (mt::constructors.find(sizeof...(_args)) == mt::constructors.end()) {
                 mt::constructors[sizeof...(_args)] = type_safe_function_overloads();
@@ -245,7 +244,7 @@ namespace tlw {
             return *this;
         }
 
-        _builder_type &dtor() {
+        constexpr _builder_type &dtor() {
             p_mt::dtor = [](lua_State *L) -> int {
                 delete stack_traits<_user_type *>::get(L, -1);
                 lua_pop(L, 1);
@@ -260,7 +259,7 @@ namespace tlw {
         }
 
         template<typename _prop_type>
-        _builder_type &prop(const char *name, property_type<_prop_type> property) {
+        constexpr _builder_type &prop(const char *name, property_type<_prop_type> property) {
             user_prop<_user_type, _prop_type>::properties[name] = property;
             user_prop<const _user_type, _prop_type>::properties[name] = property;
             user_prop<_user_type&, _prop_type>::properties[name] = property;
@@ -271,9 +270,9 @@ namespace tlw {
             mt::getters[name] = user_prop<_user_type, _prop_type>::get;
             ro_mt::getters[name] = user_prop<const _user_type, _prop_type>::get;
 //            r_mt::getters[name] = user_prop<_user_type &, _prop_type>::get;
-            ror_mt::getters[name] = user_prop<const _user_type&, _prop_type>::get;
+//            ror_mt::getters[name] = user_prop<const _user_type&, _prop_type>::get;
             p_mt::getters[name] = user_prop<_user_type *, _prop_type>::get;
-//            rop_mt::getters[name] = user_prop<const _user_type *, _prop_type>::get;
+            rop_mt::getters[name] = user_prop<const _user_type *, _prop_type>::get;
 
             if constexpr (cpp_type<_prop_type>::is_const) {
                 mt::setters[name] = user_prop<_user_type, _prop_type>::invalid_set;
@@ -295,7 +294,7 @@ namespace tlw {
         }
 
         template<typename mt, typename _method_type>
-        constexpr static inline void _register_method(const char *prop, _method_type method) {
+        static constexpr void _register_method(const char *prop, _method_type method) {
             using um = user_method<typename mt::user_type, _method_type>;
             using mtype = method_type<_method_type>;
             if (mt::methods.find(prop) == mt::methods.end()) {

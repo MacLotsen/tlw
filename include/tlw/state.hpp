@@ -31,22 +31,19 @@ namespace tlw {
 
     class state {
 
-        static inline state_holder * const invalid = nullptr;
+        static constexpr inline state_holder * const invalid = nullptr;
 
         state_holder* holder;
 
-        explicit state (bool) noexcept {
-            holder = nullptr;
+        constexpr explicit state (bool) noexcept : holder(nullptr) {
         }
 
     public:
 
-        explicit state() noexcept {
-            holder = new state_holder {luaL_newstate(), 1};
+        explicit state() noexcept : holder(new state_holder {luaL_newstate(), 1}) {
         }
 
-        explicit state(lua_State *L) noexcept {
-            holder = new state_holder{L, -1};
+        explicit state(lua_State *L) noexcept : holder(new state_holder{L, -1}) {
         }
 
         state(const state &other) noexcept {
@@ -74,7 +71,7 @@ namespace tlw {
             invalidate();
         }
 
-        state & operator =(state const & other) noexcept {
+        constexpr state & operator =(state const & other) noexcept {
             invalidate();
             if (other) {
                 holder = other.holder;
@@ -88,18 +85,18 @@ namespace tlw {
             return *this;
         }
 
-        state & operator =(state &&other) noexcept {
+        constexpr state & operator =(state &&other) noexcept {
             invalidate();
             holder = other.holder;
             other.holder = state::invalid;
             return *this;
         }
 
-        explicit operator bool() const {
+        constexpr explicit operator bool() const {
             return holder;
         }
 
-        operator lua_State * () const {
+        constexpr operator lua_State * () const {
             if (!holder)
                 throw std::runtime_error("invalid lua state");
             return holder->L;
@@ -111,7 +108,7 @@ namespace tlw {
 
     private:
 
-        void invalidate() noexcept {
+        constexpr void invalidate() noexcept {
             if (*this) {
                 bool is_owner = holder->ref_count > 0;
 

@@ -17,8 +17,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW__TABLE_H
-#define TLW__TABLE_H
+#ifndef TLW__TABLE_HPP
+#define TLW__TABLE_HPP
 
 namespace tlw {
     template<bool is_global>
@@ -34,4 +34,4 @@ namespace tlw {
     };
 }
 
-#endif //TLW__TABLE_H
+#endif //TLW__TABLE_HPP

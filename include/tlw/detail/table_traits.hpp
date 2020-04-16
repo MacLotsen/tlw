@@ -27,7 +27,7 @@ namespace tlw {
         using key_traits = stack_traits<_key>;
         using value_traits = stack_traits<_type>;
 
-        static _type get(lua_State *L, int idx, _key k) {
+        static constexpr _type get(lua_State *L, int idx, _key k) {
             key_traits::push(L, k);
             lua_gettable(L, idx);
             _type val = value_traits::get(L, -1);
@@ -35,7 +35,7 @@ namespace tlw {
             return std::move(val);
         }
 
-        static void set(lua_State *L, int idx, _key k, _type val) {
+        static constexpr void set(lua_State *L, int idx, _key k, _type val) {
             key_traits::push(L, k);
             value_traits::push(L, val);
             lua_settable(L, idx);

@@ -15,7 +15,7 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.17)
 project(tlw)
 
 execute_process(
@@ -35,7 +35,8 @@ option(BUILD_BENCHMARKS "Build Benchmarks in GTest" OFF)
 find_package(LuaJIT REQUIRED)
 
 add_library(tlw INTERFACE)
-target_compile_features(tlw INTERFACE cxx_std_17)
+
+target_compile_features(tlw INTERFACE cxx_std_20)
 target_link_libraries(tlw INTERFACE ${LUA_LIBRARY})
 target_include_directories(tlw
         INTERFACE
@@ -47,7 +48,8 @@ if ("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")
     target_compile_definitions(tlw INTERFACE STRICT_ARGUMENTS)
 endif ()
 
-set_target_properties(tlw PROPERTIES EXPORT_NAME tlw)
+set_target_properties(tlw PROPERTIES
+        EXPORT_NAME tlw)
 
 install(TARGETS tlw
         EXPORT tlw-targets

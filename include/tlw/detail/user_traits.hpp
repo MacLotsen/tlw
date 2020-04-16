@@ -27,7 +27,7 @@ namespace tlw {
     template<class _type>
     struct user_type_traits {
 
-        static bool inspect(lua_State *L, int idx) {
+        static constexpr bool inspect(lua_State *L, int idx) {
             int type_id = lua_type(L, idx);
             switch(lua_type(L, idx)) {
                 case LUA_TUSERDATA:
@@ -39,7 +39,7 @@ namespace tlw {
             }
         }
 
-        static bool inspect_meta_table(lua_State *L, int idx) {
+        static constexpr bool inspect_meta_table(lua_State *L, int idx) {
             int top = lua_gettop(L);
             lua_getmetatable(L, idx);
             lua_getfield(L, -1, "__name");
@@ -56,7 +56,7 @@ namespace tlw {
         using _user_data_t = user_data_t<_type>;
         using _light_user_data_t = light_user_data_t<_type>;
 
-        static void push(lua_State *L, const _type &value) {
+        static constexpr void push(lua_State *L, const _type &value) {
             if (meta_table_registry<_type>::name) {
                     type_traits<_user_data_t>::push(L, value);
                 luaL_getmetatable(L, meta_table_registry<_type>::name);
@@ -66,7 +66,7 @@ namespace tlw {
             }
         }
 
-        static const _type& get(lua_State *L, int idx) {
+        static constexpr const _type& get(lua_State *L, int idx) {
             if (meta_table_registry<_type>::name) {
                 return type_traits<_user_data_t>::get(L, idx);
             } else {
@@ -82,7 +82,7 @@ namespace tlw {
         using _user_data_t = user_data_t<_type>;
         using _light_user_data_t = light_user_data_t<_type>;
 
-        static void push(lua_State *L, _type value) {
+        static constexpr void push(lua_State *L, _type value) {
             if (meta_table_registry<_type>::name) {
                 if constexpr (cpp_type<_type>::is_pointer) {
                     type_traits<_user_data_t>::push(L, value);
@@ -96,7 +96,7 @@ namespace tlw {
             }
         }
 
-        static _type get(lua_State *L, int idx) {
+        static constexpr _type get(lua_State *L, int idx) {
             if (meta_table_registry<_type>::name) {
                 return type_traits<_user_data_t>::get(L, idx);
             } else {

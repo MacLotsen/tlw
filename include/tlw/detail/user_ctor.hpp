@@ -28,16 +28,16 @@ namespace tlw {
 
     template<class _user_type, typename ..._args>
     struct user_ctor {
-        static bool check_args(lua_State *L) {
+        static constexpr bool check_args(lua_State *L) {
             return check_args(L, gen_seq<sizeof...(_args)>());
         }
 
         template<int ...Is>
-        static bool check_args(lua_State *L, seq<Is...>) {
+        static constexpr bool check_args(lua_State *L, seq<Is...>) {
             return (... && stack_traits<_args>::inspect(L, Is + 1));
         }
 
-        static int ctor(lua_State *L) {
+        static constexpr int ctor(lua_State *L) {
             if constexpr (sizeof...(_args)) {
                 auto params = stack(state(L)).grab<_args...>();
                 auto seq = gen_seq<sizeof...(_args)>();
@@ -58,12 +58,12 @@ namespace tlw {
         }
 
         template<int ...Ns>
-        constexpr static _user_type create_pointer(std::tuple<_args...> t, seq<Ns...>) {
+        static constexpr _user_type create_pointer(std::tuple<_args...> t, seq<Ns...>) {
             return new typename cpp_type<_user_type>::value_type(std::get<Ns>(t)...);
         }
 
         template<int ...Ns>
-        constexpr static _user_type create_value(std::tuple<_args...> t, seq<Ns...>) {
+        static constexpr _user_type create_value(std::tuple<_args...> t, seq<Ns...>) {
             return typename cpp_type<_user_type>::value_type (std::get<Ns>(t)...);
         }
     };

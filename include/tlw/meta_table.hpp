@@ -61,11 +61,11 @@ namespace tlw {
         static inline std::unordered_map<std::string_view, cfunction_t::type> getters{};
         static inline std::unordered_map<std::string_view, cfunction_t::type> operators{};
 
-        static void reset() {
+        static constexpr void reset() {
             reset(false);
         }
 
-        static void reset(bool cleanup) {
+        static constexpr void reset(bool cleanup) {
             if (cleanup && name)
                 delete[] name;
             name = nullptr;
@@ -84,7 +84,7 @@ namespace tlw {
 
         inline static void (*expose)(state L);
 
-        static void reset() {
+        static constexpr void reset() {
             name = nullptr;
             expose = nullptr;
             meta_table<_user_type>::reset();

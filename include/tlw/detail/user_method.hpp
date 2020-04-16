@@ -23,7 +23,7 @@
 namespace tlw {
 
     template<typename _type>
-    _type get_arg(stack &s, int &idx) {
+    constexpr _type get_arg(stack &s, int &idx) {
         return s.get<_type>(++idx);
     }
 
@@ -37,11 +37,11 @@ namespace tlw {
         using method_t = void (_base_type::*)() const;
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static bool test(lua_State *L) {
+        static constexpr bool test(lua_State *L) {
             return lua_gettop(L) == 0;
         }
 
-        static int provide(stack &s, _user_type ud, const char *prop) {
+        static constexpr int provide(stack &s, _user_type ud, const char *prop) {
             auto m = methods[prop];
             if constexpr (cpp_type<_user_type>::is_pointer) {
                 (ud->*m)();
@@ -57,11 +57,11 @@ namespace tlw {
         using method_t = void (_base_type::*)();
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static bool test(lua_State *L) {
+        static constexpr bool test(lua_State *L) {
             return lua_gettop(L) == 0;
         }
 
-        static int provide(stack &s, _user_type ud, const char *prop) {
+        static constexpr int provide(stack &s, _user_type ud, const char *prop) {
             auto m = methods[prop];
             if constexpr (cpp_type<_user_type>::is_const) {
                 return -1;
@@ -85,11 +85,11 @@ namespace tlw {
         using method_t = _r (_base_type::*)() const;
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static bool test(lua_State *L) {
+        static constexpr bool test(lua_State *L) {
             return lua_gettop(L) == 0;
         }
 
-        static int provide(stack &s, _user_type ud, const char *prop) {
+        static constexpr int provide(stack &s, _user_type ud, const char *prop) {
             auto m = methods[prop];
             if constexpr (cpp_type<_user_type>::is_pointer) {
                 s.push((ud->*m)());
@@ -105,11 +105,11 @@ namespace tlw {
         using method_t = _r (_base_type::*)();
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static bool test(lua_State *L) {
+        static constexpr bool test(lua_State *L) {
             return lua_gettop(L) == 0;
         }
 
-        static int provide(stack &s, _user_type ud, const char *prop) {
+        static constexpr int provide(stack &s, _user_type ud, const char *prop) {
             auto m = methods[prop];
             if constexpr (cpp_type<_user_type>::is_const) {
                 return -1;
@@ -133,16 +133,16 @@ namespace tlw {
         using method_t = void (_base_type::*)(_args...) const;
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static bool test(lua_State *L) {
+        static constexpr bool test(lua_State *L) {
             return test(L, gen_seq<sizeof...(_args)>());
         }
 
         template<int ...Is>
-        static bool test(lua_State *L, seq<Is...>) {
+        static constexpr bool test(lua_State *L, seq<Is...>) {
             return (... && stack_traits<_args>::inspect(L, Is + 1));
         }
 
-        static int provide(stack &s, _user_type ud, const char *prop) {
+        static constexpr int provide(stack &s, _user_type ud, const char *prop) {
             auto m = methods[prop];
             int arg_idx = 0;
             if constexpr (cpp_type<_user_type>::is_pointer) {
@@ -161,16 +161,16 @@ namespace tlw {
         using method_t = void (_base_type::*)(_args...);
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static bool test(lua_State *L) {
+        static constexpr bool test(lua_State *L) {
             return test(L, gen_seq<sizeof...(_args)>());
         }
 
         template<int ...Is>
-        static bool test(lua_State *L, seq<Is...>) {
+        static constexpr bool test(lua_State *L, seq<Is...>) {
             return (... && stack_traits<_args>::inspect(L, Is + 1));
         }
 
-        static int provide(stack &s, _user_type ud, const char *prop) {
+        static constexpr int provide(stack &s, _user_type ud, const char *prop) {
             auto m = methods[prop];
             int arg_idx = 0;
             if constexpr (cpp_type<_user_type>::is_const) {
@@ -196,16 +196,16 @@ namespace tlw {
         using method_t = _r (_base_type::*)(_args...) const;
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static bool test(lua_State *L) {
+        static constexpr bool test(lua_State *L) {
             return test(L, gen_seq<sizeof...(_args)>());
         }
 
         template<int ...Is>
-        static bool test(lua_State *L, seq<Is...>) {
+        static constexpr bool test(lua_State *L, seq<Is...>) {
             return (... && stack_traits<_args>::inspect(L, Is + 1));
         }
 
-        static int provide(stack &s, _user_type ud, const char *prop) {
+        static constexpr int provide(stack &s, _user_type ud, const char *prop) {
             auto m = methods[prop];
             int arg_idx = 0;
             if constexpr (cpp_type<_user_type>::is_pointer) {
@@ -226,16 +226,16 @@ namespace tlw {
         using method_t = _r (_base_type::*)(_args...);
         static inline std::unordered_map<std::string_view, method_t> methods = {};
 
-        static bool test(lua_State *L) {
+        static constexpr bool test(lua_State *L) {
             return test(L, gen_seq<sizeof...(_args)>());
         }
 
         template<int ...Is>
-        static bool test(lua_State *L, seq<Is...>) {
+        static constexpr bool test(lua_State *L, seq<Is...>) {
             return (... && stack_traits<_args>::inspect(L, Is + 1));
         }
 
-        static int provide(stack &s, _user_type ud, const char *prop) {
+        static constexpr int provide(stack &s, _user_type ud, const char *prop) {
             auto m = methods[prop];
             int arg_idx = 0;
             if constexpr (cpp_type<_user_type>::is_const) {

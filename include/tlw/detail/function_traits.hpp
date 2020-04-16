@@ -26,33 +26,33 @@
 namespace tlw {
 
     template<>
-    struct stack_traits<function <void()>> : public reference_stack_traits <function_t> {
-    using type = function<void()>;
-    using reference_stack_traits<function_t>::push;
+    struct stack_traits<function<void()>> : public reference_stack_traits<function_t> {
+        using type = function<void()>;
+        using reference_stack_traits<function_t>::push;
 
-    static inline type get(lua_State *L, int idx) {
-        return std::move(type(std::move(reference_stack_traits::get(L, idx))));
-    }
+        static type get(lua_State *L, int idx) {
+            return std::move(type(reference_stack_traits::get(L, idx)));
+        }
 
-};
+    };
 
     template<typename _r>
-    struct stack_traits<function < _r()>> : public reference_stack_traits <function_t> {
+    struct stack_traits<function<_r()>> : public reference_stack_traits<function_t> {
         using type = function<_r()>;
         using reference_stack_traits<function_t>::push;
 
-        static inline type get(lua_State *L, int idx) {
+        static type get(lua_State *L, int idx) {
             return std::move(type(std::move(reference_stack_traits::get(L, idx))));
         }
 
     };
 
     template<typename _r, typename ..._args>
-    struct stack_traits<function < _r(_args...)>> : public reference_stack_traits <function_t> {
+    struct stack_traits<function<_r(_args...)>> : public reference_stack_traits<function_t> {
         using type = function<_r(_args...)>;
         using reference_stack_traits<function_t>::push;
 
-        static inline type get(lua_State *L, int idx) {
+        static type get(lua_State *L, int idx) {
             return std::move(type(std::move(reference_stack_traits::get(L, idx))));
         }
     };

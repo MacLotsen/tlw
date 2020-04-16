@@ -29,15 +29,26 @@ namespace tlw {
 
     };
 
+    template<typename _type>
+    struct pop_traits {
+        using st = stack_traits<_type>;
+
+        static constexpr _type pop(lua_State *L) {
+            auto value = st::get(L, -1);
+            lua_pop(L, 1);
+            return value;
+        }
+    };
+
     template<typename _lua_type>
     struct reference_stack_traits : public type_inspector<_lua_type> {
         using type_inspector<_lua_type>::inspect;
 
-        static void push(lua_State *L, typename _lua_type::type value) {
+        static constexpr void push(lua_State *L, typename _lua_type::type value) {
             reference_traits<_lua_type>::push(L, std::move(value));
         }
 
-        static typename _lua_type::type get(lua_State *L, int idx) {
+        static constexpr typename _lua_type::type get(lua_State *L, int idx) {
             return reference_traits<_lua_type>::get(L, idx);
         }
     };

@@ -60,7 +60,9 @@ namespace tlw {
             return *this;
         }
 
-        example& operator=(const example &e) = default;
+        example& operator=(const example &e) {
+            return *this = example(e);
+        }
 
         virtual ~example() {
             example_tracker::deleted++;

@@ -206,7 +206,7 @@ namespace tlw {
         }
 
         static int provide(stack &s, _user_type ud, const char *prop) {
-            auto m = s.get<method_t>(lua_upvalueindex(2));
+            auto m = methods[prop];
             int arg_idx = 0;
             if constexpr (cpp_type<_user_type>::is_pointer) {
                 auto value = (ud->*m)(get_arg<_args>(s, arg_idx)...);

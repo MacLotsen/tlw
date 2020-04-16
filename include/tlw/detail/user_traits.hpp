@@ -25,10 +25,7 @@
 namespace tlw {
 
     template<class _type>
-    struct stack_traits<_type> {
-        using _base_type = typename cpp_type<_type>::value_type;
-        using _user_data_t = user_data_t<_type>;
-        using _light_user_data_t = light_user_data_t<_type>;
+    struct user_type_traits {
 
         static bool inspect(lua_State *L, int idx) {
             int type_id = lua_type(L, idx);
@@ -50,6 +47,40 @@ namespace tlw {
             lua_settop(L, top);
             return matches;
         }
+    };
+
+    template<class _type>
+    struct stack_traits<const _type&> : public user_type_traits<_type> {
+        using user_type_traits<_type>::inspect;
+        using _base_type = typename cpp_type<_type>::value_type;
+        using _user_data_t = user_data_t<_type>;
+        using _light_user_data_t = light_user_data_t<_type>;
+
+        static void push(lua_State *L, const _type &value) {
+            if (meta_table_registry<_type>::name) {
+                    type_traits<_user_data_t>::push(L, value);
+                luaL_getmetatable(L, meta_table_registry<_type>::name);
+                lua_setmetatable(L, -2);
+            } else {
+                throw std::runtime_error("Cannot push a const reference as light user datum.");
+            }
+        }
+
+        static const _type& get(lua_State *L, int idx) {
+            if (meta_table_registry<_type>::name) {
+                return type_traits<_user_data_t>::get(L, idx);
+            } else {
+                throw std::runtime_error("Cannot get a const reference as light user datum.");
+            }
+        }
+    };
+
+    template<class _type>
+    struct stack_traits<_type> : public user_type_traits<_type> {
+        using user_type_traits<_type>::inspect;
+        using _base_type = typename cpp_type<_type>::value_type;
+        using _user_data_t = user_data_t<_type>;
+        using _light_user_data_t = light_user_data_t<_type>;
 
         static void push(lua_State *L, _type value) {
             if (meta_table_registry<_type>::name) {

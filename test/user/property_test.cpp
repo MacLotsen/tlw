@@ -39,6 +39,20 @@ TEST_F(user_test, test_property) {
     }
 
     ASSERT_EQ(4.5, e.val);
+
+    e.val = 5.5;
+    s.push<const tlw::example&>(e);
+    lua_setglobal(L, "example1");
+
+    if (luaL_dostring(L, "return example1.val")) {
+        FAIL() << "Failed to execute getter script '" << lua_tostring(L, -1) << "'";
+    }
+
+    ASSERT_EQ(5.5, s.pop<float>());
+
+    if (luaL_dostring(L, "example1.val = 4.5")) {
+        FAIL() << "Failed to execute setter script '" << lua_tostring(L, -1) << "'";
+    }
 }
 
 TEST_F(user_test, test_property_with_const_ud) {

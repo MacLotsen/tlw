@@ -43,6 +43,11 @@ namespace tlw {
     };
 
     template<>
+    struct stack_traits<reference> : public reference_stack_traits<anonymous_t> {
+
+    };
+
+    template<>
     struct stack_traits<table_t> : public reference_stack_traits<table_t> {
 
     };

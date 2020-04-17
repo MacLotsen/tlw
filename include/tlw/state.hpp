@@ -21,6 +21,7 @@
 #define TLW_STATE_HPP
 
 #include <lua.hpp>
+#include <stdexcept>
 
 namespace tlw {
 

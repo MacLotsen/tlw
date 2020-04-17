@@ -20,7 +20,14 @@
 #ifndef TLW_HIGH_END_EXAMPLES_H
 #define TLW_HIGH_END_EXAMPLES_H
 
+#include <tlw/tlw.hpp>
 #include <cmath>
+#include <utility>
+
+
+extern "C" {
+int luaopen_examplelib(lua_State *_L);
+}
 
 namespace tlw {
 
@@ -57,7 +64,7 @@ namespace tlw {
             return *this;
         }
 
-        vec4& addition(float factor) {
+        vec4 &addition(float factor) {
             x += factor;
             y += factor;
             z += factor;
@@ -65,7 +72,7 @@ namespace tlw {
             return *this;
         }
 
-        vec4& addition(const vec4&other) {
+        vec4 &addition(const vec4 &other) {
             x += other.x;
             y += other.y;
             z += other.z;
@@ -117,7 +124,7 @@ namespace tlw {
         vec4 look_at;
         mat4 model;
 
-        entity(vec4 position) : position(position), look_at(0, 0, -1), model() {
+        entity(vec4 position) : position(std::move(position)), look_at(0, 0, -1), model() {
 
         }
 
@@ -125,6 +132,46 @@ namespace tlw {
 
         }
     };
+
+    static int load_vec4(const tlw::state &L) {
+        auto
+        lib_vec4 = tlw::define<tlw::vec4>("vec4")
+                           .ctor<>()
+                           .ctor<float>()
+                           .ctor<float, float, float>()
+                           .ctor<float, float, float, float>()
+                           .prop("x", &tlw::vec4::x)
+                           .prop("y", &tlw::vec4::y)
+                           .prop("z", &tlw::vec4::z)
+                           .prop("w", &tlw::vec4::w)
+                           .method<tlw::vec4 &(float)>("add", &tlw::vec4::addition)
+                           .method < tlw::vec4 &(const tlw::vec4&)>("add", &tlw::vec4::addition)
+                .finish();
+
+        lib_vec4(L);
+    }
+
+    static void load_mat4(const tlw::state &L) {
+        auto lib_mat4 = tlw::define<tlw::mat4>("mat4")
+                .ctor<>()
+                .ctor<float>()
+                .ctor<float, float, float, float,
+                        float, float, float, float,
+                        float, float, float, float,
+                        float, float, float, float>()
+                .finish();
+
+        lib_mat4(L);
+    }
+
+    static void load_entity(const tlw::state &L) {
+        auto lib_entity = tlw::define<tlw::entity>("entity")
+                .ctor<tlw::vec4>()
+                .ctor<tlw::mat4>()
+                .finish();
+
+        lib_entity(L);
+    }
 
 }
 

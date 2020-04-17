@@ -21,6 +21,7 @@
 #define TLW_USER_TRAITS_HPP
 
 #include <tlw/meta_table.hpp>
+#include <cstring>
 
 namespace tlw {
 

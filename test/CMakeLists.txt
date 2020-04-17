@@ -25,8 +25,14 @@ set(SOURCE_FILES main.cpp
         user/move_value_test.cpp
         user/property_test.cpp high_end/trivial_methods_test.cpp high_end/overloaded_ctor_test.cpp high_end/any_test.cpp high_end/source_code_test.cpp high_end/overloaded_methods_test.cpp)
 
+# GTests
 add_executable(tlw-tests ${SOURCE_FILES})
 target_link_libraries(tlw-tests ${GTEST_LIBRARY} pthread tlw)
-target_include_directories(tlw-tests PRIVATE ${GTEST_INCLUDE_DIR})
+target_include_directories(tlw-tests PRIVATE include ${GTEST_INCLUDE_DIR})
 add_test(NAME TestAll COMMAND ./tlw-tests
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+# Example Module
+add_library(tlw-examplelib SHARED include/high_end_examples.h high_end/module.cpp)
+target_link_libraries(tlw-examplelib tlw)
+target_include_directories(tlw-examplelib PUBLIC include)

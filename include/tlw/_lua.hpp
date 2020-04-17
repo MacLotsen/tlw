@@ -41,7 +41,6 @@ namespace tlw {
             if (luaL_loadstring(L, source_code)) {
                 throw std::runtime_error(lua_tostring(L, -1));
             }
-            assert(lua_gettop(L) == 1);
             auto val = std::move(stack_traits<function<_r(_args...)>>::get(L, -1));
             lua_pop(L, 1);
             return std::move(val);
@@ -61,7 +60,6 @@ namespace tlw {
             if (luaL_loadfile(L, file_name)) {
                 throw std::runtime_error(lua_tostring(L, -1));
             }
-            assert(lua_gettop(L) == 1);
             auto val = std::move(stack_traits<function<_r(_args...)>>::get(L, -1));
             lua_pop(L, 1);
             return std::move(val);

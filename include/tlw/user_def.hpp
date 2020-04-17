@@ -25,6 +25,7 @@
 #include <tlw/detail/user_ctor.hpp>
 #include <tlw/detail/user_prop.hpp>
 #include <tlw/detail/user_method.hpp>
+#include <cstring>
 
 namespace tlw {
 

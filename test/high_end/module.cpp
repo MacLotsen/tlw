@@ -17,33 +17,29 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_HIGH_END_USER_TEST_H
-#define TLW_HIGH_END_USER_TEST_H
-
-#include "../base_test.h"
 #include "high_end_examples.h"
 
-class high_end_user_test : public base_test {
-protected:
+extern "C" {
 
-    tlw::lua lua = tlw::lua(tlw::state::invalid_state());
+/**
+ * To run lua jit using this module:
+ *
+ * `$ luajit -l libtlw-examplelib`
+ *
+ * or load it later in interactive mode
+ *
+ * `$ luajit`
+ * `> require 'libtlw-examplelib'`
+ *
+ * entity, vec4 and mat4 will directly be available in the global namespace
+ *
+ */
+int luaopen_examplelib(lua_State *_L) {
+    tlw::state L = tlw::state(_L);
+    load_entity(L);
+    load_vec4(L);
+    load_mat4(L);
+    return 0;
+}
 
-    void SetUp() override {
-        base_test::SetUp();
-        lua = tlw::lua(L);
-        load_vec4(L);
-        load_mat4(L);
-        load_entity(L);
-    }
-
-    void TearDown() override {
-        lua = tlw::lua(tlw::state::invalid_state());
-        base_test::TearDown();
-        tlw::meta_table_registry<tlw::example>::reset();
-        tlw::meta_table_registry<tlw::entity>::reset();
-        tlw::meta_table_registry<tlw::vec4>::reset();
-        tlw::meta_table_registry<tlw::mat4>::reset();
-    }
-};
-
-#endif //TLW_HIGH_END_USER_TEST_H
+}

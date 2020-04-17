@@ -36,9 +36,9 @@ extern "C" {
  */
 int luaopen_examplelib(lua_State *_L) {
     tlw::state L = tlw::state(_L);
-    load_entity(L);
-    load_vec4(L);
-    load_mat4(L);
+    tlw::load_entity(L);
+    tlw::load_vec4(L);
+    tlw::load_mat4(L);
     return 0;
 }
 

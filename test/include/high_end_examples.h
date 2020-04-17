@@ -124,6 +124,8 @@ namespace tlw {
         vec4 look_at;
         mat4 model;
 
+        entity() : position(0, 0, 0, 1), look_at(0, 0, -1), model() {}
+
         entity(vec4 position) : position(std::move(position)), look_at(0, 0, -1), model() {
 
         }
@@ -166,8 +168,12 @@ namespace tlw {
 
     static void load_entity(const tlw::state &L) {
         auto lib_entity = tlw::define<tlw::entity>("entity")
+                .ctor<>()
                 .ctor<tlw::vec4>()
                 .ctor<tlw::mat4>()
+                .prop("position", &tlw::entity::position)
+                .prop("lookat", &tlw::entity::look_at)
+                .prop("model", &tlw::entity::model)
                 .finish();
 
         lib_entity(L);

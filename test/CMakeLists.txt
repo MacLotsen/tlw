@@ -33,6 +33,10 @@ add_test(NAME TestAll COMMAND ./tlw-tests
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # Example Module
-add_library(tlw-examplelib SHARED include/high_end_examples.h high_end/module.cpp)
+add_library(tlw-examplelib SHARED high_end/module.cpp)
 target_link_libraries(tlw-examplelib tlw)
 target_include_directories(tlw-examplelib PUBLIC include)
+
+# Copy lua files to build dir
+file(COPY ${CMAKE_SOURCE_DIR}/test/lua DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+

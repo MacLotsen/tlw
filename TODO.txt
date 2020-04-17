@@ -1,0 +1,11 @@
+
+Meta Table Builder:
+ - concatenate traits and procrastinate towards the build method
+
+Type Traits:
+ - separate specialisations in concrete struct
+ - meta tables not set
+
+Embedding:
+ - values setters not working (lost update)
+ - constructors create pointers i.o. values

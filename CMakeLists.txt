@@ -98,6 +98,7 @@ export(EXPORT tlw-targets FILE ${CMAKE_CURRENT_BINARY_DIR}/TLWTargets.cmake)
 export(PACKAGE tlw)
 
 if (BUILD_TEST)
+    enable_testing()
     add_subdirectory(test)
 endif ()
 

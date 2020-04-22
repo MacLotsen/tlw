@@ -25,6 +25,7 @@
 #include <tlw/detail/user_ctor.hpp>
 #include <tlw/detail/user_prop.hpp>
 #include <tlw/detail/user_method.hpp>
+#include <tlw/operators.hpp>
 #include <cstring>
 
 namespace tlw {
@@ -359,6 +360,9 @@ namespace tlw {
                 s.push(__index<typename _mt::user_type>::set);
                 lua_setfield(L, mt_ref, "__newindex");
             }
+
+            s.push(__operator<typename _mt::user_type>::to_string);
+            lua_setfield(L, mt_ref, "__tostring");
 
             lua_settop(L, mt_ref - 1);
         }

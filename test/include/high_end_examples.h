@@ -130,6 +130,10 @@ namespace tlw {
 
         }
 
+        entity(vec4 *position) : position(*position), look_at(0, 0, -1), model() {
+
+        }
+
         entity(mat4 model) : position(0, 0, 0, 1), look_at(0, 0, -1), model(model) {
 
         }
@@ -170,6 +174,7 @@ namespace tlw {
         auto lib_entity = tlw::define<tlw::entity>("entity")
                 .ctor<>()
                 .ctor<tlw::vec4>()
+                .ctor<tlw::vec4*>()
                 .ctor<tlw::mat4>()
                 .prop("position", &tlw::entity::position)
                 .prop("lookat", &tlw::entity::look_at)

@@ -1,6 +1,6 @@
 
-Meta Table Builder:
- - concatenate traits and procrastinate towards the build method
+Meta Table Builder (low prio):
+ - concatenate traits and delegate towards the build method
 
 Type Traits:
  - separate specialisations in concrete struct
@@ -9,3 +9,51 @@ Type Traits:
 Embedding:
  - values setters not working (lost update)
  - constructors create pointers i.o. values
+
+Prototyping:
+ - create a global Entity i.o. only one constructor function
+ - for value Entity(), for pointer Entity.new()
+
+Operators:
+ - tostring, concat, len, unm
+ - eq, mul, mod, pow,
+
+Constructing:
+LuaJIT 2.1.0-beta3 -- Copyright (C) 2005-2017 Mike Pall. http://luajit.org/
+JIT: ON SSE2 SSE3 SSE4.1 BMI2 fold cse dce fwd dse narrow loop abc sink fuse
+> e2 = entity(v1)
+> print(e2)
+entity*
+> print(e2.position.x)
+5.5
+> function Entity:new(lookat) return entity(lookat) end
+> stdin:1: attempt to index global 'Entity' (a nil value)
+stack traceback:
+	stdin:1: in main chunk
+	[C]: at 0x55cee5f3f1d0
+Entity ={}
+> function Entity:new(lookat) return entity(lookat) end
+> e8 = Entity:new(e1.position)
+> mt_entity = {}
+> mt_entity.__call = entity
+> setmetatable(Entity, mt_entity)
+> e9 = Entity(e8.position)
+> stdin:1: No constructor with 2 arguments
+stack traceback:
+	[C]: in function 'Entity'
+	stdin:1: in main chunk
+	[C]: at 0x55cee5f3f1d0
+
+> mt_entity.__call = function(v) return entity(v) end
+> e9 = Entity(e8.position)
+> stdin:1: No suitable constructor found with 1 arguments
+stack traceback:
+	[C]: in function 'Entity'
+	stdin:1: in main chunk
+	[C]: at 0x55cee5f3f1d0
+
+
+> >
+mt_entity.__call = function(self, v) return entity(v) end
+> > e9 = Entity(e8.position)
+>

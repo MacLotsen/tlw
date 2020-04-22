@@ -21,6 +21,20 @@
 
 extern "C" {
 
+static int wrap_exceptions(lua_State *L, lua_CFunction f)
+{
+    try {
+        return f(L);  // Call wrapped function and return result.
+    } catch (const char *s) {  // Catch and convert exceptions.
+        lua_pushstring(L, s);
+    } catch (std::exception& e) {
+        lua_pushstring(L, e.what());
+    } catch (...) {
+        lua_pushliteral(L, "caught (...)");
+    }
+    return lua_error(L);  // Rethrow as a Lua error.
+}
+
 /**
  * To run lua jit using this module:
  *
@@ -35,6 +49,8 @@ extern "C" {
  *
  */
 int luaopen_examplelib(lua_State *_L) {
+    lua_pushlightuserdata(_L, (void *)wrap_exceptions);
+    luaJIT_setmode(_L, -1, LUAJIT_MODE_WRAPCFUNC|LUAJIT_MODE_ON);
     tlw::state L = tlw::state(_L);
     tlw::load_entity(L);
     tlw::load_vec4(L);

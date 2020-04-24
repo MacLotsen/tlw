@@ -41,7 +41,7 @@ TEST_F(user_test, test_property) {
     ASSERT_EQ(4.5, e.val);
 
     e.val = 5.5;
-    s.push<const tlw::example&>(e);
+    s.push<const tlw::example>(e);
     lua_setglobal(L, "example1");
 
     if (luaL_dostring(L, "return example1.val")) {

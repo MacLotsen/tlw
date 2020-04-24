@@ -25,15 +25,17 @@ TEST_F(user_test, test_constructor) {
             .finish();
     tlw::meta_table_registry<tlw::example>::expose(L);
     lua_getglobal(L, "example");
+    lua_getfield(L, -1, "new");
     if (lua_pcall(L, 0, 1, 0)) {
         FAIL() << "Failed to call constructor";
     }
+
     ASSERT_TRUE(tlw::type_inspector<tlw::lua_example_t>::inspect(L));
     auto created_example = tlw::type_traits<tlw::lua_example_t>::get(L, -1);
     delete created_example;
 
-    // Pop trailing value
-    lua_pop(L, 1);
+    // Pop trailing values
+    lua_pop(L, 2);
 }
 
 TEST_F(user_test, test_constructor_with_parameters) {
@@ -42,6 +44,7 @@ TEST_F(user_test, test_constructor_with_parameters) {
             .finish();
     tlw::meta_table_registry<tlw::example>::expose(L);
     lua_getglobal(L, "example");
+    lua_getfield(L, -1, "new");
     s.push(5.5);
 
     if (lua_pcall(L, 1, 1, 0)) {
@@ -52,7 +55,7 @@ TEST_F(user_test, test_constructor_with_parameters) {
     delete created_example;
 
     // Pop trailing value
-    lua_pop(L, 1);
+    lua_pop(L, 2);
 }
 
 TEST_F(user_test, test_multi_constructor) {
@@ -62,6 +65,7 @@ TEST_F(user_test, test_multi_constructor) {
             .finish();
     tlw::meta_table_registry<tlw::example>::expose(L);
     lua_getglobal(L, "example");
+    lua_getfield(L, -1, "new");
     s.push(5.5);
     if (lua_pcall(L, 1, 1, 0)) {
         FAIL() << "Failed to call constructor with argument";
@@ -71,9 +75,10 @@ TEST_F(user_test, test_multi_constructor) {
     ASSERT_EQ(5.5, created_example->val);
     delete created_example;
     // Pop the error message
-    lua_pop(L, 1);
+    lua_pop(L, 2);
 
     lua_getglobal(L, "example");
+    lua_getfield(L, -1, "new");
     if (lua_pcall(L, 0, 1, 0)) {
         FAIL() << "Failed to call constructor with argument";
     }
@@ -82,17 +87,18 @@ TEST_F(user_test, test_multi_constructor) {
     ASSERT_EQ(tlw::example::invalid, created_example->val);
     delete created_example;
     // Pop the error message
-    lua_pop(L, 1);
+    lua_pop(L, 2);
 
 
     lua_getglobal(L, "example");
+    lua_getfield(L, -1, "new");
     s.push(5.5);
     s.push("a string");
     if (!lua_pcall(L, 2, 1, 0)) {
         FAIL() << "No such constructor was defined for float, string.";
     }
     // Pop the error message
-    lua_pop(L, 1);
+    lua_pop(L, 2);
 }
 
 TEST_F(user_test, test_destructor) {

@@ -27,12 +27,12 @@ namespace tlw {
 
     template<class _type>
     struct user_type_traits {
-
+        static constexpr const bool is_lua_type = false;
         static constexpr bool inspect(lua_State *L, int idx) {
             int type_id = lua_type(L, idx);
-            switch(lua_type(L, idx)) {
+            switch (lua_type(L, idx)) {
                 case LUA_TUSERDATA:
-                    return inspect_meta_table(L, idx);
+                    return meta_table<_type>::name && inspect_meta_table(L, idx);
                 case LUA_TLIGHTUSERDATA:
                     return meta_table<_type>::name == nullptr;
                 default:
@@ -51,8 +51,9 @@ namespace tlw {
     };
 
     template<class _type>
-    struct stack_traits<const _type&> : public user_type_traits<_type> {
-        using user_type_traits<_type>::inspect;
+    struct stack_traits<const _type> : public user_type_traits<const _type> {
+        using user_type_traits<const _type>::inspect;
+        using user_type_traits<const _type>::is_lua_type;
         using _base_type = typename cpp_type<_type>::value_type;
         using _user_data_t = user_data_t<_type>;
         using _light_user_data_t = light_user_data_t<_type>;
@@ -79,17 +80,14 @@ namespace tlw {
     template<class _type>
     struct stack_traits<_type> : public user_type_traits<_type> {
         using user_type_traits<_type>::inspect;
+        using user_type_traits<_type>::is_lua_type;
         using _base_type = typename cpp_type<_type>::value_type;
         using _user_data_t = user_data_t<_type>;
         using _light_user_data_t = light_user_data_t<_type>;
 
         static constexpr void push(lua_State *L, _type value) {
             if (meta_table_registry<_type>::name) {
-                if constexpr (cpp_type<_type>::is_pointer) {
-                    type_traits<_user_data_t>::push(L, value);
-                } else {
-                    type_traits<_user_data_t>::push(L, std::move(value));
-                }
+                type_traits<_user_data_t>::push(L, value);
                 luaL_getmetatable(L, meta_table_registry<_type>::name);
                 lua_setmetatable(L, -2);
             } else {
@@ -97,7 +95,7 @@ namespace tlw {
             }
         }
 
-        static constexpr _type get(lua_State *L, int idx) {
+        static constexpr decltype(auto) get(lua_State *L, int idx) {
             if (meta_table_registry<_type>::name) {
                 return type_traits<_user_data_t>::get(L, idx);
             } else {

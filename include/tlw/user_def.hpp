@@ -112,10 +112,12 @@ namespace tlw {
             auto ud = stack_traits<typename mt::user_type>::get(L, 1);
             auto prop = stack_traits<const char *>::get(L, 2);
 
-            lua_pushcclosure(L, [] (lua_State *L)->int {
+            lua_pushcclosure(L, [](lua_State *L) -> int {
                 stack s = stack(state(L));
-                auto ud = s.get<typename mt::user_type>(lua_upvalueindex(1));//stack_traits<typename mt::user_type>::get(L, lua_upvalueindex(1));
-                auto prop = s.get<const char *>(lua_upvalueindex(2));//stack_traits<const char *>::get(L, lua_upvalueindex(2));
+                auto ud = s.get<typename mt::user_type>(
+                        lua_upvalueindex(1));//stack_traits<typename mt::user_type>::get(L, lua_upvalueindex(1));
+                auto prop = s.get<const char *>(
+                        lua_upvalueindex(2));//stack_traits<const char *>::get(L, lua_upvalueindex(2));
 
                 int top = lua_gettop(L);
                 if (mt::methods.empty()) {
@@ -188,8 +190,6 @@ namespace tlw {
         using ro_mt = meta_table<const _user_type>;
         using p_mt = meta_table<_user_type *>;
         using rop_mt = meta_table<const _user_type *>;
-//        using ror_mt = meta_table<const _user_type &>;
-//        using r_mt = meta_table<_user_type &>;
 
         template<typename _property_type>
         using property_type = _property_type _user_type::*;
@@ -210,13 +210,6 @@ namespace tlw {
             p_name[length - 1] = '\0';
             p_mt::name = p_name;
 
-//            length = strlen(name) + 2;
-//            char *r_name = new char[length];
-//            strcpy(r_name, name);
-//            r_name[length - 2] = '&';
-//            r_name[length - 1] = '\0';
-//            r_mt::name = r_name;
-
             length = strlen(name) + 8;
             char *constp_name = new char[length];
             strcpy(constp_name, "const ");
@@ -228,11 +221,16 @@ namespace tlw {
 
         template<typename ..._args>
         constexpr _builder_type &ctor() {
-            using _ct = user_ctor<_user_type *, _args...>;
+            using _ct = user_ctor<_user_type, _args...>;
+            using _pct = user_ctor<_user_type *, _args...>;
             if (mt::constructors.find(sizeof...(_args)) == mt::constructors.end()) {
                 mt::constructors[sizeof...(_args)] = type_safe_function_overloads();
             }
             mt::constructors[sizeof...(_args)].push_back(type_safe_function(_ct::check_args, _ct::ctor));
+            if (p_mt::constructors.find(sizeof...(_args)) == p_mt::constructors.end()) {
+                p_mt::constructors[sizeof...(_args)] = type_safe_function_overloads();
+            }
+            p_mt::constructors[sizeof...(_args)].push_back(type_safe_function(_pct::check_args, _pct::ctor));
             return *this;
         }
 
@@ -288,11 +286,13 @@ namespace tlw {
                 mt::methods[prop][mtype::arg_count] = type_safe_method_overloads<typename mt::user_type>();
             }
 
-            mt::methods[prop][mtype::arg_count].push_back(type_safe_method<typename mt::user_type>(&um::test, &um::provide));
+            mt::methods[prop][mtype::arg_count].push_back(
+                    type_safe_method<typename mt::user_type>(&um::test, &um::provide));
         }
 
         template<typename _ret_args_type>
-        constexpr _builder_type &method(const char *name, typename user_method_def<_ret_args_type>::template method_type<_user_type> _method) {
+        constexpr _builder_type &
+        method(const char *name, typename user_method_def<_ret_args_type>::template method_type<_user_type> _method) {
             return method<decltype(_method)>(name, _method);
         }
 
@@ -318,20 +318,34 @@ namespace tlw {
         }
 
         static void _expose(state L) {
+            if (!mt::constructors.empty()) {
+                lua_createtable(L, 0, 0);
+                lua_createtable(L, 0, 3);
+                lua_createtable(L, 0, 1);
+                lua_pushcfunction(L, __explicit_ctor<p_mt>::create);
+                lua_setfield(L, -2, "new");
+                lua_setfield(L, -2, "__index");
+                lua_pushliteral(L, "private");
+                lua_setfield(L, -2, "__metatable");
+                lua_pushcfunction(L, [](lua_State *L)->int {
+                    // remove the table
+                    lua_remove(L, 1);
+                    return __explicit_ctor<mt>::create(L);
+                });
+                lua_setfield(L, -2, "__call");
+                lua_setmetatable(L, -2);
+                lua_setglobal(L, mt::name);
+            }
+
             _expose < mt > (L);
             _expose < ro_mt > (L);
             _expose < p_mt > (L);
             _expose < rop_mt > (L);
-//            _expose < r_mt > (L);
-//            _expose < ror_mt > (L);
         }
 
         template<typename _mt>
         static void _expose(state L) {
             stack s(L);
-            if (!_mt::constructors.empty()) {
-                lua_register(L, _mt::name, __explicit_ctor<_mt>::create);
-            }
 
             if (!luaL_newmetatable(L, _mt::name)) {
                 printf("Warning: meta table already registered\n");

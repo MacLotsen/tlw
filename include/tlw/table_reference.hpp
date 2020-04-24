@@ -46,7 +46,7 @@ namespace tlw {
             stack_traits<table_reference<_table_type, _key>>::push(L, *this);
             auto val = traits::get(L, -1);
             lua_pop(L, 1);
-            return std::move(val);
+            return val;
         }
 
         template<typename _key2>

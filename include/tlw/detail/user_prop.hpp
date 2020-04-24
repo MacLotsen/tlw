@@ -35,11 +35,21 @@ namespace tlw {
         static int get(lua_State *L) {
             stack s = stack(state(L));
             auto prop = s.pop<const char *>();
-            auto ud = s.pop<_user_type>();
             if constexpr (cpp_type<_user_type>::is_pointer) {
-                s.push<_prop_type>(ud->*properties[prop]);
+                auto ud = s.pop<_user_type>();
+                if constexpr (cpp_type<_prop_type>::is_pointer || stack_traits<_prop_type>::is_lua_type) {
+                    s.push(ud->*properties[prop]);
+                } else {
+                    s.push(&(ud->*properties[prop]));
+                }
             } else {
-                s.push<_prop_type>(ud.*properties[prop]);
+                auto &ud = stack_traits<_user_type>::get(L, -1);
+                lua_pop(L, 1);
+                if constexpr (cpp_type<_prop_type>::is_pointer || stack_traits<_prop_type>::is_lua_type) {
+                    s.push(ud.*properties[prop]);
+                } else {
+                    s.push(&(ud.*properties[prop]));
+                }
             }
             return 1;
         }

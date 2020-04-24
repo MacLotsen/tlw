@@ -30,10 +30,10 @@ TEST_F(high_end_user_test, test_variable_constructor) {
     lua.set("v1", std::move(v1));
     lua.set("m1", m1);
 
-    lua.src("print(v1.z) e1 = entity(v1) e2 = entity(m1)")();
+    lua.src("print(v1.z) e1 = entity.new(v1) e2 = entity.new(m1)")();
 
-    auto e1 = lua.get<tlw::entity*>("e1");
-    auto e2 = lua.get<tlw::entity*>("e2");
+    tlw::entity* e1 = lua["e1"];
+    tlw::entity* e2 = lua["e2"];
 
     ASSERT_EQ(1, e1->position.z);
     ASSERT_EQ(1, e2->model.z[2]);

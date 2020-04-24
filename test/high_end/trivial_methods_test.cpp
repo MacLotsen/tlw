@@ -112,15 +112,16 @@ TEST_F(high_end_user_test, test_method) {
     ASSERT_NO_THROW(test_wga());
     ASSERT_NO_THROW(test_rga());
 
-    // Test non-const as value
+    // Test const as value
     lua.set<const tlw::method_example>("e", e2);
     ASSERT_NO_THROW(test_rn());
-    ASSERT_ANY_THROW(test_wn());
+    // Const values are copied
+    ASSERT_NO_THROW(test_wn());
     ASSERT_NO_THROW(test_rg());
-    ASSERT_ANY_THROW(test_wg());
-    ASSERT_ANY_THROW(test_wa());
+    ASSERT_NO_THROW(test_wg());
+    ASSERT_NO_THROW(test_wa());
     ASSERT_NO_THROW(test_ra());
-    ASSERT_ANY_THROW(test_wga());
+    ASSERT_NO_THROW(test_wga());
     ASSERT_NO_THROW(test_rga());
 
     // Test non-const as pointer

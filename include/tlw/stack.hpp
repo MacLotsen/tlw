@@ -55,7 +55,7 @@ namespace tlw {
 
         template<class _type>
         constexpr void push(_type value) const {
-            stack_traits<_type>::push(L, std::move(value));
+            stack_traits<_type>::push(L, value);
         }
 
         template<class _type>

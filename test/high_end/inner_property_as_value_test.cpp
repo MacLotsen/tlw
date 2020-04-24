@@ -22,9 +22,29 @@
 
 
 TEST_F(high_end_user_test, test_inner_property_as_value_test) {
-    lua.src("e1 = entity() e1.position.x = 5")();
+    luaL_openlibs(L);
+    lua.src("e1 = entity.new() e1.position.x = 5")();
 
     tlw::entity *e1 = lua["e1"];
 
     ASSERT_EQ(5, e1->position.x);
+
+    lua.src("e1.position.x = 6 print(e1.position.x)")();
+
+    ASSERT_EQ(6, e1->position.x);
+}
+
+TEST_F(high_end_user_test, test_inner_property_and_ud_as_value_test) {
+    luaL_openlibs(L);
+    lua.src("e1 = entity() e1.position.x = 5")();
+
+    tlw::entity e1 = lua["e1"];
+
+    ASSERT_EQ(5, e1.position.x);
+
+    lua.src("e1.position.x = 6 print(e1.position.x)")();
+
+    e1 = lua["e1"];
+
+    ASSERT_EQ(6, e1.position.x);
 }

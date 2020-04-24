@@ -56,8 +56,10 @@ namespace tlw {
             return 1;
         }
 
-        static constexpr int metatable(lua_State *L) {
-            lua_pushstring(L, "private");
+        static constexpr int unm(lua_State *L) {
+            using pt = pop_traits<_user_type>;
+            using st = stack_traits<_user_type>;
+            st::push(L, -pt::pop(L));
             return 1;
         }
 
@@ -65,11 +67,6 @@ namespace tlw {
 
     template<typename _user_type, typename _other_type>
     struct __operator<_user_type, _other_type> {
-
-        static constexpr int unm(lua_State *L) {
-            lua_pushnil(L);
-            return 1;
-        }
 
         static constexpr int add(lua_State *L) {
             lua_pushnil(L);

@@ -309,6 +309,11 @@ namespace tlw {
             return *this;
         }
 
+        constexpr _builder_type &unm() {
+            mt::operators["__unm"] = __operator<_user_type>::unm;
+            return *this;
+        }
+
         lib_load_t finish() {
             meta_table_registry<_user_type>::name = mt::name;
             meta_table_registry<const _user_type>::name = ro_mt::name;

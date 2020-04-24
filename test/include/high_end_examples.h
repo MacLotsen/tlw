@@ -80,6 +80,10 @@ namespace tlw {
             return *this;
         }
 
+        vec4 operator-() {
+            return vec4(-x, -y, -z, -w);
+        }
+
         static float length(const vec4 &v) {
             return std::sqrt(std::pow(v.x, 2) + std::pow(v.y, 2) + std::pow(v.z, 2));
         }
@@ -151,7 +155,8 @@ namespace tlw {
                            .prop("z", &tlw::vec4::z)
                            .prop("w", &tlw::vec4::w)
                            .method<tlw::vec4 &(float)>("add", &tlw::vec4::addition)
-                           .method < tlw::vec4 &(const tlw::vec4&)>("add", &tlw::vec4::addition)
+                           .method<tlw::vec4 &(const tlw::vec4&)>("add", &tlw::vec4::addition)
+                .unm()
                 .finish();
 
         lib_vec4(L);
@@ -174,7 +179,7 @@ namespace tlw {
         auto lib_entity = tlw::define<tlw::entity>("entity")
                 .ctor<>()
                 .ctor<tlw::vec4>()
-                .ctor<tlw::vec4*>()
+                .ctor<tlw::vec4 *>()
                 .ctor<tlw::mat4>()
                 .prop("position", &tlw::entity::position)
                 .prop("lookat", &tlw::entity::look_at)

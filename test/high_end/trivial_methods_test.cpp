@@ -91,6 +91,7 @@ TEST_F(high_end_user_test, test_method) {
     auto test_rga = lua.src("print(e.read_get_add(5))");
 
     // Test non-const as value
+    // Values are copied
     lua.set("e", e1);
     ASSERT_NO_THROW(test_rn());
     ASSERT_NO_THROW(test_wn());
@@ -113,9 +114,9 @@ TEST_F(high_end_user_test, test_method) {
     ASSERT_NO_THROW(test_rga());
 
     // Test const as value
+    // Values are copied
     lua.set<const tlw::method_example>("e", e2);
     ASSERT_NO_THROW(test_rn());
-    // Const values are copied
     ASSERT_NO_THROW(test_wn());
     ASSERT_NO_THROW(test_rg());
     ASSERT_NO_THROW(test_wg());

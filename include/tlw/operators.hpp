@@ -22,6 +22,48 @@
 
 namespace tlw {
 
+    template<typename _user_type, typename _number_type>
+    struct __len {
+        using base_type = typename cpp_type<_user_type>::value_type;
+        using size_method_t = _number_type (base_type::*)() const;
+        static inline size_method_t size_method = nullptr;
+
+        static constexpr int len(lua_State *L) {
+            if constexpr (cpp_type<_user_type>::is_pointer) {
+                auto ud = stack_traits<_user_type>::get(L, 1);
+                lua_settop(L, 0);
+                lua_pushnumber(L, (ud->*size_method)());
+
+            } else {
+                auto &ud = stack_traits<_user_type>::get(L, 1);
+                lua_settop(L, 0);
+                lua_pushnumber(L, (ud.*size_method)());
+            }
+            return 1;
+        }
+    };
+
+    template<typename _user_type>
+    struct __len<_user_type, int> {
+        using base_type = typename cpp_type<_user_type>::value_type;
+        using size_method_t = int (base_type::*)() const;
+        static inline size_method_t size_method = nullptr;
+
+        static constexpr int len(lua_State *L) {
+            if constexpr (cpp_type<_user_type>::is_pointer) {
+                auto ud = stack_traits<_user_type>::get(L, 1);
+                lua_settop(L, 0);
+                lua_pushinteger(L, (ud->*size_method)());
+
+            } else {
+                auto &ud = stack_traits<_user_type>::get(L, 1);
+                lua_settop(L, 0);
+                lua_pushinteger(L, (ud.*size_method)());
+            }
+            return 1;
+        }
+    };
+
     template<typename _user_type, typename ...>
     struct __operator {
 
@@ -39,12 +81,6 @@ namespace tlw {
         }
 
         // not generic
-        static constexpr int len(lua_State *L) {
-            lua_pushnumber(L, 1);
-            return 1;
-        }
-
-        // not generic
         static constexpr int pairs(lua_State *L) {
             lua_pushnumber(L, 1);
             return 1;
@@ -58,8 +94,12 @@ namespace tlw {
 
         static constexpr int unm(lua_State *L) {
             using pt = pop_traits<_user_type>;
-            using st = stack_traits<_user_type>;
-            st::push(L, -pt::pop(L));
+            if constexpr (cpp_type<_user_type>::is_pointer) {
+                // return value i.o. pointer
+                stack_traits<typename cpp_type<_user_type>::value_type>::push(L, -(*pt::pop(L)));
+            } else {
+                stack_traits<_user_type>::push(L, -pt::pop(L));
+            }
             return 1;
         }
 

@@ -311,6 +311,23 @@ namespace tlw {
 
         constexpr _builder_type &unm() {
             mt::operators["__unm"] = __operator<_user_type>::unm;
+            ro_mt::operators["__unm"] = __operator<const _user_type>::unm;
+            p_mt::operators["__unm"] = __operator<_user_type*>::unm;
+            rop_mt::operators["__unm"] = __operator<const _user_type*>::unm;
+            return *this;
+        }
+
+        template<typename _method_type>
+        constexpr _builder_type &len(_method_type method) {
+            using _r = typename method_type<_method_type>::return_type;
+            __len<_user_type, _r>::size_method = method;
+            __len<const _user_type, _r>::size_method = method;
+            __len<_user_type*, _r>::size_method = method;
+            __len<const _user_type*, _r>::size_method = method;
+            mt::operators["__len"] = __len<_user_type, _r>::len;
+            ro_mt::operators["__len"] = __len<const _user_type, _r>::len;
+            p_mt::operators["__len"] = __len<_user_type*, _r>::len;
+            rop_mt::operators["__len"] = __len<const _user_type*, _r>::len;
             return *this;
         }
 

@@ -80,16 +80,20 @@ namespace tlw {
             return *this;
         }
 
-        vec4 operator-() {
+        vec4 operator-() const {
             return vec4(-x, -y, -z, -w);
         }
 
-        static float length(const vec4 &v) {
+        float length() const {
+            return _length(*this);
+        }
+
+        static float _length(const vec4 &v) {
             return std::sqrt(std::pow(v.x, 2) + std::pow(v.y, 2) + std::pow(v.z, 2));
         }
 
         static bool invalid(const vec4 &v) {
-            return length(v) == 0 && v.w == 0;
+            return _length(v) == 0 && v.w == 0;
         }
     };
 
@@ -150,6 +154,7 @@ namespace tlw {
                            .ctor<float>()
                            .ctor<float, float, float>()
                            .ctor<float, float, float, float>()
+                           .len(&tlw::vec4::length)
                            .prop("x", &tlw::vec4::x)
                            .prop("y", &tlw::vec4::y)
                            .prop("z", &tlw::vec4::z)

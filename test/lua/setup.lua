@@ -5,4 +5,4 @@ m1 = mat4(1)
 
 e1 = entity()
 
-e1.position.x = 1
+e1.position = v1

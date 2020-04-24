@@ -59,11 +59,13 @@ namespace tlw {
 
             auto val = s.pop<_prop_type>();
             auto prop = s.pop<const char *>();
-            auto ud = s.pop<_user_type>();
             if constexpr (cpp_type<_user_type>::is_pointer) {
+                auto ud = s.pop<_user_type>();
                 ud->*properties[prop] = val;
             } else {
+                auto &ud = stack_traits<_user_type>::get(L, -1);
                 ud.*properties[prop] = val;
+                lua_pop(L, 1);
             }
 
             return 0;

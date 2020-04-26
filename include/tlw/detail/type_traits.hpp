@@ -150,7 +150,11 @@ namespace tlw {
 
         static constexpr void push(lua_State *L, _user_type value) {
             auto user_data = (_user_type *) lua_newuserdata(L, sizeof(_user_type));
-            *user_data = value;
+            if constexpr (cpp_type<_user_type>::is_movable) {
+                *user_data = std::move(value);
+            } else {
+                *user_data = value;
+            }
         }
     };
 

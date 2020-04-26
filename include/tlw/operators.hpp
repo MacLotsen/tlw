@@ -64,6 +64,28 @@ namespace tlw {
         }
     };
 
+    template<typename _user_type>
+    struct __tostring {
+        using base_type = typename cpp_type<_user_type>::value_type;
+        using tostring_method_t = const char * (base_type::*)() const;
+        static inline tostring_method_t tostring_method = nullptr;
+
+        static constexpr int tostring(lua_State *L) {
+            const char * str = nullptr;
+            if constexpr (cpp_type<_user_type>::is_pointer) {
+                auto ud = stack_traits<_user_type>::get(L, 1);
+                str = (ud->*tostring_method)();
+            } else {
+                auto &ud = stack_traits<_user_type>::get(L, 1);
+                str = (ud.*tostring_method)();
+            }
+            lua_settop(L, 0);
+            lua_pushstring(L, str);
+
+            return 1;
+        }
+    };
+
     template<typename _user_type, typename ...>
     struct __operator {
 

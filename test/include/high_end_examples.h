@@ -160,7 +160,7 @@ namespace tlw {
                            .prop("z", &tlw::vec4::z)
                            .prop("w", &tlw::vec4::w)
                            .method<tlw::vec4 &(float)>("add", &tlw::vec4::addition)
-                           .method<tlw::vec4 &(const tlw::vec4&)>("add", &tlw::vec4::addition)
+                           .method < tlw::vec4 &(const tlw::vec4&)>("add", &tlw::vec4::addition)
                 .unm()
                 .finish();
 

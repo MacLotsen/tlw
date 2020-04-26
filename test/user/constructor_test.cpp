@@ -100,27 +100,3 @@ TEST_F(user_test, test_multi_constructor) {
     // Pop the error message
     lua_pop(L, 2);
 }
-
-TEST_F(user_test, test_destructor) {
-    luaopen_base(L);
-    lua_settop(L, 0);
-
-    tlw::define<tlw::example>("example")
-            .dtor()
-            .finish();
-    tlw::meta_table_registry<tlw::example>::expose(L);
-
-    ASSERT_EQ(0, lua_gettop(L));
-    const tlw::example *example = new tlw::example(5.5);
-    s.push(example);
-    lua_setglobal(L, "example1");
-
-    if (luaL_loadstring(L, "example1 = nil\ncollectgarbage()")) {
-        FAIL() << "Failed to load script '" << lua_tostring(L, -1) << "'";
-    }
-
-    auto script = s.pop<tlw::function<void()>>();
-    script();
-
-    ASSERT_EQ(1, tlw::example_tracker::deleted);
-}

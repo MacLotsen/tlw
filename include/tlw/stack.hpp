@@ -55,7 +55,11 @@ namespace tlw {
 
         template<class _type>
         constexpr void push(_type value) const {
-            stack_traits<_type>::push(L, value);
+            if constexpr (!stack_traits<_type>::is_lua_type && cpp_type<_type>::is_movable) {
+                stack_traits<_type>::push(L, std::move(value));
+            } else {
+                stack_traits<_type>::push(L, value);
+            }
         }
 
         template<class _type>

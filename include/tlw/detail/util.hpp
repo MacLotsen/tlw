@@ -28,6 +28,7 @@ namespace tlw {
         static constexpr const bool is_value = true;
         static constexpr const bool is_pointer = false;
         static constexpr const bool is_reference = false;
+        static constexpr const bool is_movable = true;
         using value_type = _type;
     };
 
@@ -37,6 +38,7 @@ namespace tlw {
         static constexpr const bool is_value = true;
         static constexpr const bool is_pointer = false;
         static constexpr const bool is_reference = false;
+        static constexpr const bool is_movable = false;
         using value_type = _type;
     };
 
@@ -46,6 +48,17 @@ namespace tlw {
         static constexpr const bool is_value = false;
         static constexpr const bool is_pointer = false;
         static constexpr const bool is_reference = true;
+        static constexpr const bool is_movable = true;
+        using value_type = _type;
+    };
+
+    template<typename _type>
+    struct cpp_type<_type&&> {
+        static constexpr const bool is_const = false;
+        static constexpr const bool is_value = false;
+        static constexpr const bool is_pointer = false;
+        static constexpr const bool is_reference = true;
+        static constexpr const bool is_movable = true;
         using value_type = _type;
     };
 
@@ -55,6 +68,7 @@ namespace tlw {
         static constexpr const bool is_value = false;
         static constexpr const bool is_pointer = false;
         static constexpr const bool is_reference = true;
+        static constexpr const bool is_movable = false;
         using value_type = _type;
     };
 
@@ -64,6 +78,7 @@ namespace tlw {
         static constexpr const bool is_value = false;
         static constexpr const bool is_pointer = true;
         static constexpr const bool is_reference = false;
+        static constexpr const bool is_movable = false;
         using value_type = _type;
     };
 
@@ -73,6 +88,7 @@ namespace tlw {
         static constexpr const bool is_value = false;
         static constexpr const bool is_pointer = true;
         static constexpr const bool is_reference = false;
+        static constexpr const bool is_movable = false;
         using value_type = _type;
     };
 

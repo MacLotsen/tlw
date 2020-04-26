@@ -87,7 +87,11 @@ namespace tlw {
 
         static constexpr void push(lua_State *L, _type value) {
             if (meta_table_registry<_type>::name) {
-                type_traits<_user_data_t>::push(L, value);
+                if constexpr (cpp_type<_type>::is_movable) {
+                    type_traits<_user_data_t>::push(L, std::move(value));
+                } else {
+                    type_traits<_user_data_t>::push(L, value);
+                }
                 luaL_getmetatable(L, meta_table_registry<_type>::name);
                 lua_setmetatable(L, -2);
             } else {

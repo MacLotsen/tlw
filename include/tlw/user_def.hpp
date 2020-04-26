@@ -234,20 +234,6 @@ namespace tlw {
             return *this;
         }
 
-        constexpr _builder_type &dtor() {
-            p_mt::dtor = [](lua_State *L) -> int {
-                delete stack_traits<_user_type *>::get(L, -1);
-                lua_pop(L, 1);
-                return 0;
-            };
-            rop_mt::dtor = [](lua_State *L) -> int {
-                delete stack_traits<const _user_type *>::get(L, -1);
-                lua_pop(L, 1);
-                return 0;
-            };
-            return *this;
-        }
-
         template<typename _prop_type>
         constexpr _builder_type &prop(const char *name, property_type<_prop_type> property) {
             user_prop<_user_type, _prop_type>::properties[name] = property;
@@ -331,6 +317,18 @@ namespace tlw {
             return *this;
         }
 
+        template<typename _method_type>
+        constexpr _builder_type &tostring(_method_type method) {
+            __tostring<_user_type>::tostring_method = method;
+            __tostring<const _user_type>::tostring_method = method;
+            __tostring<_user_type*>::tostring_method = method;
+            __tostring<const _user_type*>::tostring_method = method;
+            mt::operators["__tostring"] = __tostring<_user_type>::tostring;
+            ro_mt::operators["__tostring"] = __tostring<const _user_type>::tostring;
+            p_mt::operators["__tostring"] = __tostring<_user_type*>::tostring;
+            rop_mt::operators["__tostring"] = __tostring<const _user_type*>::tostring;
+        }
+
         lib_load_t finish() {
             meta_table_registry<_user_type>::name = mt::name;
             meta_table_registry<const _user_type>::name = ro_mt::name;
@@ -397,8 +395,10 @@ namespace tlw {
                 lua_setfield(L, mt_ref, "__newindex");
             }
 
-            s.push(__operator<typename _mt::user_type>::to_string);
-            lua_setfield(L, mt_ref, "__tostring");
+            if (_mt::operators.find("__tostring") == _mt::operators.end()) {
+                s.push(__operator<typename _mt::user_type>::to_string);
+                lua_setfield(L, mt_ref, "__tostring");
+            }
 
             lua_settop(L, mt_ref - 1);
         }

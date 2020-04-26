@@ -317,6 +317,17 @@ namespace tlw {
             return *this;
         }
 
+        constexpr _builder_type &tostring(typename __tostring<_user_type>::tostring_method_t method) {
+            __tostring<_user_type>::tostring_method = method;
+            __tostring<const _user_type>::tostring_method = method;
+            __tostring<_user_type*>::tostring_method = method;
+            __tostring<const _user_type*>::tostring_method = method;
+            mt::operators["__tostring"] = __tostring<_user_type>::tostring;
+            ro_mt::operators["__tostring"] = __tostring<const _user_type>::tostring;
+            p_mt::operators["__tostring"] = __tostring<_user_type*>::tostring;
+            rop_mt::operators["__tostring"] = __tostring<const _user_type*>::tostring;
+        }
+
         template<typename _method_type>
         constexpr _builder_type &tostring(_method_type method) {
             __tostring<_user_type>::tostring_method = method;

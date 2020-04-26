@@ -80,6 +80,13 @@ namespace tlw {
             return *this;
         }
 
+        const char * str() const {
+            char *_str;
+            _str = static_cast<char *>(malloc(sizeof(char) * 80));
+            sprintf(_str, "vec4 {\n\tx = %g,\n\ty = %g,\n\tz = %g,\n\tw = %g,\n\tsize = %g\n}", x, y, z, w, length());
+            return _str;
+        }
+
         vec4 operator-() const {
             return vec4(-x, -y, -z, -w);
         }
@@ -148,19 +155,21 @@ namespace tlw {
     };
 
     static int load_vec4(const tlw::state &L) {
-        auto
-        lib_vec4 = tlw::define<tlw::vec4>("vec4")
-                           .ctor<>()
-                           .ctor<float>()
-                           .ctor<float, float, float>()
-                           .ctor<float, float, float, float>()
-                           .len(&tlw::vec4::length)
-                           .prop("x", &tlw::vec4::x)
-                           .prop("y", &tlw::vec4::y)
-                           .prop("z", &tlw::vec4::z)
-                           .prop("w", &tlw::vec4::w)
-                           .method<tlw::vec4 &(float)>("add", &tlw::vec4::addition)
-                           .method < tlw::vec4 &(const tlw::vec4&)>("add", &tlw::vec4::addition)
+        using add1 = tlw::vec4 &(float);
+        using add2 = tlw::vec4 &(const tlw::vec4 &);
+        auto lib_vec4 = tlw::define<tlw::vec4>("vec4")
+                .ctor<>()
+                .ctor<float>()
+                .ctor<float, float, float>()
+                .ctor<float, float, float, float>()
+                .len(&tlw::vec4::length)
+                .prop("x", &tlw::vec4::x)
+                .prop("y", &tlw::vec4::y)
+                .prop("z", &tlw::vec4::z)
+                .prop("w", &tlw::vec4::w)
+                .method<add1>("add", &tlw::vec4::addition)
+                .method<add2>("add", &tlw::vec4::addition)
+                .tostring(&tlw::vec4::str)
                 .unm()
                 .finish();
 

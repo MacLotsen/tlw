@@ -152,6 +152,21 @@ namespace tlw {
 
     };
 
+    template<typename mt>
+    struct __explicit_add {
+
+        static constexpr int add(lua_State *L) {
+            for (auto kv : mt::add_operator) {
+                if (std::get<0>(kv)(L)) {
+                    return std::get<1>(kv)(L);
+                }
+            }
+            luaL_error(L, "ERROR: Cannot sum up");
+            return 0;
+        }
+
+    };
+
     template<typename _user_type>
     struct __index {
         using mt = meta_table<_user_type>;
@@ -328,6 +343,15 @@ namespace tlw {
             rop_mt::operators["__tostring"] = __tostring<const _user_type*>::tostring;
         }
 
+        template<typename _other>
+        constexpr _builder_type &add() {
+            mt::add_operator.push_back(type_safe_function{__add<_user_type, _other>::test, __add<_user_type, _other>::add});
+            ro_mt::add_operator.push_back(type_safe_function{__add<const _user_type, _other>::test, __add<const _user_type, _other>::add});
+            p_mt::add_operator.push_back(type_safe_function{__add<_user_type*, _other>::test, __add<_user_type*, _other>::add});
+            rop_mt::add_operator.push_back(type_safe_function{__add<const _user_type*, _other>::test, __add<const _user_type*, _other>::add});
+            return *this;
+        }
+
         template<typename _method_type>
         constexpr _builder_type &tostring(_method_type method) {
             __tostring<_user_type>::tostring_method = method;
@@ -388,13 +412,13 @@ namespace tlw {
                 lua_setfield(L, mt_ref, std::string(kv.first).c_str());
             }
 
+            if (!_mt::add_operator.empty()) {
+                s.push(__explicit_add<_mt>::add);
+                lua_setfield(L, mt_ref, "__add");
+            }
+
             s.push(_mt::name);
             lua_setfield(L, mt_ref, "__name");
-
-            if (_mt::dtor) {
-                s.push(_mt::dtor);
-                lua_setfield(L, mt_ref, "__gc");
-            }
 
             if (!_mt::getters.empty() || !_mt::methods.empty()) {
                 s.push(__index<typename _mt::user_type>::get);

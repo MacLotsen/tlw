@@ -54,12 +54,11 @@ namespace tlw {
         using user_type = _user_type;
         static inline const char *name = nullptr;
         static inline arg_counted_overloads<type_safe_function_overloads> constructors{};
-        static inline cfunction_t::type ctor = nullptr;
-        static inline cfunction_t::type dtor = nullptr;
         static inline type_safe_properties<_user_type> methods{};
         static inline std::unordered_map<std::string_view, cfunction_t::type> setters{};
         static inline std::unordered_map<std::string_view, cfunction_t::type> getters{};
         static inline std::unordered_map<std::string_view, cfunction_t::type> operators{};
+        static inline type_safe_function_overloads add_operator{};
 
         static constexpr void reset() {
             reset(false);
@@ -69,7 +68,6 @@ namespace tlw {
             if (cleanup && name)
                 delete[] name;
             name = nullptr;
-            ctor = dtor = nullptr;
             methods.clear();
             setters.clear();
             getters.clear();

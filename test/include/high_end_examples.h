@@ -91,6 +91,10 @@ namespace tlw {
             return vec4(-x, -y, -z, -w);
         }
 
+        vec4 operator+(const vec4 &other) const {
+            return vec4(x + other.x, y + other.y, z + other.z, w + other.w);
+        }
+
         float length() const {
             return _length(*this);
         }
@@ -163,6 +167,7 @@ namespace tlw {
                 .ctor<float, float, float>()
                 .ctor<float, float, float, float>()
                 .len(&tlw::vec4::length)
+                .add<tlw::vec4>()
                 .prop("x", &tlw::vec4::x)
                 .prop("y", &tlw::vec4::y)
                 .prop("z", &tlw::vec4::z)

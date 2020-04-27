@@ -392,12 +392,26 @@ namespace tlw {
             return *this;
         }
 
+        template<typename _other, typename _other2, typename ..._others>
+        constexpr _builder_type &add() {
+            add<_other>(); add<_other2>();
+            (..., add<_others>());
+            return *this;
+        }
+
         template<typename _other>
         constexpr _builder_type &sub() {
             mt::sub_operator.push_back(type_safe_function{__sub<_user_type, _other>::test, __sub<_user_type, _other>::sub});
             ro_mt::sub_operator.push_back(type_safe_function{__sub<const _user_type, _other>::test, __sub<const _user_type, _other>::sub});
             p_mt::sub_operator.push_back(type_safe_function{__sub<_user_type*, _other>::test, __sub<_user_type*, _other>::sub});
             rop_mt::sub_operator.push_back(type_safe_function{__sub<const _user_type*, _other>::test, __sub<const _user_type*, _other>::sub});
+            return *this;
+        }
+
+        template<typename _other, typename _other2, typename ..._others>
+        constexpr _builder_type &sub() {
+            sub<_other>(); sub<_other2>();
+            (..., sub<_others>());
             return *this;
         }
 
@@ -410,6 +424,13 @@ namespace tlw {
             return *this;
         }
 
+        template<typename _other, typename _other2, typename ..._others>
+        constexpr _builder_type &mul() {
+            mul<_other>(); mul<_other2>();
+            (..., mul<_others>());
+            return *this;
+        }
+
         template<typename _other>
         constexpr _builder_type &div() {
             mt::div_operator.push_back(type_safe_function{__div<_user_type, _other>::test, __div<_user_type, _other>::div});
@@ -419,12 +440,26 @@ namespace tlw {
             return *this;
         }
 
+        template<typename _other, typename _other2, typename ..._others>
+        constexpr _builder_type &div() {
+            div<_other>(); div<_other2>();
+            (..., div<_others>());
+            return *this;
+        }
+
         template<typename _other>
         constexpr _builder_type &mod() {
             mt::mod_operator.push_back(type_safe_function{__mod<_user_type, _other>::test, __mod<_user_type, _other>::mod});
             ro_mt::mod_operator.push_back(type_safe_function{__mod<const _user_type, _other>::test, __mod<const _user_type, _other>::mod});
             p_mt::mod_operator.push_back(type_safe_function{__mod<_user_type*, _other>::test, __mod<_user_type*, _other>::mod});
             rop_mt::mod_operator.push_back(type_safe_function{__mod<const _user_type*, _other>::test, __mod<const _user_type*, _other>::mod});
+            return *this;
+        }
+
+        template<typename _other, typename _other2, typename ..._others>
+        constexpr _builder_type &mod() {
+            mod<_other>(); mod<_other2>();
+            (..., mod<_others>());
             return *this;
         }
 

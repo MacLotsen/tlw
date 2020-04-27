@@ -191,7 +191,7 @@ namespace tlw {
                 .sub<tlw::vec4>()
                 .mul<tlw::vec4>()
                 .div<tlw::vec4>()
-                .mod<tlw::vec4>()
+                .mod<tlw::vec4, float>()
                 .prop("x", &tlw::vec4::x)
                 .prop("y", &tlw::vec4::y)
                 .prop("z", &tlw::vec4::z)

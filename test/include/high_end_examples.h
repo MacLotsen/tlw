@@ -39,7 +39,7 @@ namespace tlw {
 
         vec4() : vec4(0) {}
 
-        vec4(float n) : vec4(n, n, n) {}
+        vec4(float n) : vec4(n, n, n, n) {}
 
         vec4(float x, float y, float z) : vec4(x, y, z, .0f) {}
 
@@ -80,7 +80,7 @@ namespace tlw {
             return *this;
         }
 
-        const char * str() const {
+        const char *str() const {
             char *_str;
             _str = static_cast<char *>(malloc(sizeof(char) * 80));
             sprintf(_str, "vec4 {\n\tx = %g,\n\ty = %g,\n\tz = %g,\n\tw = %g,\n\tsize = %g\n}", x, y, z, w, length());
@@ -93,6 +93,26 @@ namespace tlw {
 
         vec4 operator+(const vec4 &other) const {
             return vec4(x + other.x, y + other.y, z + other.z, w + other.w);
+        }
+
+        vec4 operator-(const vec4 &other) const {
+            return vec4(x - other.x, y - other.y, z - other.z, w - other.w);
+        }
+
+        vec4 operator*(const vec4 &other) const {
+            return vec4(x * other.x, y * other.y, z * other.z, w * other.w);
+        }
+
+        vec4 operator/(const vec4 &other) const {
+            return vec4(x / other.x, y / other.y, z / other.z, w / other.w);
+        }
+
+        vec4 operator%(const vec4 &other) const {
+            return vec4(fmod(x, other.x), fmod(y, other.y), fmod(z, other.z), fmod(w, other.w));
+        }
+
+        vec4 operator%(float other) const {
+            return vec4(fmod(x, other), fmod(y, other), fmod(z, other), fmod(w, other));
         }
 
         float length() const {
@@ -168,6 +188,10 @@ namespace tlw {
                 .ctor<float, float, float, float>()
                 .len(&tlw::vec4::length)
                 .add<tlw::vec4>()
+                .sub<tlw::vec4>()
+                .mul<tlw::vec4>()
+                .div<tlw::vec4>()
+                .mod<tlw::vec4>()
                 .prop("x", &tlw::vec4::x)
                 .prop("y", &tlw::vec4::y)
                 .prop("z", &tlw::vec4::z)

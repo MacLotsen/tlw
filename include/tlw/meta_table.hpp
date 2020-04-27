@@ -59,6 +59,10 @@ namespace tlw {
         static inline std::unordered_map<std::string_view, cfunction_t::type> getters{};
         static inline std::unordered_map<std::string_view, cfunction_t::type> operators{};
         static inline type_safe_function_overloads add_operator{};
+        static inline type_safe_function_overloads sub_operator{};
+        static inline type_safe_function_overloads mul_operator{};
+        static inline type_safe_function_overloads div_operator{};
+        static inline type_safe_function_overloads mod_operator{};
 
         static constexpr void reset() {
             reset(false);

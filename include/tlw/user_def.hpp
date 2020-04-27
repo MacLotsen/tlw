@@ -153,10 +153,50 @@ namespace tlw {
     };
 
     template<typename mt>
-    struct __explicit_add {
+    struct __explicit_operator {
 
         static constexpr int add(lua_State *L) {
             for (auto kv : mt::add_operator) {
+                if (std::get<0>(kv)(L)) {
+                    return std::get<1>(kv)(L);
+                }
+            }
+            luaL_error(L, "ERROR: Cannot sum up");
+            return 0;
+        }
+
+        static constexpr int sub(lua_State *L) {
+            for (auto kv : mt::sub_operator) {
+                if (std::get<0>(kv)(L)) {
+                    return std::get<1>(kv)(L);
+                }
+            }
+            luaL_error(L, "ERROR: Cannot sum up");
+            return 0;
+        }
+
+        static constexpr int mul(lua_State *L) {
+            for (auto kv : mt::mul_operator) {
+                if (std::get<0>(kv)(L)) {
+                    return std::get<1>(kv)(L);
+                }
+            }
+            luaL_error(L, "ERROR: Cannot sum up");
+            return 0;
+        }
+
+        static constexpr int div(lua_State *L) {
+            for (auto kv : mt::div_operator) {
+                if (std::get<0>(kv)(L)) {
+                    return std::get<1>(kv)(L);
+                }
+            }
+            luaL_error(L, "ERROR: Cannot sum up");
+            return 0;
+        }
+
+        static constexpr int mod(lua_State *L) {
+            for (auto kv : mt::mod_operator) {
                 if (std::get<0>(kv)(L)) {
                     return std::get<1>(kv)(L);
                 }
@@ -352,6 +392,42 @@ namespace tlw {
             return *this;
         }
 
+        template<typename _other>
+        constexpr _builder_type &sub() {
+            mt::sub_operator.push_back(type_safe_function{__sub<_user_type, _other>::test, __sub<_user_type, _other>::sub});
+            ro_mt::sub_operator.push_back(type_safe_function{__sub<const _user_type, _other>::test, __sub<const _user_type, _other>::sub});
+            p_mt::sub_operator.push_back(type_safe_function{__sub<_user_type*, _other>::test, __sub<_user_type*, _other>::sub});
+            rop_mt::sub_operator.push_back(type_safe_function{__sub<const _user_type*, _other>::test, __sub<const _user_type*, _other>::sub});
+            return *this;
+        }
+
+        template<typename _other>
+        constexpr _builder_type &mul() {
+            mt::mul_operator.push_back(type_safe_function{__mul<_user_type, _other>::test, __mul<_user_type, _other>::mul});
+            ro_mt::mul_operator.push_back(type_safe_function{__mul<const _user_type, _other>::test, __mul<const _user_type, _other>::mul});
+            p_mt::mul_operator.push_back(type_safe_function{__mul<_user_type*, _other>::test, __mul<_user_type*, _other>::mul});
+            rop_mt::mul_operator.push_back(type_safe_function{__mul<const _user_type*, _other>::test, __mul<const _user_type*, _other>::mul});
+            return *this;
+        }
+
+        template<typename _other>
+        constexpr _builder_type &div() {
+            mt::div_operator.push_back(type_safe_function{__div<_user_type, _other>::test, __div<_user_type, _other>::div});
+            ro_mt::div_operator.push_back(type_safe_function{__div<const _user_type, _other>::test, __div<const _user_type, _other>::div});
+            p_mt::div_operator.push_back(type_safe_function{__div<_user_type*, _other>::test, __div<_user_type*, _other>::div});
+            rop_mt::div_operator.push_back(type_safe_function{__div<const _user_type*, _other>::test, __div<const _user_type*, _other>::div});
+            return *this;
+        }
+
+        template<typename _other>
+        constexpr _builder_type &mod() {
+            mt::mod_operator.push_back(type_safe_function{__mod<_user_type, _other>::test, __mod<_user_type, _other>::mod});
+            ro_mt::mod_operator.push_back(type_safe_function{__mod<const _user_type, _other>::test, __mod<const _user_type, _other>::mod});
+            p_mt::mod_operator.push_back(type_safe_function{__mod<_user_type*, _other>::test, __mod<_user_type*, _other>::mod});
+            rop_mt::mod_operator.push_back(type_safe_function{__mod<const _user_type*, _other>::test, __mod<const _user_type*, _other>::mod});
+            return *this;
+        }
+
         template<typename _method_type>
         constexpr _builder_type &tostring(_method_type method) {
             __tostring<_user_type>::tostring_method = method;
@@ -413,8 +489,28 @@ namespace tlw {
             }
 
             if (!_mt::add_operator.empty()) {
-                s.push(__explicit_add<_mt>::add);
+                s.push(__explicit_operator<_mt>::add);
                 lua_setfield(L, mt_ref, "__add");
+            }
+
+            if (!_mt::sub_operator.empty()) {
+                s.push(__explicit_operator<_mt>::sub);
+                lua_setfield(L, mt_ref, "__sub");
+            }
+
+            if (!_mt::mul_operator.empty()) {
+                s.push(__explicit_operator<_mt>::mul);
+                lua_setfield(L, mt_ref, "__mul");
+            }
+
+            if (!_mt::div_operator.empty()) {
+                s.push(__explicit_operator<_mt>::div);
+                lua_setfield(L, mt_ref, "__div");
+            }
+
+            if (!_mt::mod_operator.empty()) {
+                s.push(__explicit_operator<_mt>::mod);
+                lua_setfield(L, mt_ref, "__mod");
             }
 
             s.push(_mt::name);

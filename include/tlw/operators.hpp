@@ -112,6 +112,137 @@ namespace tlw {
         }
     };
 
+    template<typename _user_type, typename _other_type>
+    struct __sub {
+        using base_type = typename cpp_type<_user_type>::value_type;
+
+        static constexpr bool test(lua_State *L) {
+            return stack_traits<_user_type>::inspect(L, 1)
+                   && stack_traits<_other_type>::inspect(L, 2);
+        }
+
+        static constexpr int sub(lua_State *L) {
+            auto ud = stack_traits<_user_type>::get(L, 1);
+            auto other = stack_traits<_other_type>::get(L, 2);
+            lua_settop(L, 0);
+            if constexpr (cpp_type<_user_type>::is_pointer && cpp_type<_other_type>::is_pointer) {
+                stack_traits<base_type>::push(L, *ud - *other);
+            } else if constexpr (cpp_type<_user_type>::is_pointer) {
+                stack_traits<base_type>::push(L, *ud - other);
+            } else if constexpr (cpp_type<_other_type>::is_pointer) {
+                stack_traits<base_type>::push(L, ud - *other);
+            } else {
+                stack_traits<base_type>::push(L, ud - other);
+            }
+            return 1;
+        }
+    };
+
+    template<typename _user_type, typename _other_type>
+    struct __mul {
+        using base_type = typename cpp_type<_user_type>::value_type;
+
+        static constexpr bool test(lua_State *L) {
+            return stack_traits<_user_type>::inspect(L, 1)
+                   && stack_traits<_other_type>::inspect(L, 2);
+        }
+
+        static constexpr int mul(lua_State *L) {
+            auto ud = stack_traits<_user_type>::get(L, 1);
+            auto other = stack_traits<_other_type>::get(L, 2);
+            lua_settop(L, 0);
+            if constexpr (cpp_type<_user_type>::is_pointer && cpp_type<_other_type>::is_pointer) {
+                stack_traits<base_type>::push(L, *ud * *other);
+            } else if constexpr (cpp_type<_user_type>::is_pointer) {
+                stack_traits<base_type>::push(L, *ud * other);
+            } else if constexpr (cpp_type<_other_type>::is_pointer) {
+                stack_traits<base_type>::push(L, ud * *other);
+            } else {
+                stack_traits<base_type>::push(L, ud * other);
+            }
+            return 1;
+        }
+    };
+
+    template<typename _user_type, typename _other_type>
+    struct __div {
+        using base_type = typename cpp_type<_user_type>::value_type;
+
+        static constexpr bool test(lua_State *L) {
+            return stack_traits<_user_type>::inspect(L, 1)
+                   && stack_traits<_other_type>::inspect(L, 2);
+        }
+
+        static constexpr int div(lua_State *L) {
+            auto ud = stack_traits<_user_type>::get(L, 1);
+            auto other = stack_traits<_other_type>::get(L, 2);
+            lua_settop(L, 0);
+            if constexpr (cpp_type<_user_type>::is_pointer && cpp_type<_other_type>::is_pointer) {
+                stack_traits<base_type>::push(L, *ud / *other);
+            } else if constexpr (cpp_type<_user_type>::is_pointer) {
+                stack_traits<base_type>::push(L, *ud / other);
+            } else if constexpr (cpp_type<_other_type>::is_pointer) {
+                stack_traits<base_type>::push(L, ud / *other);
+            } else {
+                stack_traits<base_type>::push(L, ud / other);
+            }
+            return 1;
+        }
+    };
+
+    template<typename _user_type, typename _other_type>
+    struct __mod {
+        using base_type = typename cpp_type<_user_type>::value_type;
+
+        static constexpr bool test(lua_State *L) {
+            return stack_traits<_user_type>::inspect(L, 1)
+                   && stack_traits<_other_type>::inspect(L, 2);
+        }
+
+        static constexpr int mod(lua_State *L) {
+            auto ud = stack_traits<_user_type>::get(L, 1);
+            auto other = stack_traits<_other_type>::get(L, 2);
+            lua_settop(L, 0);
+            if constexpr (cpp_type<_user_type>::is_pointer && cpp_type<_other_type>::is_pointer) {
+                stack_traits<base_type>::push(L, *ud % *other);
+            } else if constexpr (cpp_type<_user_type>::is_pointer) {
+                stack_traits<base_type>::push(L, *ud % other);
+            } else if constexpr (cpp_type<_other_type>::is_pointer) {
+                stack_traits<base_type>::push(L, ud % *other);
+            } else {
+                stack_traits<base_type>::push(L, ud % other);
+            }
+            return 1;
+        }
+    };
+
+    // hold methods + map
+//    template<typename _user_type, typename _other_type>
+//    struct __pow {
+//        using base_type = typename cpp_type<_user_type>::value_type;
+//
+//        static constexpr bool test(lua_State *L) {
+//            return stack_traits<_user_type>::inspect(L, 1)
+//                   && stack_traits<_other_type>::inspect(L, 2);
+//        }
+//
+//        static constexpr int mod(lua_State *L) {
+//            auto ud = stack_traits<_user_type>::get(L, 1);
+//            auto other = stack_traits<_other_type>::get(L, 2);
+//            lua_settop(L, 0);
+//            if constexpr (cpp_type<_user_type>::is_pointer && cpp_type<_other_type>::is_pointer) {
+//                stack_traits<base_type>::push(L, *ud % *other);
+//            } else if constexpr (cpp_type<_user_type>::is_pointer) {
+//                stack_traits<base_type>::push(L, *ud % other);
+//            } else if constexpr (cpp_type<_other_type>::is_pointer) {
+//                stack_traits<base_type>::push(L, ud % *other);
+//            } else {
+//                stack_traits<base_type>::push(L, ud % other);
+//            }
+//            return 1;
+//        }
+//    };
+
     template<typename _user_type, typename ...>
     struct __operator {
 

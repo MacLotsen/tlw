@@ -12,4 +12,6 @@ Operators:
 
 Old API pending:
  - multi return (table, function, script)
- -
+ - regain table speed
+ - regain property speed
+ - try avoid moving and pass as reference

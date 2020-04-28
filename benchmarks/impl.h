@@ -119,6 +119,10 @@ public:
     }
 };
 
+auto load_prop_example = tlw::define<PropertyExample>("PropertyExample")
+        .prop("number", &PropertyExample::number)
+        .build();
+
 class ImplPropertyBenchmark : public ImplBenchmarkRunner {
 private:
     PropertyExample *example = nullptr;
@@ -129,10 +133,6 @@ public:
 
     void prepare(const char *script) override {
         ImplBenchmarkRunner::prepare(script);
-        
-        auto load_prop_example = tlw::define<PropertyExample>("PropertyExample")
-                .prop("number", &PropertyExample::number)
-                .build();
         
         load_prop_example(L);
 
@@ -207,7 +207,7 @@ public:
     void prepare(const char *script) override {
         ImplBenchmarkRunner::prepare(script);
         ImplBenchmarkRunner::run();
-        table = new tlw::table(std::move(lua.get<tlw::table>("t")));
+        table = new tlw::table(lua.get<tlw::table>("t"));
     }
 
     void run() override {
@@ -229,7 +229,7 @@ public:
     void prepare(const char *script) override {
         ImplBenchmarkRunner::prepare(script);
         ImplBenchmarkRunner::run();
-        table = new tlw::table(std::move(lua.get<tlw::table>("t")));
+        table = new tlw::table(lua.get<tlw::table>("t"));
     }
 
     void run() override {

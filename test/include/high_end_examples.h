@@ -24,10 +24,10 @@
 #include <cmath>
 #include <utility>
 
-
-extern "C" {
-int luaopen_examplelib(lua_State *_L);
-}
+//
+//extern "C" {
+//int luaopen_examplelib(lua_State *_L);
+//}
 
 namespace tlw {
 
@@ -115,6 +115,22 @@ namespace tlw {
             return vec4(fmod(x, other), fmod(y, other), fmod(z, other), fmod(w, other));
         }
 
+        bool operator==(const vec4 &other) const {
+            return x == other.x && y == other.y && z == other.z && w == other.w;
+        }
+
+        bool operator<(const vec4 &other) const {
+            return length() < other.length();
+        }
+
+        bool operator<=(const vec4 &other) const {
+            return length() <= other.length();
+        }
+
+        bool operator>(const vec4 &other) const {
+            return length() > other.length();
+        }
+
         float length() const {
             return _length(*this);
         }
@@ -139,10 +155,10 @@ namespace tlw {
                  z{0, 0, 0, 0},
                  w{0, 0, 0, 0} {}
 
-        mat4(float scalar) : x{scalar, 0, 0, 0},
-                             y{0, scalar, 0, 0},
-                             z{0, 0, scalar, 0},
-                             w{0, 0, 0, scalar} {}
+        explicit mat4(float scalar) : x{scalar, 0, 0, 0},
+                                      y{0, scalar, 0, 0},
+                                      z{0, 0, scalar, 0},
+                                      w{0, 0, 0, scalar} {}
 
         mat4(float x1, float x2, float x3, float x4,
              float y1, float y2, float y3, float y4,
@@ -165,15 +181,11 @@ namespace tlw {
 
         entity() : position(0, 0, 0, 1), look_at(0, 0, -1), model() {}
 
-        entity(vec4 position) : position(std::move(position)), look_at(0, 0, -1), model() {
+        explicit entity(vec4 position) : position(std::move(position)), look_at(0, 0, -1), model() {
 
         }
 
-        entity(vec4 *position) : position(*position), look_at(0, 0, -1), model() {
-
-        }
-
-        entity(mat4 model) : position(0, 0, 0, 1), look_at(0, 0, -1), model(model) {
+        explicit entity(mat4 model) : position(0, 0, 0, 1), look_at(0, 0, -1), model(model) {
 
         }
     };
@@ -192,6 +204,9 @@ namespace tlw {
                 .mul<tlw::vec4>()
                 .div<tlw::vec4>()
                 .mod<tlw::vec4, float>()
+                .eq<tlw::vec4>()
+                .lt<tlw::vec4>()
+                .le<tlw::vec4>()
                 .prop("x", &tlw::vec4::x)
                 .prop("y", &tlw::vec4::y)
                 .prop("z", &tlw::vec4::z)
@@ -222,7 +237,6 @@ namespace tlw {
         auto lib_entity = tlw::define<tlw::entity>("entity")
                 .ctor<>()
                 .ctor<tlw::vec4>()
-                .ctor<tlw::vec4 *>()
                 .ctor<tlw::mat4>()
                 .prop("position", &tlw::entity::position)
                 .prop("lookat", &tlw::entity::look_at)

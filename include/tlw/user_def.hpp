@@ -161,7 +161,7 @@ namespace tlw {
                     return std::get<1>(kv)(L);
                 }
             }
-            luaL_error(L, "ERROR: Cannot sum up");
+            luaL_error(L, "ERROR: No suitable __add method found");
             return 0;
         }
 
@@ -171,7 +171,7 @@ namespace tlw {
                     return std::get<1>(kv)(L);
                 }
             }
-            luaL_error(L, "ERROR: Cannot sum up");
+            luaL_error(L, "ERROR: No suitable __sub method found");
             return 0;
         }
 
@@ -181,7 +181,7 @@ namespace tlw {
                     return std::get<1>(kv)(L);
                 }
             }
-            luaL_error(L, "ERROR: Cannot sum up");
+            luaL_error(L, "ERROR: No suitable __mul method found");
             return 0;
         }
 
@@ -191,7 +191,7 @@ namespace tlw {
                     return std::get<1>(kv)(L);
                 }
             }
-            luaL_error(L, "ERROR: Cannot sum up");
+            luaL_error(L, "ERROR: No suitable __div method found");
             return 0;
         }
 
@@ -201,7 +201,37 @@ namespace tlw {
                     return std::get<1>(kv)(L);
                 }
             }
-            luaL_error(L, "ERROR: Cannot sum up");
+            luaL_error(L, "ERROR: No suitable __mod method found");
+            return 0;
+        }
+
+        static constexpr int eq(lua_State *L) {
+            for (auto kv : mt::eq_operator) {
+                if (std::get<0>(kv)(L)) {
+                    return std::get<1>(kv)(L);
+                }
+            }
+            luaL_error(L, "ERROR: No suitable __eq method found");
+            return 0;
+        }
+
+        static constexpr int lt(lua_State *L) {
+            for (auto kv : mt::lt_operator) {
+                if (std::get<0>(kv)(L)) {
+                    return std::get<1>(kv)(L);
+                }
+            }
+            luaL_error(L, "ERROR: No suitable __lt method found");
+            return 0;
+        }
+
+        static constexpr int le(lua_State *L) {
+            for (auto kv : mt::le_operator) {
+                if (std::get<0>(kv)(L)) {
+                    return std::get<1>(kv)(L);
+                }
+            }
+            luaL_error(L, "ERROR: No suitable __le method found");
             return 0;
         }
 
@@ -463,6 +493,33 @@ namespace tlw {
             return *this;
         }
 
+        template<typename _other>
+        constexpr _builder_type &eq() {
+            mt::eq_operator.push_back(type_safe_function{__eq<_user_type, _other>::test, __eq<_user_type, _other>::eq});
+            ro_mt::eq_operator.push_back(type_safe_function{__eq<const _user_type, _other>::test, __eq<const _user_type, _other>::eq});
+            p_mt::eq_operator.push_back(type_safe_function{__eq<_user_type*, _other>::test, __eq<_user_type*, _other>::eq});
+            rop_mt::eq_operator.push_back(type_safe_function{__eq<const _user_type*, _other>::test, __eq<const _user_type*, _other>::eq});
+            return *this;
+        }
+
+        template<typename _other>
+        constexpr _builder_type &lt() {
+            mt::lt_operator.push_back(type_safe_function{__lt<_user_type, _other>::test, __lt<_user_type, _other>::lt});
+            ro_mt::lt_operator.push_back(type_safe_function{__lt<const _user_type, _other>::test, __lt<const _user_type, _other>::lt});
+            p_mt::lt_operator.push_back(type_safe_function{__lt<_user_type*, _other>::test, __lt<_user_type*, _other>::lt});
+            rop_mt::lt_operator.push_back(type_safe_function{__lt<const _user_type*, _other>::test, __lt<const _user_type*, _other>::lt});
+            return *this;
+        }
+
+        template<typename _other>
+        constexpr _builder_type &le() {
+            mt::le_operator.push_back(type_safe_function{__le<_user_type, _other>::test, __le<_user_type, _other>::le});
+            ro_mt::le_operator.push_back(type_safe_function{__le<const _user_type, _other>::test, __le<const _user_type, _other>::le});
+            p_mt::le_operator.push_back(type_safe_function{__le<_user_type*, _other>::test, __le<_user_type*, _other>::le});
+            rop_mt::le_operator.push_back(type_safe_function{__le<const _user_type*, _other>::test, __le<const _user_type*, _other>::le});
+            return *this;
+        }
+
         template<typename _method_type>
         constexpr _builder_type &tostring(_method_type method) {
             __tostring<_user_type>::tostring_method = method;
@@ -546,6 +603,21 @@ namespace tlw {
             if (!_mt::mod_operator.empty()) {
                 s.push(__explicit_operator<_mt>::mod);
                 lua_setfield(L, mt_ref, "__mod");
+            }
+
+            if (!_mt::eq_operator.empty()) {
+                s.push(__explicit_operator<_mt>::eq);
+                lua_setfield(L, mt_ref, "__eq");
+            }
+
+            if (!_mt::lt_operator.empty()) {
+                s.push(__explicit_operator<_mt>::lt);
+                lua_setfield(L, mt_ref, "__lt");
+            }
+
+            if (!_mt::le_operator.empty()) {
+                s.push(__explicit_operator<_mt>::le);
+                lua_setfield(L, mt_ref, "__le");
             }
 
             s.push(_mt::name);

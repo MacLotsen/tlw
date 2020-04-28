@@ -63,6 +63,9 @@ namespace tlw {
         static inline type_safe_function_overloads mul_operator{};
         static inline type_safe_function_overloads div_operator{};
         static inline type_safe_function_overloads mod_operator{};
+        static inline type_safe_function_overloads eq_operator{};
+        static inline type_safe_function_overloads lt_operator{};
+        static inline type_safe_function_overloads le_operator{};
 
         static constexpr void reset() {
             reset(false);

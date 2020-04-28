@@ -243,6 +243,81 @@ namespace tlw {
 //        }
 //    };
 
+    template<typename _user_type, typename _other_type>
+    struct __eq {
+
+        static constexpr bool test(lua_State *L) {
+            return stack_traits<_user_type>::inspect(L, 1)
+                   && stack_traits<_other_type>::inspect(L, 2);
+        }
+
+        static constexpr int eq(lua_State *L) {
+            auto ud = stack_traits<_user_type>::get(L, 1);
+            auto other = stack_traits<_other_type>::get(L, 2);
+            lua_settop(L, 0);
+            if constexpr (cpp_type<_user_type>::is_pointer && cpp_type<_other_type>::is_pointer) {
+                stack_traits<bool>::push(L, *ud == *other);
+            } else if constexpr (cpp_type<_user_type>::is_pointer) {
+                stack_traits<bool>::push(L, *ud == other);
+            } else if constexpr (cpp_type<_other_type>::is_pointer) {
+                stack_traits<bool>::push(L, ud == *other);
+            } else {
+                stack_traits<bool>::push(L, ud == other);
+            }
+            return 1;
+        }
+    };
+
+    template<typename _user_type, typename _other_type>
+    struct __lt {
+
+        static constexpr bool test(lua_State *L) {
+            return stack_traits<_user_type>::inspect(L, 1)
+                   && stack_traits<_other_type>::inspect(L, 2);
+        }
+
+        static constexpr int lt(lua_State *L) {
+            auto ud = stack_traits<_user_type>::get(L, 1);
+            auto other = stack_traits<_other_type>::get(L, 2);
+            lua_settop(L, 0);
+            if constexpr (cpp_type<_user_type>::is_pointer && cpp_type<_other_type>::is_pointer) {
+                stack_traits<bool>::push(L, *ud < *other);
+            } else if constexpr (cpp_type<_user_type>::is_pointer) {
+                stack_traits<bool>::push(L, *ud < other);
+            } else if constexpr (cpp_type<_other_type>::is_pointer) {
+                stack_traits<bool>::push(L, ud < *other);
+            } else {
+                stack_traits<bool>::push(L, ud < other);
+            }
+            return 1;
+        }
+    };
+
+    template<typename _user_type, typename _other_type>
+    struct __le {
+
+        static constexpr bool test(lua_State *L) {
+            return stack_traits<_user_type>::inspect(L, 1)
+                   && stack_traits<_other_type>::inspect(L, 2);
+        }
+
+        static constexpr int le(lua_State *L) {
+            auto ud = stack_traits<_user_type>::get(L, 1);
+            auto other = stack_traits<_other_type>::get(L, 2);
+            lua_settop(L, 0);
+            if constexpr (cpp_type<_user_type>::is_pointer && cpp_type<_other_type>::is_pointer) {
+                stack_traits<bool>::push(L, *ud <= *other);
+            } else if constexpr (cpp_type<_user_type>::is_pointer) {
+                stack_traits<bool>::push(L, *ud <= other);
+            } else if constexpr (cpp_type<_other_type>::is_pointer) {
+                stack_traits<bool>::push(L, ud <= *other);
+            } else {
+                stack_traits<bool>::push(L, ud <= other);
+            }
+            return 1;
+        }
+    };
+
     template<typename _user_type, typename ...>
     struct __operator {
 

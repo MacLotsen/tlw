@@ -57,6 +57,53 @@ namespace tlw {
         }
     };
 
+    template<typename _r, typename ..._args>
+    struct stack_traits<_r(*)(_args...)> {
+        using type = _r(*)(_args...);
+        static constexpr const bool is_lua_type = false;
+
+        static constexpr void push(lua_State *L, type fn) {
+            lua_pushlightuserdata(L, (void*) fn);
+            lua_pushcclosure(L, __wrap, 1);
+        }
+
+        static constexpr int __wrap(lua_State *L) {
+            return __wrap(L, gen_seq<sizeof...(_args)>());
+        }
+
+        template<int ...Is>
+        static constexpr int __wrap(lua_State *L, seq<Is...>) {
+            auto fn = (type) lua_touserdata(L, lua_upvalueindex(1));
+            _r ret = fn(stack_traits<_args>::get(L, Is + 1)...);
+            lua_settop(L, 0);
+            stack_traits<_r>::push(L, ret);
+            return 1;
+        }
+    };
+
+    template<typename ..._args>
+    struct stack_traits<void(*)(_args...)> {
+        using type = void(*)(_args...);
+        static constexpr const bool is_lua_type = false;
+
+        static constexpr void push(lua_State *L, type fn) {
+            lua_pushlightuserdata(L, (void*) fn);
+            lua_pushcclosure(L, __wrap, 1);
+        }
+
+        static constexpr int __wrap(lua_State *L) {
+            return __wrap(L, gen_seq<sizeof...(_args)>());
+        }
+
+        template<int ...Is>
+        static constexpr int __wrap(lua_State *L, seq<Is...>) {
+            auto fn = (type) lua_touserdata(L, lua_upvalueindex(1));
+            fn(stack_traits<_args>::get(L, Is + 1)...);
+            lua_settop(L, 0);
+            return 0;
+        }
+    };
+
 }
 
 #endif //TLW_FUNCTION_TRAITS_HPP

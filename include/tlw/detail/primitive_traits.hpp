@@ -73,11 +73,19 @@ namespace tlw {
     };
 
     template<>
-    struct stack_traits<int> : public primitive_stack_traits<number_t> {
+    struct stack_traits<int> : public primitive_stack_traits<integer_t> {
     };
 
     template<>
-    struct stack_traits<long> : public primitive_stack_traits<number_t> {
+    struct stack_traits<unsigned int> : public primitive_stack_traits<integer_t> {
+    };
+
+    template<>
+    struct stack_traits<long> : public primitive_stack_traits<integer_t> {
+    };
+
+    template<>
+    struct stack_traits<unsigned long> : public primitive_stack_traits<integer_t> {
     };
 
     template<>

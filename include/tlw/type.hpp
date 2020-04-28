@@ -34,6 +34,7 @@ namespace tlw {
     using none_t =      type_set<void, LUA_TNONE>;
     using bool_t =      type_set<bool, LUA_TBOOLEAN>;
     using number_t =    type_set<lua_Number, LUA_TNUMBER>;
+    using integer_t =   type_set<int64_t, LUA_TNUMBER>;
     using string_t =    type_set<const char *, LUA_TSTRING>;
     using table_t =     type_set<reference, LUA_TTABLE>;
     using function_t =  type_set<reference, LUA_TFUNCTION>;

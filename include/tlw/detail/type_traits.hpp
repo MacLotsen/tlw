@@ -110,6 +110,17 @@ namespace tlw {
     };
 
     template<>
+    struct type_traits<integer_t> {
+        static typename number_t::type get(lua_State *L, int idx) {
+            return lua_tointeger(L, idx);
+        }
+
+        static void push(lua_State *L, typename number_t::type value) {
+            lua_pushinteger(L, value);
+        }
+    };
+
+    template<>
     struct type_traits<string_t> {
         static typename string_t::type get(lua_State *L, int idx) {
             return lua_tostring(L, idx);

@@ -23,7 +23,7 @@ TEST_F(detail_test, test_stack) {
     tlw::stack s(L);
     tlw::meta_table_registry<tlw::example>::reset();
     tlw::define<tlw::example>("example")
-            .finish();
+            .build();
 
     s.push(magic_bool);
     ASSERT_EQ(magic_bool, s.get<bool>(-1));

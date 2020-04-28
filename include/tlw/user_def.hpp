@@ -532,7 +532,7 @@ namespace tlw {
             rop_mt::operators["__tostring"] = __tostring<const _user_type*>::tostring;
         }
 
-        lib_load_t finish() {
+        lib_load_t build() {
             meta_table_registry<_user_type>::name = mt::name;
             meta_table_registry<const _user_type>::name = ro_mt::name;
             meta_table_registry<_user_type *>::name = p_mt::name;

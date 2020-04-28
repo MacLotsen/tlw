@@ -10,5 +10,6 @@ Operators:
  - pow
  - const correctness
 
-Stack support:
- - functions
+Old API pending:
+ - multi return (table, function, script)
+ -

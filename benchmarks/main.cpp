@@ -17,6 +17,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <vector>
 #include "benchmark.h"
 #include "classic.h"
 #include "impl.h"
@@ -41,17 +42,17 @@ std::vector<Benchmark> benchmarks = {
         {"Get global function",  "function f() return true end",    new ClassicGlobalFunctionGetBenchmark,   new ImplGlobalFunctionGetBenchmark, 19000000},
         {"Property Get",         "local num = example.number",      new ClassicPropertyBenchmark,            new ImplPropertyBenchmark,          11500000},
         {"Property Set",         "example.number = 5252",           new ClassicPropertyBenchmark,            new ImplPropertyBenchmark,          11000000},
-        {"Getter",               "local num = example.number",      new ClassicGetterSetterBenchmark,        new ImplGetterSetterBenchmark,      11500000},
-        {"Setter",               "example.number = 5252",           new ClassicGetterSetterBenchmark,        new ImplGetterSetterBenchmark,      11000000},
-        {"Get method",           "local num = example:getNumber()", new ClassicGetterSetterAsTableBenchmark, new ImplGetterSetterFastBenchmark,  19000000},
-        {"Set method",           "example:setNumber(5252)",         new ClassicGetterSetterAsTableBenchmark, new ImplGetterSetterFastBenchmark,  17000000},
-        {"Fetching results",     "return 1.5, true, 'string'",      new ClassicScriptResultsBenchmark,       new ImplScriptResultsBenchmark,     17000000},
+//        {"Getter",               "local num = example.number",      new ClassicGetterSetterBenchmark,        new ImplGetterSetterBenchmark,      11500000},
+//        {"Setter",               "example.number = 5252",           new ClassicGetterSetterBenchmark,        new ImplGetterSetterBenchmark,      11000000},
+//        {"Get method",           "local num = example:getNumber()", new ClassicGetterSetterAsTableBenchmark, new ImplGetterSetterFastBenchmark,  19000000},
+//        {"Set method",           "example:setNumber(5252)",         new ClassicGetterSetterAsTableBenchmark, new ImplGetterSetterFastBenchmark,  17000000},
+//        {"Fetching results",     "return 1.5, true, 'string'",      new ClassicScriptResultsBenchmark,       new ImplScriptResultsBenchmark,     17000000},
         {"Fetching table key",   "t = {r = 5, g = 3, b = 1}",       new ClassicTableFetchBenchmark,          new ImplTableFetchBenchmark,        48000000},
-        {"Fetching table keys",  "t = {r = 5, g = 3, b = 1}",       new ClassicTableFetchesBenchmark,        new ImplTableFetchesBenchmark,      18000000},
+//        {"Fetching table keys",  "t = {r = 5, g = 3, b = 1}",       new ClassicTableFetchesBenchmark,        new ImplTableFetchesBenchmark,      18000000},
         {"Fetching list key",    "t = { 5, 3, 1 }",                 new ClassicListFetchBenchmark,           new ImplListFetchBenchmark,         62000000},
-        {"Fetching list keys",   "t = { 5, 3, 1 }",                 new ClassicListFetchesBenchmark,         new ImplListFetchesBenchmark,       27000000},
+//        {"Fetching list keys",   "t = { 5, 3, 1 }",                 new ClassicListFetchesBenchmark,         new ImplListFetchesBenchmark,       27000000},
         {"Setting table value",  "t = {}",                          new ClassicTableSetBenchmark,            new ImplTableSetBenchmark,          50000000},
-        {"Setting table values", "t = {}",                          new ClassicTableSetsBenchmark,           new ImplTableSetsBenchmark,         20000000},
+//        {"Setting table values", "t = {}",                          new ClassicTableSetsBenchmark,           new ImplTableSetsBenchmark,         20000000},
 };
 
 int main(int argc, char **argv) {

@@ -20,21 +20,21 @@
 #ifndef TLW_IMPL_H
 #define TLW_IMPL_H
 
-#include <tlw/old/_types.hpp>
-#include <tlw/old/_wrapping.hpp>
+#include <tlw/tlw.hpp>
 #include "benchmark.h"
 
 class ImplBenchmarkRunner : public BenchmarkRunner {
 protected:
-    LuaFunction<> *func = nullptr;
-    Lua lua;
-public:
+    tlw::function<void()> *func = nullptr;
+    tlw::state L = tlw::state(lua_open());
+    tlw::lua lua = tlw::lua(L);
+public:    
     ~ImplBenchmarkRunner() {
         delete func;
     }
 
     void prepare(const char *script) override {
-        func = new LuaFunction<>(lua.src(script));
+        func = new tlw::function<void()>(lua.src(script));
     }
 
     void run() override {
@@ -108,7 +108,7 @@ public:
     }
 
     void run() override {
-        auto f = lua.get<LuaFunction<bool()>>("f");
+        auto f = lua.get<tlw::function<bool()>>("f");
     }
 };
 
@@ -129,12 +129,15 @@ public:
 
     void prepare(const char *script) override {
         ImplBenchmarkRunner::prepare(script);
-        lua.add<PropertyExample>(PrettyClassPrototypeBuilder("PropertyExample")
-                                         .property("number", mk_property(&PropertyExample::number))
-                                         .build());
+        
+        auto load_prop_example = tlw::define<PropertyExample>("PropertyExample")
+                .prop("number", &PropertyExample::number)
+                .build();
+        
+        load_prop_example(L);
 
         example = new PropertyExample;
-        lua.setObject("example", example);
+        lua.set("example", example);
     }
 };
 
@@ -147,14 +150,14 @@ public:
     }
 
     void prepare(const char *script) override {
-        ImplBenchmarkRunner::prepare(script);
-        lua.add<PropertyExample>(PrettyClassPrototypeBuilder("GetterSetterExample")
-                                         .getter("number", mk_function(&PropertyExample::getNumber))
-                                         .setter("number", mk_function(&PropertyExample::setNumber))
-                                         .build());
-
-        example = new PropertyExample;
-        lua.setObject("example", example);
+//        ImplBenchmarkRunner::prepare(script);
+//        lua.add<PropertyExample>(PrettyClassPrototypeBuilder("GetterSetterExample")
+//                                         .getter("number", mk_function(&PropertyExample::getNumber))
+//                                         .setter("number", mk_function(&PropertyExample::setNumber))
+//                                         .build());
+//
+//        example = new PropertyExample;
+//        lua.setObject("example", example);
     }
 };
 
@@ -167,44 +170,44 @@ public:
     }
 
     void prepare(const char *script) override {
-        ImplBenchmarkRunner::prepare(script);
-        lua.add<PropertyExample>(ClassPrototypeBuilder("GetterSetterFastExample")
-                                         .method("getNumber", mk_function(&PropertyExample::getNumber))
-                                         .method("setNumber", mk_function(&PropertyExample::setNumber))
-                                         .build());
-
-        example = new PropertyExample;
-        lua.setObject("example", example);
+//        ImplBenchmarkRunner::prepare(script);
+//        lua.add<PropertyExample>(ClassPrototypeBuilder("GetterSetterFastExample")
+//                                         .method("getNumber", mk_function(&PropertyExample::getNumber))
+//                                         .method("setNumber", mk_function(&PropertyExample::setNumber))
+//                                         .build());
+//
+//        example = new PropertyExample;
+//        lua.setObject("example", example);
     }
 };
 
 class ImplScriptResultsBenchmark : public BenchmarkRunner {
-protected:
-    LuaFunction<std::tuple<double, bool, const char *>()> *func = nullptr;
-    Lua lua;
-public:
-    ~ImplScriptResultsBenchmark() {
-        delete func;
-    }
-
-    void prepare(const char *script) override {
-        func = new LuaFunction<std::tuple<double, bool, const char *>()>(
-                lua.src<LuaFunction<std::tuple<double, bool, const char *>()>>(script));
-    }
-
-    void run() override {
-        auto r = (*func)();
-    }
+//protected:
+//    LuaFunction<std::tuple<double, bool, const char *>()> *func = nullptr;
+//    Lua lua;
+//public:
+//    ~ImplScriptResultsBenchmark() {
+//        delete func;
+//    }
+//
+//    void prepare(const char *script) override {
+//        func = new LuaFunction<std::tuple<double, bool, const char *>()>(
+//                lua.src<LuaFunction<std::tuple<double, bool, const char *>()>>(script));
+//    }
+//
+//    void run() override {
+//        auto r = (*func)();
+//    }
 };
 
 class ImplTableFetchBenchmark : public ImplBenchmarkRunner {
 protected:
-    LuaTable *table;
+    tlw::table *table;
 public:
     void prepare(const char *script) override {
         ImplBenchmarkRunner::prepare(script);
         ImplBenchmarkRunner::run();
-        table = new LuaTable(lua.get<LuaTable>("t"));
+        table = new tlw::table(std::move(lua.get<tlw::table>("t")));
     }
 
     void run() override {
@@ -215,18 +218,18 @@ public:
 class ImplTableFetchesBenchmark : public ImplTableFetchBenchmark {
 public:
     void run() override {
-        auto num = table->all<double, double, double>("r", "g", "b");
+//        auto num = table->all<double, double, double>("r", "g", "b");
     }
 };
 
 class ImplListFetchBenchmark : public ImplBenchmarkRunner {
 protected:
-    LuaList *table;
+    tlw::table *table;
 public:
     void prepare(const char *script) override {
         ImplBenchmarkRunner::prepare(script);
         ImplBenchmarkRunner::run();
-        table = new LuaList(lua.get<LuaList>("t"));
+        table = new tlw::table(std::move(lua.get<tlw::table>("t")));
     }
 
     void run() override {
@@ -237,7 +240,7 @@ public:
 class ImplListFetchesBenchmark : public ImplListFetchBenchmark {
 public:
     void run() override {
-        auto num = table->all<double, double, double>(1, 2, 3);
+//        auto num = table->all<double, double, double>(1, 2, 3);
     }
 };
 
@@ -248,11 +251,11 @@ public:
     }
 };
 
-class ImplTableSetsBenchmark : public ImplTableFetchBenchmark {
-public:
-    void run() override {
-        table->setAll(std::pair{"key1", 2.5}, std::pair{"key2", 2.5}, std::pair{"key3", 2.5});
-    }
-};
+//class ImplTableSetsBenchmark : public ImplTableFetchBenchmark {
+//public:
+//    void run() override {
+//        table->setAll(std::pair{"key1", 2.5}, std::pair{"key2", 2.5}, std::pair{"key3", 2.5});
+//    }
+//};
 
 #endif //TLW_IMPL_H

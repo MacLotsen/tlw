@@ -22,7 +22,7 @@
 TEST_F(user_test, test_property) {
     tlw::define<tlw::example>("example")
             .prop("val", &tlw::example::val)
-            .finish();
+            .build();
     tlw::meta_table_registry<tlw::example>::expose(L);
     tlw::example e(5.5);
     s.push(&e);
@@ -58,7 +58,7 @@ TEST_F(user_test, test_property) {
 TEST_F(user_test, test_property_with_const_ud) {
     tlw::define<tlw::example>("example")
             .prop("val", &tlw::example::val)
-            .finish();
+            .build();
     tlw::meta_table_registry<tlw::example>::expose(L);
     const tlw::example e(5.5);
     s.push(&e);
@@ -81,7 +81,7 @@ TEST_F(user_test, test_property_with_const_ud) {
 TEST_F(user_test, test_const_property) {
     tlw::define<tlw::example>("example")
             .prop("val", &tlw::example::initial)
-            .finish();
+            .build();
     tlw::meta_table_registry<tlw::example>::expose(L);
     tlw::example e(5.5);
     s.push(&e);

@@ -215,7 +215,7 @@ namespace tlw {
                 .method<add2>("add", &tlw::vec4::addition)
                 .tostring(&tlw::vec4::str)
                 .unm()
-                .finish();
+                .build();
 
         lib_vec4(L);
     }
@@ -228,7 +228,7 @@ namespace tlw {
                         float, float, float, float,
                         float, float, float, float,
                         float, float, float, float>()
-                .finish();
+                .build();
 
         lib_mat4(L);
     }
@@ -241,7 +241,7 @@ namespace tlw {
                 .prop("position", &tlw::entity::position)
                 .prop("lookat", &tlw::entity::look_at)
                 .prop("model", &tlw::entity::model)
-                .finish();
+                .build();
 
         lib_entity(L);
     }

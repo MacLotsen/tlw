@@ -33,7 +33,7 @@ TEST_F(high_end_user_test, test_any_value) {
     ASSERT_EQ(n1, n2);
 
     tlw::define<tlw::example>("example_value")
-            .finish();
+            .build();
 
     tlw::meta_table_registry<tlw::example>::expose(L);
     tlw::example val1(5.5);

@@ -22,7 +22,7 @@
 
 TEST_F(user_test, test_move_value) {
     tlw::define<tlw::example>("example_value")
-            .finish();
+            .build();
     tlw::example value;
     s.push(std::move(value));
     ASSERT_FALSE(tlw::type_inspector<tlw::nil_t>::inspect(L));
@@ -40,7 +40,7 @@ TEST_F(user_test, test_inner_value_move) {
     lua_settop(L, 0);
 
     tlw::define<tlw::example>("example")
-            .finish();
+            .build();
     tlw::meta_table_registry<tlw::example>::expose(L);
 
     ASSERT_EQ(0, lua_gettop(L));

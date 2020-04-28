@@ -24,7 +24,6 @@
 #include <iostream>
 #include <iomanip>
 #include <utility>
-#include <tlw/old/_tlw.hpp>
 
 class BenchmarkRunner {
 public:

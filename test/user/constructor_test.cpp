@@ -22,7 +22,7 @@
 TEST_F(user_test, test_constructor) {
     tlw::define<tlw::example>("example")
             .ctor<>()
-            .finish();
+            .build();
     tlw::meta_table_registry<tlw::example>::expose(L);
     lua_getglobal(L, "example");
     lua_getfield(L, -1, "new");
@@ -41,7 +41,7 @@ TEST_F(user_test, test_constructor) {
 TEST_F(user_test, test_constructor_with_parameters) {
     tlw::define<tlw::example>("example")
             .ctor<float>()
-            .finish();
+            .build();
     tlw::meta_table_registry<tlw::example>::expose(L);
     lua_getglobal(L, "example");
     lua_getfield(L, -1, "new");
@@ -62,7 +62,7 @@ TEST_F(user_test, test_multi_constructor) {
     tlw::define<tlw::example>("example")
             .ctor<>()
             .ctor<float>()
-            .finish();
+            .build();
     tlw::meta_table_registry<tlw::example>::expose(L);
     lua_getglobal(L, "example");
     lua_getfield(L, -1, "new");

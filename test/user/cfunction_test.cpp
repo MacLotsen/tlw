@@ -19,7 +19,7 @@
 
 #include "user_test.h"
 
-uint64_t inverse(uint64_t n) {
+unsigned long inverse(unsigned long n) {
     return ~n;
 }
 

@@ -83,7 +83,7 @@ namespace tlw {
     };
 
     template<typename mt>
-    struct __explicit_ctor {
+    struct overloaded_ctor {
 
         static constexpr int create(lua_State *L) {
             int top = lua_gettop(L);
@@ -106,7 +106,7 @@ namespace tlw {
     };
 
     template<typename mt>
-    struct __explicit_method {
+    struct overloaded_method {
 
         static constexpr int invoke(lua_State *L) {
             auto ud = stack_traits<typename mt::user_type>::get(L, 1);
@@ -153,7 +153,7 @@ namespace tlw {
     };
 
     template<typename mt>
-    struct __explicit_operator {
+    struct overloaded_operator {
 
         static constexpr int add(lua_State *L) {
             for (auto kv : mt::add_operator) {
@@ -246,7 +246,7 @@ namespace tlw {
             auto prop = s.get<const char *>(2);
             auto f = mt::getters[prop];
             if (!f) {
-                f = __explicit_method<mt>::invoke;
+                f = overloaded_method<mt>::invoke;
                 if (!f) {
                     luaL_error(L, "Error: no such field '%s'", prop);
                 }
@@ -411,6 +411,7 @@ namespace tlw {
             ro_mt::operators["__tostring"] = __tostring<const _user_type>::tostring;
             p_mt::operators["__tostring"] = __tostring<_user_type*>::tostring;
             rop_mt::operators["__tostring"] = __tostring<const _user_type*>::tostring;
+            return *this;
         }
 
         template<typename _other>
@@ -530,6 +531,7 @@ namespace tlw {
             ro_mt::operators["__tostring"] = __tostring<const _user_type>::tostring;
             p_mt::operators["__tostring"] = __tostring<_user_type*>::tostring;
             rop_mt::operators["__tostring"] = __tostring<const _user_type*>::tostring;
+            return *this;
         }
 
         lib_load_t build() {
@@ -545,7 +547,7 @@ namespace tlw {
                 lua_createtable(L, 0, 0);
                 lua_createtable(L, 0, 3);
                 lua_createtable(L, 0, 1);
-                lua_pushcfunction(L, __explicit_ctor<p_mt>::create);
+                lua_pushcfunction(L, overloaded_ctor<p_mt>::create);
                 lua_setfield(L, -2, "new");
                 lua_setfield(L, -2, "__index");
                 lua_pushliteral(L, "private");
@@ -553,7 +555,7 @@ namespace tlw {
                 lua_pushcfunction(L, [](lua_State *L)->int {
                     // remove the table
                     lua_remove(L, 1);
-                    return __explicit_ctor<mt>::create(L);
+                    return overloaded_ctor<mt>::create(L);
                 });
                 lua_setfield(L, -2, "__call");
                 lua_setmetatable(L, -2);
@@ -581,42 +583,42 @@ namespace tlw {
             }
 
             if (!_mt::add_operator.empty()) {
-                s.push(__explicit_operator<_mt>::add);
+                s.push(overloaded_operator<_mt>::add);
                 lua_setfield(L, mt_ref, "__add");
             }
 
             if (!_mt::sub_operator.empty()) {
-                s.push(__explicit_operator<_mt>::sub);
+                s.push(overloaded_operator<_mt>::sub);
                 lua_setfield(L, mt_ref, "__sub");
             }
 
             if (!_mt::mul_operator.empty()) {
-                s.push(__explicit_operator<_mt>::mul);
+                s.push(overloaded_operator<_mt>::mul);
                 lua_setfield(L, mt_ref, "__mul");
             }
 
             if (!_mt::div_operator.empty()) {
-                s.push(__explicit_operator<_mt>::div);
+                s.push(overloaded_operator<_mt>::div);
                 lua_setfield(L, mt_ref, "__div");
             }
 
             if (!_mt::mod_operator.empty()) {
-                s.push(__explicit_operator<_mt>::mod);
+                s.push(overloaded_operator<_mt>::mod);
                 lua_setfield(L, mt_ref, "__mod");
             }
 
             if (!_mt::eq_operator.empty()) {
-                s.push(__explicit_operator<_mt>::eq);
+                s.push(overloaded_operator<_mt>::eq);
                 lua_setfield(L, mt_ref, "__eq");
             }
 
             if (!_mt::lt_operator.empty()) {
-                s.push(__explicit_operator<_mt>::lt);
+                s.push(overloaded_operator<_mt>::lt);
                 lua_setfield(L, mt_ref, "__lt");
             }
 
             if (!_mt::le_operator.empty()) {
-                s.push(__explicit_operator<_mt>::le);
+                s.push(overloaded_operator<_mt>::le);
                 lua_setfield(L, mt_ref, "__le");
             }
 

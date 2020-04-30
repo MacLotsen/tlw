@@ -28,7 +28,7 @@ namespace tlw {
         static constexpr const bool is_value = true;
         static constexpr const bool is_pointer = false;
         static constexpr const bool is_reference = false;
-        static constexpr const bool is_movable = true;
+        static constexpr const bool is_rvalue = false;
         using value_type = _type;
     };
 
@@ -38,7 +38,7 @@ namespace tlw {
         static constexpr const bool is_value = true;
         static constexpr const bool is_pointer = false;
         static constexpr const bool is_reference = false;
-        static constexpr const bool is_movable = false;
+        static constexpr const bool is_rvalue = false;
         using value_type = _type;
     };
 
@@ -48,7 +48,7 @@ namespace tlw {
         static constexpr const bool is_value = false;
         static constexpr const bool is_pointer = false;
         static constexpr const bool is_reference = true;
-        static constexpr const bool is_movable = true;
+        static constexpr const bool is_rvalue = false;
         using value_type = _type;
     };
 
@@ -58,7 +58,7 @@ namespace tlw {
         static constexpr const bool is_value = false;
         static constexpr const bool is_pointer = false;
         static constexpr const bool is_reference = true;
-        static constexpr const bool is_movable = true;
+        static constexpr const bool is_rvalue = true;
         using value_type = _type;
     };
 
@@ -68,7 +68,7 @@ namespace tlw {
         static constexpr const bool is_value = false;
         static constexpr const bool is_pointer = false;
         static constexpr const bool is_reference = true;
-        static constexpr const bool is_movable = false;
+        static constexpr const bool is_rvalue = false;
         using value_type = _type;
     };
 
@@ -78,7 +78,7 @@ namespace tlw {
         static constexpr const bool is_value = false;
         static constexpr const bool is_pointer = true;
         static constexpr const bool is_reference = false;
-        static constexpr const bool is_movable = false;
+        static constexpr const bool is_rvalue = false;
         using value_type = _type;
     };
 
@@ -88,7 +88,7 @@ namespace tlw {
         static constexpr const bool is_value = false;
         static constexpr const bool is_pointer = true;
         static constexpr const bool is_reference = false;
-        static constexpr const bool is_movable = false;
+        static constexpr const bool is_rvalue = false;
         using value_type = _type;
     };
 

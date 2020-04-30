@@ -34,7 +34,7 @@ namespace tlw {
         using st = stack_traits<_type>;
 
         static constexpr _type pop(lua_State *L) {
-            auto value = st::get(L, -1);
+            auto &&value = st::get(L, -1);
             lua_pop(L, 1);
             return value;
         }
@@ -45,8 +45,8 @@ namespace tlw {
         using type_inspector<_lua_type>::inspect;
         static constexpr const bool is_lua_type = true;
 
-        static constexpr void push(lua_State *L, typename _lua_type::type value) {
-            reference_traits<_lua_type>::push(L, std::move(value));
+        static constexpr void push(lua_State *L, typename _lua_type::type &value) {
+            reference_traits<_lua_type>::push(L, value);
         }
 
         static constexpr typename _lua_type::type get(lua_State *L, int idx) {

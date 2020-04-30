@@ -31,7 +31,7 @@ namespace tlw {
         using reference_stack_traits<function_t>::push;
 
         static type get(lua_State *L, int idx) {
-            return std::move(type(reference_stack_traits::get(L, idx)));
+            return type(reference_stack_traits::get(L, idx));
         }
 
     };
@@ -42,7 +42,7 @@ namespace tlw {
         using reference_stack_traits<function_t>::push;
 
         static type get(lua_State *L, int idx) {
-            return std::move(type(std::move(reference_stack_traits::get(L, idx))));
+            return type(reference_stack_traits::get(L, idx));
         }
 
     };
@@ -53,7 +53,7 @@ namespace tlw {
         using reference_stack_traits<function_t>::push;
 
         static type get(lua_State *L, int idx) {
-            return std::move(type(std::move(reference_stack_traits::get(L, idx))));
+            return type(reference_stack_traits::get(L, idx));
         }
     };
 
@@ -74,7 +74,7 @@ namespace tlw {
         template<int ...Is>
         static constexpr int __wrap(lua_State *L, seq<Is...>) {
             auto fn = (type) lua_touserdata(L, lua_upvalueindex(1));
-            _r ret = fn(stack_traits<_args>::get(L, Is + 1)...);
+            _r &&ret = fn(stack_traits<_args>::get(L, Is + 1)...);
             lua_settop(L, 0);
             stack_traits<_r>::push(L, ret);
             return 1;

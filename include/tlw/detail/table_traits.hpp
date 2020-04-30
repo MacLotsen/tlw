@@ -32,16 +32,16 @@ namespace tlw {
             lua_gettable(L, idx);
             _type val = value_traits::get(L, -1);
             lua_pop(L, 1);
-            if constexpr (cpp_type<_type>::is_movable) {
-                return std::move(val);
-            } else {
-                return val;
-            }
+            return val;
         }
 
         static constexpr void set(lua_State *L, int idx, _key k, _type val) {
             key_traits::push(L, k);
-            value_traits::push(L, val);
+            if constexpr (cpp_type<_type>::is_rvalue) {
+                value_traits::push(L, std::forward(val));
+            } else {
+                value_traits::push(L, val);
+            }
             lua_settable(L, idx);
         }
     };

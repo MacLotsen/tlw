@@ -27,7 +27,7 @@ TEST_F(high_end_user_test, test_variable_constructor) {
     tlw::vec4 v1(1.0f);
     tlw::mat4 m1(1.0f);
 
-    lua.set("v1", std::move(v1));
+    lua.set("v1", v1);
     lua.set("m1", m1);
 
     lua.src("print(v1.z) e1 = entity.new(v1) e2 = entity.new(m1)")();

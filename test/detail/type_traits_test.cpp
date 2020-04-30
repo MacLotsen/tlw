@@ -54,13 +54,13 @@ TEST_F(detail_test, test_push) {
 
     lua_createtable(L, 0, 0);
     auto t_ref = tlw::reference(L);
-    tlw::type_traits<tlw::table_t>::push(L, std::move(t_ref));
+    tlw::type_traits<tlw::table_t>::push(L, t_ref);
     ASSERT_EQ(tlw::table_t::value, lua_type(L, -1));
     ASSERT_FALSE(static_cast<bool>(t_ref));
 
     lua_pushcfunction(L, &noop);
     auto fn_ref = tlw::reference(L);
-    tlw::type_traits<tlw::function_t>::push(L, std::move(fn_ref));
+    tlw::type_traits<tlw::function_t>::push(L, fn_ref);
     ASSERT_EQ(tlw::function_t::value, lua_type(L, -1));
     ASSERT_FALSE(static_cast<bool>(fn_ref));
 

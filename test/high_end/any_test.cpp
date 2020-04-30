@@ -37,7 +37,7 @@ TEST_F(high_end_user_test, test_any_value) {
 
     tlw::meta_table_registry<tlw::example>::expose(L);
     tlw::example val1(5.5);
-    lua.set("ud", std::move(val1));
+    lua.set("ud", val1);
 
     tlw::example val2 = lua["ud"];
     if (val2)

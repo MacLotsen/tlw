@@ -24,7 +24,7 @@ TEST_F(user_test, test_move_value) {
     tlw::define<tlw::example>("example_value")
             .build();
     tlw::example value;
-    s.push(std::move(value));
+    s.push(value);
     ASSERT_FALSE(tlw::type_inspector<tlw::nil_t>::inspect(L));
     ASSERT_TRUE(tlw::type_inspector<tlw::user_data_t<const tlw::example *>>::inspect(L));
 

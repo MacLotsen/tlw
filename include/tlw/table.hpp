@@ -40,13 +40,16 @@ namespace tlw {
 
         template<typename _type, typename _key>
         constexpr void set(_key k, _type val) {
-            table_traits<_type, _key>::set(L, LUA_GLOBALSINDEX, k, std::move(val));
+            if constexpr (cpp_type<_type>::is_rvalue) {
+                table_traits<_type, _key>::set(L, LUA_GLOBALSINDEX, k, std::forward(val));
+            } else {
+                table_traits<_type, _key>::set(L, LUA_GLOBALSINDEX, k, val);
+            }
         }
 
         template<typename _key>
         constexpr table_reference<_table<true>, _key> operator[](_key k) {
-            auto val = get<reference>(k);
-            return table_reference<_table<true>, _key>(std::move(val), *this, k);
+            return table_reference<_table<true>, _key>(get<reference>(k), *this, k);
         }
     };
 
@@ -71,9 +74,9 @@ namespace tlw {
         }
 
         template<typename _type, typename _key>
-        constexpr void set(_key k, _type val) {
+        constexpr void set(_key k, _type &&val) {
             traits::push(L, *this);
-            table_traits<_type, _key>::set(L, lua_gettop(L), k, std::move(val));
+            table_traits<_type, _key>::set(L, lua_gettop(L), k, val);
             lua_pop(L, 1);
         }
 

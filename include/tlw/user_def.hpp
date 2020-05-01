@@ -262,14 +262,10 @@ namespace tlw {
         }
     };
 
-    // TODO mk_struct (different ctor)
-    // TODO mk_function
-
     template<class _user_type>
     struct meta_table_builder {
         using _builder_type = meta_table_builder<_user_type>;
         using mt = meta_table<_user_type>;
-//        using ro_mt = meta_table<const _user_type>;
         using p_mt = meta_table<_user_type *>;
         using rop_mt = meta_table<const _user_type *>;
 
@@ -279,13 +275,7 @@ namespace tlw {
         constexpr explicit meta_table_builder(const char *name) noexcept {
             mt::name = name;
 
-            size_t length = 0;// = strlen(name) + 7;
-//            char *const_name = new char[length];
-//            strcpy(const_name, "const ");
-//            strcat(const_name, name);
-//            ro_mt::name = const_name;
-
-            length = strlen(name) + 2;
+            size_t length = strlen(name) + 2;
             char *p_name = new char[length];
             strcpy(p_name, name);
             p_name[length - 2] = '*';
@@ -319,23 +309,19 @@ namespace tlw {
         template<typename _prop_type>
         constexpr _builder_type &prop(const char *name, property_type<_prop_type> property) {
             user_prop<_user_type, _prop_type>::properties[name] = property;
-//            user_prop<const _user_type, _prop_type>::properties[name] = property;
             user_prop<_user_type *, _prop_type>::properties[name] = property;
             user_prop<const _user_type *, _prop_type>::properties[name] = property;
 
             mt::getters[name] = user_prop<_user_type, _prop_type>::get;
-//            ro_mt::getters[name] = user_prop<const _user_type, _prop_type>::get;
             p_mt::getters[name] = user_prop<_user_type *, _prop_type>::get;
             rop_mt::getters[name] = user_prop<const _user_type *, _prop_type>::get;
 
             if constexpr (cpp_type<_prop_type>::is_const) {
                 mt::setters[name] = user_prop<_user_type, _prop_type>::invalid_set;
-//                ro_mt::setters[name] = user_prop<const _user_type, _prop_type>::invalid_set;
                 p_mt::setters[name] = user_prop<_user_type *, _prop_type>::invalid_set;
                 rop_mt::setters[name] = user_prop<const _user_type *, _prop_type>::invalid_set;
             } else {
                 mt::setters[name] = user_prop<_user_type, _prop_type>::set;
-//                ro_mt::setters[name] = user_prop<const _user_type, _prop_type>::invalid_set;
                 p_mt::setters[name] = user_prop<_user_type *, _prop_type>::set;
                 rop_mt::setters[name] = user_prop<const _user_type *, _prop_type>::invalid_set;
             }
@@ -367,11 +353,9 @@ namespace tlw {
         template<typename _method_type>
         constexpr _builder_type &method(const char *name, _method_type method) {
             user_method<_user_type, _method_type>::methods[name] = method;
-//            user_method<const _user_type, _method_type>::methods[name] = method;
             user_method<_user_type *, _method_type>::methods[name] = method;
             user_method<const _user_type *, _method_type>::methods[name] = method;
             _register_method<mt>(name, method);
-//            _register_method<ro_mt>(name, method);
             _register_method<p_mt>(name, method);
             _register_method<rop_mt>(name, method);
             return *this;
@@ -379,7 +363,6 @@ namespace tlw {
 
         constexpr _builder_type &unm() {
             mt::operators["__unm"] = __operator<_user_type>::unm;
-//            ro_mt::operators["__unm"] = __operator<const _user_type>::unm;
             p_mt::operators["__unm"] = __operator<_user_type*>::unm;
             rop_mt::operators["__unm"] = __operator<const _user_type*>::unm;
             return *this;
@@ -389,11 +372,9 @@ namespace tlw {
         constexpr _builder_type &len(_method_type method) {
             using _r = typename method_type<_method_type>::return_type;
             __len<_user_type, _r>::size_method = method;
-//            __len<const _user_type, _r>::size_method = method;
             __len<_user_type*, _r>::size_method = method;
             __len<const _user_type*, _r>::size_method = method;
             mt::operators["__len"] = __len<_user_type, _r>::len;
-//            ro_mt::operators["__len"] = __len<const _user_type, _r>::len;
             p_mt::operators["__len"] = __len<_user_type*, _r>::len;
             rop_mt::operators["__len"] = __len<const _user_type*, _r>::len;
             return *this;
@@ -401,11 +382,9 @@ namespace tlw {
 
         constexpr _builder_type &tostring(typename __tostring<_user_type>::tostring_method_t method) {
             __tostring<_user_type>::tostring_method = method;
-//            __tostring<const _user_type>::tostring_method = method;
             __tostring<_user_type*>::tostring_method = method;
             __tostring<const _user_type*>::tostring_method = method;
             mt::operators["__tostring"] = __tostring<_user_type>::tostring;
-//            ro_mt::operators["__tostring"] = __tostring<const _user_type>::tostring;
             p_mt::operators["__tostring"] = __tostring<_user_type*>::tostring;
             rop_mt::operators["__tostring"] = __tostring<const _user_type*>::tostring;
             return *this;
@@ -414,7 +393,6 @@ namespace tlw {
         template<typename _other>
         constexpr _builder_type &add() {
             mt::add_operator.push_back(type_safe_function{__add<_user_type, _other>::test, __add<_user_type, _other>::add});
-//            ro_mt::add_operator.push_back(type_safe_function{__add<const _user_type, _other>::test, __add<const _user_type, _other>::add});
             p_mt::add_operator.push_back(type_safe_function{__add<_user_type*, _other>::test, __add<_user_type*, _other>::add});
             rop_mt::add_operator.push_back(type_safe_function{__add<const _user_type*, _other>::test, __add<const _user_type*, _other>::add});
             return *this;
@@ -430,7 +408,6 @@ namespace tlw {
         template<typename _other>
         constexpr _builder_type &sub() {
             mt::sub_operator.push_back(type_safe_function{__sub<_user_type, _other>::test, __sub<_user_type, _other>::sub});
-//            ro_mt::sub_operator.push_back(type_safe_function{__sub<const _user_type, _other>::test, __sub<const _user_type, _other>::sub});
             p_mt::sub_operator.push_back(type_safe_function{__sub<_user_type*, _other>::test, __sub<_user_type*, _other>::sub});
             rop_mt::sub_operator.push_back(type_safe_function{__sub<const _user_type*, _other>::test, __sub<const _user_type*, _other>::sub});
             return *this;
@@ -446,7 +423,6 @@ namespace tlw {
         template<typename _other>
         constexpr _builder_type &mul() {
             mt::mul_operator.push_back(type_safe_function{__mul<_user_type, _other>::test, __mul<_user_type, _other>::mul});
-//            ro_mt::mul_operator.push_back(type_safe_function{__mul<const _user_type, _other>::test, __mul<const _user_type, _other>::mul});
             p_mt::mul_operator.push_back(type_safe_function{__mul<_user_type*, _other>::test, __mul<_user_type*, _other>::mul});
             rop_mt::mul_operator.push_back(type_safe_function{__mul<const _user_type*, _other>::test, __mul<const _user_type*, _other>::mul});
             return *this;
@@ -462,7 +438,6 @@ namespace tlw {
         template<typename _other>
         constexpr _builder_type &div() {
             mt::div_operator.push_back(type_safe_function{__div<_user_type, _other>::test, __div<_user_type, _other>::div});
-//            ro_mt::div_operator.push_back(type_safe_function{__div<const _user_type, _other>::test, __div<const _user_type, _other>::div});
             p_mt::div_operator.push_back(type_safe_function{__div<_user_type*, _other>::test, __div<_user_type*, _other>::div});
             rop_mt::div_operator.push_back(type_safe_function{__div<const _user_type*, _other>::test, __div<const _user_type*, _other>::div});
             return *this;
@@ -478,7 +453,6 @@ namespace tlw {
         template<typename _other>
         constexpr _builder_type &mod() {
             mt::mod_operator.push_back(type_safe_function{__mod<_user_type, _other>::test, __mod<_user_type, _other>::mod});
-//            ro_mt::mod_operator.push_back(type_safe_function{__mod<const _user_type, _other>::test, __mod<const _user_type, _other>::mod});
             p_mt::mod_operator.push_back(type_safe_function{__mod<_user_type*, _other>::test, __mod<_user_type*, _other>::mod});
             rop_mt::mod_operator.push_back(type_safe_function{__mod<const _user_type*, _other>::test, __mod<const _user_type*, _other>::mod});
             return *this;
@@ -494,7 +468,6 @@ namespace tlw {
         template<typename _other>
         constexpr _builder_type &eq() {
             mt::eq_operator.push_back(type_safe_function{__eq<_user_type, _other>::test, __eq<_user_type, _other>::eq});
-//            ro_mt::eq_operator.push_back(type_safe_function{__eq<const _user_type, _other>::test, __eq<const _user_type, _other>::eq});
             p_mt::eq_operator.push_back(type_safe_function{__eq<_user_type*, _other>::test, __eq<_user_type*, _other>::eq});
             rop_mt::eq_operator.push_back(type_safe_function{__eq<const _user_type*, _other>::test, __eq<const _user_type*, _other>::eq});
             return *this;
@@ -503,7 +476,6 @@ namespace tlw {
         template<typename _other>
         constexpr _builder_type &lt() {
             mt::lt_operator.push_back(type_safe_function{__lt<_user_type, _other>::test, __lt<_user_type, _other>::lt});
-//            ro_mt::lt_operator.push_back(type_safe_function{__lt<const _user_type, _other>::test, __lt<const _user_type, _other>::lt});
             p_mt::lt_operator.push_back(type_safe_function{__lt<_user_type*, _other>::test, __lt<_user_type*, _other>::lt});
             rop_mt::lt_operator.push_back(type_safe_function{__lt<const _user_type*, _other>::test, __lt<const _user_type*, _other>::lt});
             return *this;
@@ -512,7 +484,6 @@ namespace tlw {
         template<typename _other>
         constexpr _builder_type &le() {
             mt::le_operator.push_back(type_safe_function{__le<_user_type, _other>::test, __le<_user_type, _other>::le});
-//            ro_mt::le_operator.push_back(type_safe_function{__le<const _user_type, _other>::test, __le<const _user_type, _other>::le});
             p_mt::le_operator.push_back(type_safe_function{__le<_user_type*, _other>::test, __le<_user_type*, _other>::le});
             rop_mt::le_operator.push_back(type_safe_function{__le<const _user_type*, _other>::test, __le<const _user_type*, _other>::le});
             return *this;
@@ -521,11 +492,9 @@ namespace tlw {
         template<typename _method_type>
         constexpr _builder_type &tostring(_method_type method) {
             __tostring<_user_type>::tostring_method = method;
-//            __tostring<const _user_type>::tostring_method = method;
             __tostring<_user_type*>::tostring_method = method;
             __tostring<const _user_type*>::tostring_method = method;
             mt::operators["__tostring"] = __tostring<_user_type>::tostring;
-//            ro_mt::operators["__tostring"] = __tostring<const _user_type>::tostring;
             p_mt::operators["__tostring"] = __tostring<_user_type*>::tostring;
             rop_mt::operators["__tostring"] = __tostring<const _user_type*>::tostring;
             return *this;
@@ -533,7 +502,6 @@ namespace tlw {
 
         lib_load_t build() {
             meta_table_registry<_user_type>::name = mt::name;
-//            meta_table_registry<const _user_type>::name = ro_mt::name;
             meta_table_registry<_user_type *>::name = p_mt::name;
             meta_table_registry<const _user_type *>::name = rop_mt::name;
             return meta_table_registry<_user_type>::expose = _expose;
@@ -560,7 +528,6 @@ namespace tlw {
             }
 
             _expose < mt > (L);
-//            _expose < ro_mt > (L);
             _expose < p_mt > (L);
             _expose < rop_mt > (L);
         }

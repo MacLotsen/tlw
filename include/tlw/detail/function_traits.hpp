@@ -31,7 +31,7 @@ namespace tlw {
         using reference_stack_traits<function_t>::push;
 
         static type get(lua_State *L, int idx) {
-            return type(reference_stack_traits::get(L, idx));
+            return type(reference_traits<function_t>::get(L, idx));
         }
 
     };
@@ -42,7 +42,7 @@ namespace tlw {
         using reference_stack_traits<function_t>::push;
 
         static type get(lua_State *L, int idx) {
-            return type(reference_stack_traits::get(L, idx));
+            return type(reference_traits<function_t>::get(L, idx));
         }
 
     };
@@ -53,7 +53,7 @@ namespace tlw {
         using reference_stack_traits<function_t>::push;
 
         static type get(lua_State *L, int idx) {
-            return type(reference_stack_traits::get(L, idx));
+            return type(reference_traits<function_t>::get(L, idx));
         }
     };
 

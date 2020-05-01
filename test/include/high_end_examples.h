@@ -190,7 +190,7 @@ namespace tlw {
         }
     };
 
-    static int load_vec4(const tlw::state &L) {
+    static void load_vec4(const tlw::state &L) {
         using add1 = tlw::vec4 &(float);
         using add2 = tlw::vec4 &(const tlw::vec4 &);
         auto lib_vec4 = tlw::define<tlw::vec4>("vec4")

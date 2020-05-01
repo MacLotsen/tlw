@@ -55,15 +55,26 @@ namespace tlw {
 
         template<class _type>
         constexpr void push(_type value) const {
-            if constexpr (cpp_type<_type>::is_rvalue) {
-                stack_traits<_type>::push(L, std::forward(value));
-            } else {
+            if constexpr (stack_traits<_type>::is_lua_type) {
                 stack_traits<_type>::push(L, value);
+            } else {
+                if constexpr (cpp_type<_type>::is_pointer) {
+                    stack_traits<_type>::push(L, value);
+                } else if constexpr (cpp_type<_type>::is_rvalue) {
+                    stack_traits<_type>::push(L, std::forward(value));
+                } else if constexpr (cpp_type<_type>::is_reference) {
+                    stack_traits<_type&>::push(L, value);
+                } else if constexpr (cpp_type<_type>::is_const) {
+                    typename cpp_type<_type>::value_type copy = value;
+                    stack_traits<typename cpp_type<_type>::value_type&>::push(L, copy);
+                } else {
+                    stack_traits<typename cpp_type<_type>::value_type&>::push(L, value);
+                }
             }
         }
 
         template<class _type>
-        constexpr _type get(int idx) const {
+        constexpr decltype(auto) get(int idx) const {
             return stack_traits<_type>::get(L, idx);
         }
 

@@ -24,13 +24,13 @@ TEST_F(high_end_user_test, test_unm) {
     ASSERT_EQ(-5, v2.x);
     ASSERT_EQ(-5, v2.y);
     ASSERT_EQ(-5, v2.z);
-    ASSERT_EQ(0, v2.w);
+    ASSERT_EQ(-5, v2.w);
 
     v2 = lua.src<tlw::vec4>("v1 = vec4.new(5) return -v1")();
     ASSERT_EQ(-5, v2.x);
     ASSERT_EQ(-5, v2.y);
     ASSERT_EQ(-5, v2.z);
-    ASSERT_EQ(0, v2.w);
+    ASSERT_EQ(-5, v2.w);
 }
 
 TEST_F(high_end_user_test, test_len) {

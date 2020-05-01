@@ -56,13 +56,11 @@ TEST_F(detail_test, test_push) {
     auto t_ref = tlw::reference(L);
     tlw::type_traits<tlw::table_t>::push(L, t_ref);
     ASSERT_EQ(tlw::table_t::value, lua_type(L, -1));
-    ASSERT_FALSE(static_cast<bool>(t_ref));
 
     lua_pushcfunction(L, &noop);
     auto fn_ref = tlw::reference(L);
     tlw::type_traits<tlw::function_t>::push(L, fn_ref);
     ASSERT_EQ(tlw::function_t::value, lua_type(L, -1));
-    ASSERT_FALSE(static_cast<bool>(fn_ref));
 
     tlw::type_traits<tlw::lua_example_t>::push(L, &magic_user_datum);
     ASSERT_EQ(&magic_user_datum, *(tlw::example **) lua_touserdata(L, -1));

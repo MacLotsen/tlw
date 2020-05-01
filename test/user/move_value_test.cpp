@@ -23,16 +23,16 @@
 TEST_F(user_test, test_move_value) {
     tlw::define<tlw::example>("example_value")
             .build();
-    tlw::example value;
-    s.push(value);
+    tlw::example value = tlw::example(5);
+    s.push(std::move(value));
     ASSERT_FALSE(tlw::type_inspector<tlw::nil_t>::inspect(L));
     ASSERT_TRUE(tlw::type_inspector<tlw::user_data_t<const tlw::example *>>::inspect(L));
 
     // Pop trailing value
     lua_pop(L, 1);
     ASSERT_EQ(0, tlw::example_tracker::copied);
-    ASSERT_EQ(3, tlw::example_tracker::moved);
-    ASSERT_EQ(3, tlw::example_tracker::deleted);
+    ASSERT_EQ(1, tlw::example_tracker::moved);
+    ASSERT_EQ(1, tlw::example_tracker::deleted);
 }
 
 TEST_F(user_test, test_inner_value_move) {
@@ -45,7 +45,7 @@ TEST_F(user_test, test_inner_value_move) {
 
     ASSERT_EQ(0, lua_gettop(L));
     auto example = tlw::example(5.5);
-    s.push(example);
+    s.push(std::move(example));
     lua_setglobal(L, "example1");
 
     if (luaL_loadstring(L, "example1 = nil\ncollectgarbage()")) {
@@ -55,7 +55,7 @@ TEST_F(user_test, test_inner_value_move) {
     auto script = s.pop<tlw::function<void()>>();
     script();
 
-    ASSERT_EQ(1, tlw::example_tracker::copied);
-    ASSERT_EQ(2, tlw::example_tracker::moved);
-    ASSERT_EQ(3, tlw::example_tracker::deleted);
+    ASSERT_EQ(0, tlw::example_tracker::copied);
+    ASSERT_EQ(1, tlw::example_tracker::moved);
+    ASSERT_EQ(1, tlw::example_tracker::deleted);
 }

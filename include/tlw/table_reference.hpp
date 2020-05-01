@@ -56,7 +56,7 @@ namespace tlw {
             if (!type_inspector<table_t>::inspect(L)) {
                 throw std::runtime_error("Not a table");
             }
-            auto value = std::move(table_traits<reference, _key2>::get(L, lua_gettop(L), k));
+            auto value = table_traits<reference, _key2>::get(L, lua_gettop(L), k);
             lua_pop(L, 1);
             return table_reference<_table<false>, _key2>(value, _table<false>(*this), k);
         }

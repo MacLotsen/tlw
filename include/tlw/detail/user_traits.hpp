@@ -86,9 +86,18 @@ namespace tlw {
         using _user_data_t = user_data_t<_type>;
 
         static constexpr void push(lua_State *L, _type value) {
-            if (meta_table_registry<_type>::name) {
-                type_traits<_user_data_t>::push(L, value);
-                luaL_getmetatable(L, meta_table_registry<_type>::name);
+            const char * mt_name = cpp_type<_type>::is_pointer
+                    ? meta_table_registry<_type>::name
+                    : meta_table<typename cpp_type<_type>::value_type>::name;
+            if (mt_name) {
+                if constexpr (cpp_type<_type>::is_rvalue) {
+                    type_traits<_user_data_t>::push(L, std::forward(value));
+                } else if constexpr (cpp_type<_type>::is_reference) {
+                    type_traits<user_data_t<typename cpp_type<_type>::value_type>>::push(L, value);
+                } else {
+                    type_traits<_user_data_t>::push(L, value);
+                }
+                luaL_getmetatable(L, mt_name);
                 lua_setmetatable(L, -2);
             } else {
                 throw std::runtime_error("Tried to push non existing user data type");
@@ -113,9 +122,10 @@ namespace tlw {
         using _light_user_data_t = light_user_data_t<_type*>;
 
         static constexpr void push(lua_State *L, _type *value) {
-            if (meta_table_registry<_type*>::name) {
+            const char * mt_name = meta_table_registry<_type*>::name;
+            if (mt_name) {
                 type_traits<_user_data_t>::push(L, value);
-                luaL_getmetatable(L, meta_table_registry<_type>::name);
+                luaL_getmetatable(L, mt_name);
                 lua_setmetatable(L, -2);
             } else {
                 type_traits<_light_user_data_t>::push(L, value);

@@ -23,7 +23,7 @@
 
 namespace tlw {
 
-    template<typename _lua_type>
+    template<typename _lua_type, typename _r = typename _lua_type::type>
     struct primitive_stack_traits : public type_inspector<_lua_type> {
         static constexpr const bool is_lua_type = true;
         using type_inspector<_lua_type>::inspect;
@@ -32,7 +32,7 @@ namespace tlw {
             type_traits<_lua_type>::push(L, value);
         }
 
-        static constexpr typename _lua_type::type get(lua_State *L, int idx) {
+        static constexpr _r get(lua_State *L, int idx) {
             return type_traits<_lua_type>::get(L, idx);
         }
     };
@@ -57,35 +57,35 @@ namespace tlw {
     };
 
     template<>
-    struct stack_traits<double> : public primitive_stack_traits<number_t> {
+    struct stack_traits<double> : public primitive_stack_traits<number_t, double> {
     };
 
     template<>
-    struct stack_traits<const double> : public primitive_stack_traits<number_t> {
+    struct stack_traits<const double> : public primitive_stack_traits<number_t, const double> {
     };
 
     template<>
-    struct stack_traits<float> : public primitive_stack_traits<number_t> {
+    struct stack_traits<float> : public primitive_stack_traits<number_t, float> {
     };
 
     template<>
-    struct stack_traits<const float> : public primitive_stack_traits<number_t> {
+    struct stack_traits<const float> : public primitive_stack_traits<number_t, const float> {
     };
 
     template<>
-    struct stack_traits<int> : public primitive_stack_traits<integer_t> {
+    struct stack_traits<int> : public primitive_stack_traits<integer_t, int> {
     };
 
     template<>
-    struct stack_traits<unsigned int> : public primitive_stack_traits<integer_t> {
+    struct stack_traits<unsigned int> : public primitive_stack_traits<integer_t, unsigned int> {
     };
 
     template<>
-    struct stack_traits<long> : public primitive_stack_traits<integer_t> {
+    struct stack_traits<long> : public primitive_stack_traits<integer_t, long> {
     };
 
     template<>
-    struct stack_traits<unsigned long> : public primitive_stack_traits<integer_t> {
+    struct stack_traits<unsigned long> : public primitive_stack_traits<integer_t, unsigned long> {
     };
 
     template<>
@@ -93,9 +93,18 @@ namespace tlw {
     };
 
     template<>
-    struct stack_traits<cfunction_t::type> : public primitive_stack_traits<cfunction_t> {
+    struct stack_traits<std::string> : public primitive_stack_traits<string_t, std::string> {
+        using st = primitive_stack_traits<string_t, std::string>;
+        using primitive_stack_traits<string_t, std::string>::get;
+
+        static void push(lua_State *L, const std::string &value) {
+            st::push(L, value.c_str());
+        }
     };
 
+    template<>
+    struct stack_traits<cfunction_t::type> : public primitive_stack_traits<cfunction_t> {
+    };
 }
 
 #endif //TLW_PRIMITIVE_TRAITS_HPP

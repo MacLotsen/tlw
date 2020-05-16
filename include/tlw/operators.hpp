@@ -100,13 +100,17 @@ namespace tlw {
             auto other = stack_traits<_other_type>::get(L, 2);
             lua_settop(L, 0);
             if constexpr (cpp_type<_user_type>::is_pointer && cpp_type<_other_type>::is_pointer) {
-                stack_traits<base_type>::push(L, *ud + *other);
+                auto r = *ud + *other;
+                stack_traits<decltype(r)>::push(L, r);
             } else if constexpr (cpp_type<_user_type>::is_pointer) {
-                stack_traits<base_type>::push(L, *ud + other);
+                auto r = *ud + other;
+                stack_traits<decltype(r)>::push(L, r);
             } else if constexpr (cpp_type<_other_type>::is_pointer) {
-                stack_traits<base_type>::push(L, ud + *other);
+                auto r = ud + *other;
+                stack_traits<decltype(r)>::push(L, r);
             } else {
-                stack_traits<base_type>::push(L, ud + other);
+                auto r = ud + other;
+                stack_traits<decltype(r)>::push(L, r);
             }
             return 1;
         }
@@ -152,13 +156,17 @@ namespace tlw {
             auto other = stack_traits<_other_type>::get(L, 2);
             lua_settop(L, 0);
             if constexpr (cpp_type<_user_type>::is_pointer && cpp_type<_other_type>::is_pointer) {
-                stack_traits<base_type>::push(L, *ud * *other);
+                auto r = *ud * *other;
+                stack_traits<decltype(r)>::push(L, r);
             } else if constexpr (cpp_type<_user_type>::is_pointer) {
-                stack_traits<base_type>::push(L, *ud * other);
+                auto r = *ud * other;
+                stack_traits<decltype(r)>::push(L, r);
             } else if constexpr (cpp_type<_other_type>::is_pointer) {
-                stack_traits<base_type>::push(L, ud * *other);
+                auto r = ud * *other;
+                stack_traits<decltype(r)>::push(L, r);
             } else {
-                stack_traits<base_type>::push(L, ud * other);
+                auto r = ud * other;
+                stack_traits<decltype(r)>::push(L, r);
             }
             return 1;
         }
@@ -178,13 +186,17 @@ namespace tlw {
             auto other = stack_traits<_other_type>::get(L, 2);
             lua_settop(L, 0);
             if constexpr (cpp_type<_user_type>::is_pointer && cpp_type<_other_type>::is_pointer) {
-                stack_traits<base_type>::push(L, *ud / *other);
+                auto r = *ud / *other;
+                stack_traits<decltype(r)>::push(L, r);
             } else if constexpr (cpp_type<_user_type>::is_pointer) {
-                stack_traits<base_type>::push(L, *ud / other);
+                auto r = *ud / other;
+                stack_traits<decltype(r)>::push(L, r);
             } else if constexpr (cpp_type<_other_type>::is_pointer) {
-                stack_traits<base_type>::push(L, ud / *other);
+                auto r = ud / *other;
+                stack_traits<decltype(r)>::push(L, r);
             } else {
-                stack_traits<base_type>::push(L, ud / other);
+                auto r = ud / other;
+                stack_traits<decltype(r)>::push(L, r);
             }
             return 1;
         }
@@ -204,13 +216,17 @@ namespace tlw {
             auto other = stack_traits<_other_type>::get(L, 2);
             lua_settop(L, 0);
             if constexpr (cpp_type<_user_type>::is_pointer && cpp_type<_other_type>::is_pointer) {
-                stack_traits<base_type>::push(L, *ud % *other);
+                auto r = *ud % *other;
+                stack_traits<decltype(r)>::push(L, r);
             } else if constexpr (cpp_type<_user_type>::is_pointer) {
-                stack_traits<base_type>::push(L, *ud % other);
+                auto r = *ud % other;
+                stack_traits<decltype(r)>::push(L, r);
             } else if constexpr (cpp_type<_other_type>::is_pointer) {
-                stack_traits<base_type>::push(L, ud % *other);
+                auto r = ud % *other;
+                stack_traits<decltype(r)>::push(L, r);
             } else {
-                stack_traits<base_type>::push(L, ud % other);
+                auto r = ud % other;
+                stack_traits<decltype(r)>::push(L, r);
             }
             return 1;
         }

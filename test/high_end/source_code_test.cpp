@@ -20,7 +20,7 @@
 #include "high_end_user_test.h"
 
 TEST_F(high_end_user_test, test_source_code_with_return) {
-    tlw::function<bool()> f = lua.src<bool>("return true");
+    tlw::function<bool()> f = lua.src<bool()>("return true");
 
     ASSERT_TRUE(f());
 }

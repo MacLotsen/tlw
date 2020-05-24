@@ -20,12 +20,79 @@
 #ifndef TLW_TABLE_HPP
 #define TLW_TABLE_HPP
 
-#include <tlw/_table.hpp>
 #include <tlw/detail/stack_traits.hpp>
 #include <tlw/detail/table_traits.hpp>
+#include <tlw/_table.hpp>
 #include <tlw/table_reference.hpp>
 
 namespace tlw {
+
+    template<typename _table_type, typename _key_type>
+    struct table_iterator {
+        using _value_type = table_reference<_table_type, _key_type>;
+        using iter = table_iterator<_table_type, _key_type>;
+        using kvp = std::pair<_key_type, _value_type>;
+
+        state L;
+        reference table;
+        int top;
+
+        table_iterator(tlw::reference &t) {
+            L = t.L;
+            table = t;
+            top = lua_gettop(L);
+            stack_traits<tlw::reference>::push(L, t);
+            lua_pushnil(L);
+            lua_pushnil(L);
+            this->operator++();
+        }
+
+        table_iterator() {
+            L = state::invalid_state();
+            table = reference();
+            top = -1;
+        }
+
+        ~table_iterator() {
+            if (top > -1)
+                lua_settop(L, top);
+        }
+
+        kvp operator*() {
+            _key_type key = stack_traits<_key_type>::get(L, top + 2);
+            _value_type val = table_reference(reference(L, top + 3), _table<false>(table),key);
+            return {key, val};
+        }
+
+        iter & operator++() {
+            do {
+                // Firstly pop the old value
+                lua_pop(L, 1);
+
+                if (!lua_next(L, top + 1)) {
+                    table = reference();
+                    lua_settop(L, top + 1);
+                    return *this;
+                }
+            } while(!stack_traits<_key_type>::inspect(L, top + 2));
+
+            return *this;
+        }
+
+        iter operator++(int) {
+            auto copy = *this;
+            this->operator++();
+            return copy;
+        }
+
+        bool operator==(const iter &other) {
+            return table == other.table;
+        }
+
+        bool operator!=(const iter &other) {
+            return table != other.table;
+        }
+    };
 
     template<>
     struct _table<true> {
@@ -56,6 +123,7 @@ namespace tlw {
     template<>
     struct _table<false> : public reference {
         using traits = stack_traits<_table<true>>;
+        using iterator = table_iterator<_table<false>, const char *>;
 
         _table(const reference &other) : reference(other) {
 
@@ -83,6 +151,14 @@ namespace tlw {
         template<typename _key>
         constexpr table_reference<_table<false>, _key> operator[](_key k) {
             return table_reference<_table<false>, _key>(get<reference>(k), *this, k);
+        }
+
+        iterator begin() const {
+            return iterator((reference&) *this);
+        }
+
+        iterator end() const {
+            return iterator();
         }
     };
 

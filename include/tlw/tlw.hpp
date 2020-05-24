@@ -28,13 +28,14 @@
 #include <tlw/detail/stack_traits.hpp>
 #include <tlw/detail/primitive_traits.hpp>
 #include <tlw/detail/function_traits.hpp>
+#include <tlw/detail/table_traits.hpp>
 #include <tlw/detail/user_traits.hpp>
-#include <tlw/function.hpp>
-#include <tlw/table.hpp>
 #include <tlw/stack.hpp>
 #include <tlw/meta_table.hpp>
 #include <tlw/user_def.hpp>
+#include <tlw/function.hpp>
 #include <tlw/table_reference.hpp>
+#include <tlw/table.hpp>
 #include <tlw/_lua.hpp>
 
 

@@ -36,12 +36,12 @@ namespace tlw {
             return val;
         }
 
-        template<typename _r, typename ..._args>
-        function<_r(_args...)> src(const char *source_code) {
+        template<typename _fn_type>
+        function<_fn_type> src(const char *source_code) {
             if (luaL_loadstring(L, source_code)) {
                 throw std::runtime_error(lua_tostring(L, -1));
             }
-            auto val = stack_traits<function<_r(_args...)>>::get(L, -1);
+            auto val = stack_traits<function<_fn_type>>::get(L, -1);
             lua_pop(L, 1);
             return val;
         }
@@ -55,12 +55,12 @@ namespace tlw {
             return val;
         }
 
-        template<typename _r, typename ..._args>
-        function<_r(_args...)> file(const char *file_name) {
+        template<typename _fn_type>
+        function<_fn_type> file(const char *file_name) {
             if (luaL_loadfile(L, file_name)) {
                 throw std::runtime_error(lua_tostring(L, -1));
             }
-            auto val = stack_traits<function<_r(_args...)>>::get(L, -1);
+            auto val = stack_traits<function<_fn_type>>::get(L, -1);
             lua_pop(L, 1);
             return val;
         }

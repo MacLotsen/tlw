@@ -92,6 +92,16 @@ namespace tlw {
         using value_type = _type;
     };
 
+    template<>
+    struct cpp_type<const char *> {
+        static constexpr const bool is_const = false;
+        static constexpr const bool is_value = true;
+        static constexpr const bool is_pointer = false;
+        static constexpr const bool is_reference = false;
+        static constexpr const bool is_rvalue = false;
+        using value_type = const char *;
+    };
+
     template<typename ...>
     struct method_type {
 

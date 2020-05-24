@@ -24,18 +24,23 @@
 #include <utility>
 
 namespace tlw {
-    
+
     struct reference {
         static constexpr const int invalid = LUA_NOREF;
-        
+
         state L;
         int r_idx;
 
         reference() : L(nullptr), r_idx(invalid) {}
 
-        explicit reference(const state &L) : L(L), r_idx(luaL_ref(L, LUA_REGISTRYINDEX)) {}
+        reference(const state &L) : L(L), r_idx(luaL_ref(L, LUA_REGISTRYINDEX)) {}
 
-        reference(const reference &other) noexcept : L(other.L) {
+        reference(const state &L, int idx) : L(L) {
+            lua_pushvalue(L, idx);
+            r_idx = luaL_ref(L, LUA_REGISTRYINDEX);
+        }
+
+        reference(const reference &other) noexcept: L(other.L) {
             if (other) {
                 lua_rawgeti(L, LUA_REGISTRYINDEX, other.r_idx);
                 r_idx = luaL_ref(L, LUA_REGISTRYINDEX);
@@ -44,7 +49,7 @@ namespace tlw {
             }
         }
 
-        reference(reference &&other) noexcept : L(std::move(other.L)), r_idx(std::exchange(other.r_idx, invalid)) {}
+        reference(reference &&other) noexcept: L(std::move(other.L)), r_idx(std::exchange(other.r_idx, invalid)) {}
 
         ~reference() {
             if (*this) {
@@ -52,13 +57,22 @@ namespace tlw {
             }
         }
 
-        reference& operator=(const tlw::reference&) = default;
+        reference &operator=(const reference &) = default;
 
         constexpr explicit operator bool() const noexcept {
             return r_idx != invalid && r_idx != LUA_REFNIL;
         }
+
+        bool operator==(const reference &other) const {
+            return L.operator lua_State *() == other.L.operator lua_State *() &&
+                   r_idx == other.r_idx;
+        }
+
+        bool operator!=(const reference &other) const {
+            return !(*this == other);
+        }
     };
-    
+
 }
 
 #endif //TLW_REFERENCE_HPP

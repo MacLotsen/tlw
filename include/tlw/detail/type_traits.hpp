@@ -217,38 +217,6 @@ namespace tlw {
         }
     };
 
-//    template<class _light_user_type>
-//    struct type_traits<light_user_data_t<_light_user_type>> {
-//        static constexpr _light_user_type& get(lua_State *L, int idx) {
-//            auto user_data = (_light_user_type *) lua_touserdata(L, idx);
-//            return *user_data;
-//        }
-//
-//        static constexpr void push(lua_State *L, _light_user_type& value) {
-//            if constexpr (cpp_type<_light_user_type>::is_const) {
-//                luaL_error(L, "Cannot push a const value as light user data");
-//            } else {
-//                lua_pushlightuserdata(L, &value);
-//            }
-//        }
-//    };
-
-//    template<class _light_user_type>
-//    struct type_traits<light_user_data_t<_light_user_type&>> {
-//        static constexpr _light_user_type& get(lua_State *L, int idx) {
-//            auto user_data = (_light_user_type *) lua_touserdata(L, idx);
-//            return *user_data;
-//        }
-//
-//        static constexpr void push(lua_State *L, _light_user_type& value) {
-//            if constexpr (cpp_type<_light_user_type>::is_const) {
-//                luaL_error(L, "Cannot push a const value as light user data");
-//            } else {
-//                lua_pushlightuserdata(L, &value);
-//            }
-//        }
-//    };
-
     template<class _light_user_type>
     struct type_traits<light_user_data_t<_light_user_type *>> {
         static constexpr _light_user_type *get(lua_State *L, int idx) {
@@ -256,11 +224,7 @@ namespace tlw {
         }
 
         static constexpr void push(lua_State *L, _light_user_type *value) {
-            if constexpr (cpp_type<_light_user_type>::is_const) {
-                luaL_error(L, "Cannot push a const value as light user data");
-            } else {
-                lua_pushlightuserdata(L, value);
-            }
+            lua_pushlightuserdata(L, value);
         }
     };
 }

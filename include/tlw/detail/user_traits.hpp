@@ -30,7 +30,6 @@ namespace tlw {
         static constexpr const bool is_lua_type = false;
 
         static constexpr bool inspect(lua_State *L, int idx) {
-            int type_id = lua_type(L, idx);
             switch (lua_type(L, idx)) {
                 case LUA_TUSERDATA:
                     return meta_table<_type>::name && inspect_meta_table(L, idx);
@@ -127,6 +126,8 @@ namespace tlw {
                 type_traits<_user_data_t>::push(L, value);
                 luaL_getmetatable(L, mt_name);
                 lua_setmetatable(L, -2);
+            } else if constexpr (cpp_type<_type>::is_const) {
+                throw std::runtime_error("light user data may not be constant.");
             } else {
                 type_traits<_light_user_data_t>::push(L, value);
             }

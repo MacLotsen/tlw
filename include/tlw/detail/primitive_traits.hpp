@@ -95,10 +95,13 @@ namespace tlw {
     template<>
     struct stack_traits<std::string> : public primitive_stack_traits<string_t, std::string> {
         using st = primitive_stack_traits<string_t, std::string>;
-        using primitive_stack_traits<string_t, std::string>::get;
 
         static void push(lua_State *L, const std::string &value) {
             st::push(L, value.c_str());
+        }
+
+        static std::string get(lua_State *L, int idx) {
+            return std::string(type_traits<string_t>::get(L, idx));
         }
     };
 

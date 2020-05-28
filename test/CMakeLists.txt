@@ -27,6 +27,7 @@ set(SOURCE_FILES main.cpp
 
 # GTests
 add_executable(tlw-tests ${SOURCE_FILES})
+target_compile_options(tlw-tests PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(tlw-tests ${GTEST_LIBRARY} pthread tlw)
 target_include_directories(tlw-tests PRIVATE include ${GTEST_INCLUDE_DIR})
 add_test(NAME TestAll COMMAND ./tlw-tests
@@ -34,6 +35,7 @@ add_test(NAME TestAll COMMAND ./tlw-tests
 
 # Example Module
 add_library(tlw-examplelib SHARED high_end/module.cpp)
+target_compile_options(tlw-examplelib PRIVATE -Wall -Wextra -pedantic)
 target_link_libraries(tlw-examplelib tlw)
 target_include_directories(tlw-examplelib PUBLIC include)
 

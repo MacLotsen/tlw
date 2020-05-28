@@ -236,11 +236,11 @@ namespace tlw {
         }
 
         static constexpr int provide(stack &s, _user_type ud, const char *prop) {
-            auto m = methods[prop];
-            int arg_idx = 0;
             if constexpr (cpp_type<_user_type>::is_const) {
                 return -1;
             } else {
+                int arg_idx = 0;
+                auto m = methods[prop];
                 if constexpr (cpp_type<_user_type>::is_pointer) {
                     auto value = (ud->*m)(get_arg<_args>(s, arg_idx)...);
                     s.clear();

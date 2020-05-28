@@ -330,9 +330,10 @@ namespace tlw {
         }
 
         template<typename mt, typename _method_type>
-        static constexpr void _register_method(const char *prop, _method_type method) {
+        static constexpr void _register_method(const char *prop) {
             using um = user_method<typename mt::user_type, _method_type>;
             using mtype = method_type<_method_type>;
+
             if (mt::methods.find(prop) == mt::methods.end()) {
                 mt::methods[prop] = arg_counted_overloads<type_safe_method_overloads<typename mt::user_type>>();
             }
@@ -355,9 +356,9 @@ namespace tlw {
             user_method<_user_type, _method_type>::methods[name] = method;
             user_method<_user_type *, _method_type>::methods[name] = method;
             user_method<const _user_type *, _method_type>::methods[name] = method;
-            _register_method<mt>(name, method);
-            _register_method<p_mt>(name, method);
-            _register_method<rop_mt>(name, method);
+            _register_method<mt, _method_type>(name);
+            _register_method<p_mt, _method_type>(name);
+            _register_method<rop_mt, _method_type>(name);
             return *this;
         }
 

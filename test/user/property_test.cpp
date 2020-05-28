@@ -48,8 +48,6 @@ TEST_F(user_test, test_property) {
         FAIL() << "Failed to execute getter script '" << lua_tostring(L, -1) << "'";
     }
 
-    int top = lua_gettop(L);
-
     ASSERT_EQ(5.5, s.pop<float>());
 
     if (luaL_dostring(L, "example1.val = 4.5")) {

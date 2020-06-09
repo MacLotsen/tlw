@@ -22,11 +22,6 @@
 
 namespace tlw {
 
-    template<typename _type>
-    constexpr _type get_arg(stack &s, int &idx) {
-        return s.get<_type>(++idx);
-    }
-
     template<typename ...>
     struct user_method {
 
@@ -144,14 +139,20 @@ namespace tlw {
 
         static constexpr int provide(stack &s, _user_type ud, const char *prop) {
             auto m = methods[prop];
-            int arg_idx = 0;
-            if constexpr (cpp_type<_user_type>::is_pointer) {
-                (ud->*m)(get_arg<_args>(s, arg_idx)...);
-            } else {
-                (ud.*m)(get_arg<_args>(s, arg_idx)...);
-            }
+            auto seq = gen_seq<sizeof...(_args)>();
+            invoke(s, ud, m, seq);
             s.clear();
             return 0;
+        }
+
+        template<int ...Is>
+        static void invoke(stack &s, _user_type ud, method_t m, seq<Is...>) {
+            auto args = s.grab<typename remove_ref<_args>::type...>();
+            if constexpr (cpp_type<_user_type>::is_pointer) {
+                (ud->*m)(std::get<Is>(args)...);
+            } else {
+                (ud.*m)(std::get<Is>(args)...);
+            }
         }
     };
 
@@ -172,18 +173,24 @@ namespace tlw {
 
         static constexpr int provide(stack &s, _user_type ud, const char *prop) {
             auto m = methods[prop];
-            int arg_idx = 0;
             if constexpr (cpp_type<_user_type>::is_const) {
                 return -1;
             } else {
-                if constexpr (cpp_type<_user_type>::is_pointer) {
-                    (ud->*m)(get_arg<_args>(s, arg_idx)...);
-                } else {
-                    (ud.*m)(get_arg<_args>(s, arg_idx)...);
-                }
+                auto seq = gen_seq<sizeof...(_args)>();
+                invoke(s, ud, m, seq);
             }
             s.clear();
             return 0;
+        }
+
+        template<int ...Is>
+        static void invoke(stack &s, _user_type ud, method_t m, seq<Is...>) {
+            auto args = s.grab<typename remove_ref<_args>::type...>();
+            if constexpr (cpp_type<_user_type>::is_pointer) {
+                (ud->*m)(std::get<Is>(args)...);
+            } else {
+                (ud.*m)(std::get<Is>(args)...);
+            }
         }
     };
 
@@ -207,13 +214,19 @@ namespace tlw {
 
         static constexpr int provide(stack &s, _user_type ud, const char *prop) {
             auto m = methods[prop];
-            int arg_idx = 0;
+            auto seq = gen_seq<sizeof...(_args)>();
+            return invoke(s, ud, m, seq);
+        }
+
+        template<int ...Is>
+        static int invoke(stack &s, _user_type ud, method_t m, seq<Is...>) {
+            auto args = s.grab<typename remove_ref<_args>::type...>();
             if constexpr (cpp_type<_user_type>::is_pointer) {
-                auto value = (ud->*m)(get_arg<_args>(s, arg_idx)...);
+                auto value = (ud->*m)(std::get<Is>(args)...);
                 s.clear();
                 s.push(value);
             } else {
-                auto value = (ud.*m)(get_arg<_args>(s, arg_idx)...);
+                auto value = (ud.*m)(std::get<Is>(args)...);
                 s.clear();
                 s.push(value);
             }
@@ -239,17 +252,22 @@ namespace tlw {
             if constexpr (cpp_type<_user_type>::is_const) {
                 return -1;
             } else {
-                int arg_idx = 0;
+                auto seq = gen_seq<sizeof...(_args)>();
                 auto m = methods[prop];
-                if constexpr (cpp_type<_user_type>::is_pointer) {
-                    auto value = (ud->*m)(get_arg<_args>(s, arg_idx)...);
-                    s.clear();
-                    s.push(value);
-                } else {
-                    auto value = (ud.*m)(get_arg<_args>(s, arg_idx)...);
-                    s.clear();
-                    s.push(value);
-                }
+                invoke(s, ud, m, seq);
+            }
+            return 1;
+        }
+
+        template<int ...Is>
+        static int invoke(stack &s, _user_type ud, method_t m, seq<Is...>) {
+            auto args = s.grab<typename remove_ref<_args>::type...>();
+            if constexpr (cpp_type<_user_type>::is_pointer) {
+                auto value = (ud->*m)(std::get<Is>(args)...);
+                s.push(value);
+            } else {
+                auto value = (ud.*m)(std::get<Is>(args)...);
+                s.push(value);
             }
             return 1;
         }

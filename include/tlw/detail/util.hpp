@@ -22,6 +22,21 @@
 
 namespace tlw {
 
+    template<typename _type>
+    struct remove_ref {
+        using type = _type;
+    };
+
+    template<typename _type>
+    struct remove_ref<_type&> {
+        using type = _type;
+    };
+
+    template<typename _type>
+    struct remove_ref<_type const&> {
+        using type = _type;
+    };
+
     template<typename _type, typename ...>
     struct cpp_type {
         static constexpr const bool is_const = false;

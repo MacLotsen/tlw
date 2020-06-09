@@ -51,10 +51,10 @@ namespace tlw {
 
     template<class _user_type>
     struct meta_table {
-        using user_type = _user_type;
+        using user_type = typename remove_ref<_user_type>::type;
         static inline const char *name = nullptr;
         static inline arg_counted_overloads<type_safe_function_overloads> constructors{};
-        static inline type_safe_properties<_user_type> methods{};
+        static inline type_safe_properties<user_type> methods{};
         static inline std::unordered_map<std::string_view, cfunction_t::type> setters{};
         static inline std::unordered_map<std::string_view, cfunction_t::type> getters{};
         static inline std::unordered_map<std::string_view, cfunction_t::type> operators{};
@@ -93,7 +93,6 @@ namespace tlw {
             name = nullptr;
             expose = nullptr;
             meta_table<_user_type>::reset();
-            meta_table<const _user_type>::reset(true);
             meta_table<_user_type *>::reset(true);
             meta_table<const _user_type *>::reset(true);
         }

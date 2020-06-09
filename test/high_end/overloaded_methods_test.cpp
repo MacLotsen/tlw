@@ -28,4 +28,5 @@ TEST_F(high_end_user_test, test_overloaded_method) {
 
     ASSERT_NO_THROW(lua.src("v1.add(n)")());
 //    ASSERT_NO_THROW(lua.src("v1.add(v1)")());
+    lua.src("v1.add(v1)")();
 }

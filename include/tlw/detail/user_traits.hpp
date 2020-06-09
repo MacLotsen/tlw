@@ -29,22 +29,22 @@ namespace tlw {
     struct user_type_traits {
         static constexpr const bool is_lua_type = false;
 
-        static constexpr bool inspect(lua_State *L, int idx) {
+        static bool inspect(lua_State *L, int idx) {
             switch (lua_type(L, idx)) {
                 case LUA_TUSERDATA:
-                    return meta_table<_type>::name && inspect_meta_table(L, idx);
+                    return meta_table<typename remove_ref<_type>::type>::name && inspect_meta_table(L, idx);
                 case LUA_TLIGHTUSERDATA:
-                    return meta_table<_type>::name == nullptr;
+                    return meta_table<typename remove_ref<_type>::type>::name == nullptr;
                 default:
                     return false;
             }
         }
 
-        static constexpr bool inspect_meta_table(lua_State *L, int idx) {
+        static bool inspect_meta_table(lua_State *L, int idx) {
             int top = lua_gettop(L);
             lua_getmetatable(L, idx);
             lua_getfield(L, -1, "__name");
-            bool matches = strcmp(lua_tostring(L, -1), meta_table<_type>::name) == 0;
+            bool matches = strcmp(lua_tostring(L, -1), meta_table<typename remove_ref<_type>::type>::name) == 0;
             lua_settop(L, top);
             return matches;
         }
@@ -55,13 +55,13 @@ namespace tlw {
         using user_type_traits<const _type>::inspect;
         using user_type_traits<const _type>::is_lua_type;
         using _base_type = typename cpp_type<_type>::value_type;
-        using _user_data_t = user_data_t<_type>;
+        using _user_data_t = user_data_t<typename remove_ref<_type>::type>;
 
         static constexpr void push(lua_State *L, const _type value) {
-            if (meta_table_registry<_type>::name) {
+            if (meta_table_registry<typename remove_ref<_type>::type>::name) {
                 _type copy = _type(value);
                 type_traits<_user_data_t>::push(L, copy);
-                luaL_getmetatable(L, meta_table_registry<_type>::name);
+                luaL_getmetatable(L, meta_table_registry<typename remove_ref<_type>::type>::name);
                 lua_setmetatable(L, -2);
             } else {
                 throw std::runtime_error("Cannot push a const reference as light user datum.");
@@ -69,7 +69,7 @@ namespace tlw {
         }
 
         static constexpr const _type &get(lua_State *L, int idx) {
-            if (meta_table_registry<_type>::name) {
+            if (meta_table_registry<typename remove_ref<_type>::type>::name) {
                 return type_traits<_user_data_t>::get(L, idx);
             } else {
                 throw std::runtime_error("Cannot get a const reference as light user datum.");
@@ -82,7 +82,7 @@ namespace tlw {
         using user_type_traits<_type>::inspect;
         using user_type_traits<_type>::is_lua_type;
         using _base_type = typename cpp_type<_type>::value_type;
-        using _user_data_t = user_data_t<_type>;
+        using _user_data_t = user_data_t<typename remove_ref<_type>::type>;
 
         static constexpr void push(lua_State *L, _type value) {
             const char * mt_name = cpp_type<_type>::is_pointer
@@ -104,7 +104,7 @@ namespace tlw {
         }
 
         static constexpr decltype(auto) get(lua_State *L, int idx) {
-            if (meta_table_registry<_type>::name) {
+            if (meta_table_registry<typename remove_ref<_type>::type>::name) {
                 return type_traits<_user_data_t>::get(L, idx);
             } else {
                 throw std::runtime_error("Tried to get non existing user data type");

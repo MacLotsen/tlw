@@ -141,7 +141,6 @@ namespace tlw {
             auto m = methods[prop];
             auto seq = gen_seq<sizeof...(_args)>();
             invoke(s, ud, m, seq);
-            s.clear();
             return 0;
         }
 
@@ -174,12 +173,12 @@ namespace tlw {
         static constexpr int provide(stack &s, _user_type ud, const char *prop) {
             auto m = methods[prop];
             if constexpr (cpp_type<_user_type>::is_const) {
+                s.clear();
                 return -1;
             } else {
                 auto seq = gen_seq<sizeof...(_args)>();
                 invoke(s, ud, m, seq);
             }
-            s.clear();
             return 0;
         }
 
@@ -223,11 +222,9 @@ namespace tlw {
             auto args = s.grab<typename remove_ref<_args>::type...>();
             if constexpr (cpp_type<_user_type>::is_pointer) {
                 auto value = (ud->*m)(std::get<Is>(args)...);
-                s.clear();
                 s.push(value);
             } else {
                 auto value = (ud.*m)(std::get<Is>(args)...);
-                s.clear();
                 s.push(value);
             }
             return 1;

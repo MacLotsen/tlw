@@ -17,16 +17,33 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW__TABLE_HPP
-#define TLW__TABLE_HPP
+#include "high_end_user_test.h"
 
-namespace tlw {
-    template<bool is_global>
-    struct _table {
-    };
+TEST_F(high_end_user_test, test_inner_table) {
+    lua.src("t1 = { t2 = { t3 = { a = 1.0 } } }")();
 
-    using table = _table<false>;
-    using global_table = _table<true>;
+    float a = lua["t1"]["t2"]["t3"]["a"];
+//    tlw::table t1 = lua["t1"];
+//    tlw::table t2 = t1["t2"];
+//    float a = t2["a"];
+
+    ASSERT_EQ(1.0f, a);
 }
 
-#endif //TLW__TABLE_HPP
+TEST_F(high_end_user_test, test_inner_table_with_while) {
+    std::vector<std::string> keys = {"t2", "t3"};
+    lua.src("t1 = { t2 = { t3 = { a = 1.0 } } }")();
+
+    tlw::table extra_ref = lua["t1"];
+    tlw::table t = lua["t1"];
+
+    for (std::string key : keys) {
+        t = t[key];
+    }
+    float a = t["a"];
+//    tlw::table t1 = lua["t1"];
+//    tlw::table t2 = t1["t2"];
+//    float a = t2["a"];
+
+    ASSERT_EQ(1.0f, a);
+}

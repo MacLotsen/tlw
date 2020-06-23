@@ -122,7 +122,7 @@ namespace tlw {
 
     template<>
     struct _table<false> : public reference {
-        using traits = stack_traits<_table<true>>;
+        using traits = stack_traits<reference>;
         using iterator = table_iterator<_table<false>, const char *>;
 
         _table(const reference &other) : reference(other) {
@@ -159,6 +159,20 @@ namespace tlw {
 
         iterator end() const {
             return iterator();
+        }
+    };
+
+    template<>
+    struct stack_traits<table> : public type_inspector<table_t> {
+        using type_inspector<table_t>::inspect;
+        static constexpr const bool is_lua_type = true;
+
+        static void push(lua_State *L, reference &value) {
+            reference_traits<table_t>::push(L, value);
+        }
+
+        static table get(lua_State *L, int idx) {
+            return table(std::move(reference_traits<table_t>::get(L, idx)));
         }
     };
 

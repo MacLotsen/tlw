@@ -58,6 +58,11 @@ namespace tlw {
         }
 
         reference &operator=(const reference &) = default;
+        reference &operator=(reference &&other) {
+            reference old = std::move(*this);
+            L = std::move(other.L);
+            r_idx = std::exchange(other.r_idx, invalid);
+        }
 
         constexpr explicit operator bool() const noexcept {
             return r_idx != invalid && r_idx != LUA_REFNIL;

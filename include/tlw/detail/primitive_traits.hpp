@@ -20,6 +20,9 @@
 #ifndef TLW_PRIMITIVE_TRAITS_HPP
 #define TLW_PRIMITIVE_TRAITS_HPP
 
+#include <array>
+#include <vector>
+#include <unordered_map>
 
 namespace tlw {
 

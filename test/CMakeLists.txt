@@ -23,7 +23,7 @@ set(SOURCE_FILES main.cpp
         detail/stack_test.cpp
         user/constructor_test.cpp
         user/move_value_test.cpp
-        user/property_test.cpp high_end/trivial_methods_test.cpp high_end/overloaded_ctor_test.cpp high_end/any_test.cpp high_end/source_code_test.cpp high_end/overloaded_methods_test.cpp high_end/inner_property_as_value_test.cpp high_end/operators_test.cpp user/cfunction_test.cpp high_end/table_iterator_test.cpp)
+        user/property_test.cpp high_end/trivial_methods_test.cpp high_end/overloaded_ctor_test.cpp high_end/any_test.cpp high_end/source_code_test.cpp high_end/overloaded_methods_test.cpp high_end/inner_property_as_value_test.cpp high_end/operators_test.cpp user/cfunction_test.cpp high_end/table_iterator_test.cpp high_end/inner_table_test.cpp)
 
 # GTests
 add_executable(tlw-tests ${SOURCE_FILES})

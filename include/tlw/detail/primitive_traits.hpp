@@ -92,6 +92,10 @@ namespace tlw {
     };
 
     template<>
+    struct stack_traits<unsigned long long> : public primitive_stack_traits<integer_t, unsigned long long> {
+    };
+
+    template<>
     struct stack_traits<string_t::type> : public primitive_stack_traits<string_t> {
     };
 
@@ -109,8 +113,103 @@ namespace tlw {
     };
 
     template<>
+    struct stack_traits<const std::string &> : public stack_traits<std::string> {
+    };
+
+    template<>
     struct stack_traits<cfunction_t::type> : public primitive_stack_traits<cfunction_t> {
     };
+
+    template<typename _type>
+    struct stack_traits<std::vector<_type>> : public stack_traits<table_t> {
+        static inline void push(lua_State *L, const std::vector<_type> &v) {
+            lua_createtable(L, v.size(), 0);
+            int table = lua_gettop(L);
+            for (unsigned int i = 0; i < v.size(); ++i) {
+                stack_traits<unsigned int>::push(L, i + 1);
+                stack_traits<_type>::push(L, v.at(i));
+                lua_settable(L, table);
+            }
+        }
+
+        static inline std::vector<_type> get(lua_State *L, int idx) {
+            if (idx < 0) idx = lua_gettop(L) + idx + 1;
+            std::vector<_type> v{};
+            lua_pushnil(L);  /* first key */
+            while (lua_next(L, idx) != 0) {
+                v.emplace_back(stack_traits<_type>::get(L, -1));
+                lua_pop(L, 1);
+            }
+            lua_pop(L, 1);
+            return v;
+        }
+    };
+
+    template<typename _type>
+    struct stack_traits<const std::vector<_type> &> : public stack_traits<std::vector<_type>> {
+    };
+
+    template<typename _key, typename _type>
+    struct stack_traits<std::unordered_map<_key, _type>> : public stack_traits<table_t> {
+
+        static inline void push(lua_State *L, const std::unordered_map<_key, _type> &v) {
+            lua_createtable(L, v.size(), 0);
+            int table = lua_gettop(L);
+            for (auto kv : v) {
+                stack_traits<_key>::push(L, kv.first);
+                stack_traits<_type>::push(L, kv.second);
+                lua_settable(L, table);
+            }
+        }
+
+        static inline std::unordered_map<_key, _type> get(lua_State *L, int idx) {
+            if (idx < 0) idx = lua_gettop(L) + idx + 1;
+            std::unordered_map<_key, _type> v{};
+            lua_pushnil(L);  /* first key */
+            while (lua_next(L, idx) != 0) {
+                v.try_emplace(stack_traits<_key>::get(L, -2), stack_traits<_type>::get(L, -1));
+                lua_pop(L, 1);
+            }
+            lua_pop(L, 1);
+            return v;
+        }
+    };
+
+    template<typename _key, typename _type>
+    struct stack_traits<const std::unordered_map<_key, _type> &>
+            : public stack_traits<std::unordered_map<_key, _type>> {
+    };
+
+    template<typename _type, size_t size>
+    struct stack_traits<std::array<_type, size>> : public stack_traits<table_t> {
+        static inline void push(lua_State *L, const std::array<_type, size> &v) {
+            lua_createtable(L, v.size(), 0);
+            int table = lua_gettop(L);
+            for (unsigned int i = 0; i < v.size(); ++i) {
+                stack_traits<size_t>::push(L, i + 1);
+                stack_traits<_type>::push(L, v.at(i));
+                lua_settable(L, table);
+            }
+        }
+
+        static inline std::array<_type, size> get(lua_State *L, int idx) {
+            if (idx < 0) idx = lua_gettop(L) + idx + 1;
+            std::array<_type, size> v{};
+            int index = 0;
+            lua_pushnil(L);  /* first key */
+            while (lua_next(L, idx) != 0 && index < size) {
+                v[index++] = stack_traits<_type>::get(L, -1);
+                lua_pop(L, 1);
+            }
+            lua_pop(L, 1);
+            return v;
+        }
+    };
+
+    template<typename _type, size_t size>
+    struct stack_traits<const std::array<_type, size> &> : public stack_traits<std::array<_type, size>> {
+    };
+
 }
 
 #endif //TLW_PRIMITIVE_TRAITS_HPP

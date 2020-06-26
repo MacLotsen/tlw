@@ -43,7 +43,7 @@ namespace tlw {
         template<typename _type>
         constexpr operator _type() {
             using traits = stack_traits<_type>;
-            stack_traits<reference>::push(L, *this);
+            stack_traits<table_reference<_table_type, _key>>::push(L, *this);
             auto val = traits::get(L, -1);
             lua_pop(L, 1);
             return val;
@@ -51,7 +51,7 @@ namespace tlw {
 
         template<typename _key2>
         constexpr table_reference<_table<false>, _key2> operator[](_key2 k) {
-            stack_traits<reference>::push(L, *this);
+            stack_traits<table_reference>::push(L, *this);
 
             if (!type_inspector<table_t>::inspect(L)) {
                 throw std::runtime_error("Not a table");

@@ -23,7 +23,17 @@ set(SOURCE_FILES main.cpp
         detail/stack_test.cpp
         user/constructor_test.cpp
         user/move_value_test.cpp
-        user/property_test.cpp high_end/trivial_methods_test.cpp high_end/overloaded_ctor_test.cpp high_end/any_test.cpp high_end/source_code_test.cpp high_end/overloaded_methods_test.cpp high_end/inner_property_as_value_test.cpp high_end/operators_test.cpp user/cfunction_test.cpp high_end/table_iterator_test.cpp high_end/inner_table_test.cpp)
+        user/property_test.cpp
+        high_end/trivial_methods_test.cpp
+        high_end/overloaded_ctor_test.cpp
+        high_end/any_test.cpp
+        high_end/source_code_test.cpp
+        high_end/overloaded_methods_test.cpp
+        high_end/inner_property_as_value_test.cpp
+        high_end/operators_test.cpp user/cfunction_test.cpp
+        high_end/table_iterator_test.cpp
+        high_end/inner_table_test.cpp
+        high_end/std_types_test.cpp)
 
 # GTests
 add_executable(tlw-tests ${SOURCE_FILES})
@@ -32,6 +42,12 @@ target_link_libraries(tlw-tests ${GTEST_LIBRARY} pthread tlw)
 target_include_directories(tlw-tests PRIVATE include ${GTEST_INCLUDE_DIR})
 add_test(NAME TestAll COMMAND ./tlw-tests
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+add_executable(tlw-std-tests high_end/std_types_test.cpp main.cpp)
+target_compile_options(tlw-std-tests PRIVATE -Wall -Wextra -pedantic)
+target_link_libraries(tlw-std-tests ${GTEST_LIBRARY} pthread tlw)
+target_include_directories(tlw-std-tests PRIVATE include ${GTEST_INCLUDE_DIR})
+add_test(NAME TestSTD COMMAND ./tlw-std-tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # Example Module
 add_library(tlw-examplelib SHARED high_end/module.cpp)

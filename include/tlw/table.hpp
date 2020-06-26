@@ -60,21 +60,25 @@ namespace tlw {
 
         kvp operator*() {
             _key_type key = stack_traits<_key_type>::get(L, top + 2);
-            _value_type val = table_reference(reference(L, top + 3), _table<false>(table),key);
+            _value_type val = table_reference(reference(L, top + 3), _table<false>(table), key);
             return {key, val};
         }
 
-        iter & operator++() {
+        iter &operator++() {
             do {
                 // Firstly pop the old value
                 lua_pop(L, 1);
-
                 if (!lua_next(L, top + 1)) {
                     table = reference();
-                    lua_settop(L, top + 1);
-                    return *this;
+                    lua_settop(L, top + 2);
+//                    return *this;
+                    break;
                 }
-            } while(!stack_traits<_key_type>::inspect(L, top + 2));
+//                if (!lua_next(L, top + 1)) {
+//                    table = reference();
+//                    lua_pop(L, 1);
+//                }
+            } while (!stack_traits<_key_type>::inspect(L, top + 2));
 
             return *this;
         }
@@ -115,7 +119,7 @@ namespace tlw {
         }
 
         template<typename _key>
-        constexpr table_reference<_table<true>, _key> operator[](_key k) {
+        constexpr table_reference <_table<true>, _key> operator[](_key k) {
             return table_reference<_table<true>, _key>(get<reference>(k), *this, k);
         }
     };
@@ -149,12 +153,12 @@ namespace tlw {
         }
 
         template<typename _key>
-        constexpr table_reference<_table<false>, _key> operator[](_key k) {
+        constexpr table_reference <_table<false>, _key> operator[](_key k) {
             return table_reference<_table<false>, _key>(get<reference>(k), *this, k);
         }
 
         iterator begin() const {
-            return iterator((reference&) *this);
+            return iterator((reference &) *this);
         }
 
         iterator end() const {

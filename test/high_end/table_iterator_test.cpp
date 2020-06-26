@@ -54,3 +54,24 @@ TEST_F(high_end_user_test, test_iterator_named) {
         }
     }
 }
+
+TEST_F(high_end_user_test, test_multi_iterator_named) {
+    tlw::lua lua = tlw::lua();
+    auto t = lua.src<tlw::table()>("return {"
+                                   "key1 = { values = { v1 = 'hi', v2 = 'hoi' }, values2 = {w1 = 'bye', w2 = 'doei'}},"
+                                   "key2 = { values = { v1 = 'hi', v2 = 'hoi' }, values2 = {w1 = 'bye', w2 = 'doei'}},"
+                                   "key3 = { values = { v1 = 'hi', v2 = 'hoi' }, values2 = {w1 = 'bye', w2 = 'doei'}}"
+                                   "}")();
+    for (auto kv : t) {
+        tlw::table values = kv.second;
+        printf("%d global key %s\n", lua_gettop(lua.L), kv.first);
+        for (auto kv2 : values) {
+            tlw::table values2 = kv2.second;
+            printf("\tTop: %d, Table %s\n", lua_gettop(lua.L), kv2.first);
+            for (auto kv3 : values2) {
+                printf("\t\tKey %s, Value %s\n", kv3.first, (const char *) kv3.second);
+            }
+        }
+        fflush(stdout);
+    }
+}

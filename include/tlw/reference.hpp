@@ -57,11 +57,19 @@ namespace tlw {
             }
         }
 
-        reference &operator=(const reference &) = default;
-        reference &operator=(reference &&other) {
+        reference &operator=(const reference &other) {
+            reference old = std::move(*this);
+            L = other.L;
+            lua_rawgeti(L, LUA_REGISTRYINDEX, other.r_idx);
+            r_idx = luaL_ref(L, LUA_REGISTRYINDEX);
+            return *this;
+        }
+
+        reference &operator=(reference &&other) noexcept {
             reference old = std::move(*this);
             L = std::move(other.L);
             r_idx = std::exchange(other.r_idx, invalid);
+            return *this;
         }
 
         constexpr explicit operator bool() const noexcept {

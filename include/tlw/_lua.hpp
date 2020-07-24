@@ -64,6 +64,24 @@ namespace tlw {
             lua_pop(L, 1);
             return val;
         }
+
+        tlw::table table() {
+            return table(0);
+        }
+
+        tlw::table table(int record_size) {
+            lua_createtable(L, 0, record_size);
+            return pop_traits<tlw::table>::pop(L);
+        }
+
+        tlw::table array() {
+            return array(0);
+        }
+
+        tlw::table array(int size) {
+            lua_createtable(L, size, 0);
+            return pop_traits<tlw::table>::pop(L);
+        }
     };
 }
 

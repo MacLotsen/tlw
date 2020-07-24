@@ -71,13 +71,8 @@ namespace tlw {
                 if (!lua_next(L, top + 1)) {
                     table = reference();
                     lua_settop(L, top + 2);
-//                    return *this;
                     break;
                 }
-//                if (!lua_next(L, top + 1)) {
-//                    table = reference();
-//                    lua_pop(L, 1);
-//                }
             } while (!stack_traits<_key_type>::inspect(L, top + 2));
 
             return *this;
@@ -146,9 +141,13 @@ namespace tlw {
         }
 
         template<typename _type, typename _key>
-        constexpr void set(_key k, _type &&val) {
+        constexpr void set(_key k, _type val) {
             traits::push(L, *this);
-            table_traits<_type, _key>::set(L, lua_gettop(L), k, val);
+            if constexpr (cpp_type<_type>::is_rvalue) {
+                table_traits<_type, _key>::set(L, lua_gettop(L), k, std::forward(val));
+            } else {
+                table_traits<_type, _key>::set(L, lua_gettop(L), k, val);
+            }
             lua_pop(L, 1);
         }
 
@@ -176,7 +175,7 @@ namespace tlw {
         }
 
         static table get(lua_State *L, int idx) {
-            return table(std::move(reference_traits<table_t>::get(L, idx)));
+            return table(reference_traits<table_t>::get(L, idx));
         }
     };
 

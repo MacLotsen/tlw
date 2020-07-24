@@ -24,11 +24,6 @@
 #include <cmath>
 #include <utility>
 
-//
-//extern "C" {
-//int luaopen_examplelib(lua_State *_L);
-//}
-
 namespace tlw {
 
     struct vec4 {

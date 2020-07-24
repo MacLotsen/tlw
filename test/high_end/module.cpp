@@ -21,8 +21,7 @@
 
 extern "C" {
 
-static int wrap_exceptions(lua_State *L, lua_CFunction f)
-{
+static int wrap_exceptions(lua_State *L, lua_CFunction f) {
     try {
         return f(L);  // Call wrapped function and return result.
     } catch (const char *s) {  // Catch and convert exceptions.

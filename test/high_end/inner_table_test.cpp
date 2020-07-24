@@ -23,9 +23,17 @@ TEST_F(high_end_user_test, test_inner_table) {
     lua.src("t1 = { t2 = { t3 = { a = 1.0 } } }")();
 
     float a = lua["t1"]["t2"]["t3"]["a"];
-//    tlw::table t1 = lua["t1"];
-//    tlw::table t2 = t1["t2"];
-//    float a = t2["a"];
+
+    ASSERT_EQ(1.0f, a);
+}
+
+TEST_F(high_end_user_test, test_inner_table_create) {
+    lua["t1"] = lua.table(1);
+    lua["t1"]["t2"] = lua.table(1);
+    lua["t1"]["t2"]["t3"] = lua.table(1);
+    lua["t1"]["t2"]["t3"]["a"] = 1.0f;
+
+    float a = lua["t1"]["t2"]["t3"]["a"];
 
     ASSERT_EQ(1.0f, a);
 }
@@ -41,9 +49,6 @@ TEST_F(high_end_user_test, test_inner_table_with_while) {
         t = t[key];
     }
     float a = t["a"];
-//    tlw::table t1 = lua["t1"];
-//    tlw::table t2 = t1["t2"];
-//    float a = t2["a"];
 
     ASSERT_EQ(1.0f, a);
 }

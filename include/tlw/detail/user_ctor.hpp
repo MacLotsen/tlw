@@ -38,7 +38,7 @@ namespace tlw {
         }
 
         static constexpr int ctor(lua_State *L) {
-            if constexpr (sizeof...(_args)) {
+            if constexpr (sizeof...(_args) != 0) {
                 auto params = stack(state(L)).grab<_args...>();
                 auto seq = gen_seq<sizeof...(_args)>();
                 if constexpr (cpp_type<_user_type>::is_pointer) {

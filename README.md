@@ -4,22 +4,49 @@ A library for creating bindings between Lua and C++ in a typed manner.
 
 ## Getting Started
 
-1. To get started, firstly clone this repository and get into the project directory.
+1. To get started, firstly obtain the software by either of the options.
+
+    a. Clone from the repository:<br>
+       `git clone https://github.com/MacLotsen/tlw.git; cd tlw`
+
+    b. Download the source and extract:<br>
+       ```bash
+       curl -Lo tlw.zip https://github.com/MacLotsen/tlw/archive/master.zip
+       unzip tlw.zip; cd tlw-master
+       ```
+
 2. Create a build directory and go to the build directory.
-`mkdir build; cd build`
+
+    `mkdir build; cd build`
+
 3. Configure and build the project.
-`cmake [options] ..; make`.
-Options are:
+
+   `cmake [definitions] ..; make`.
+   
+   Definitions to use:
    * `-DBUILD_TESTS=ON` (Default ON)
    * `-DBUILD_BENCHMARKS=OFF` (Default OFF)
    * `-DCMAKE_BUILD_TYPE=Release` (Default Debug)
+
 4. Running some executables:
-   * `./tlw-tests` (running the tests)
-   * `./tlw-benchmarks` (running the benchmarks)
+
+   `./tlw-tests` (running the tests)
+
+   `./tlw-benchmarks` (running the benchmarks)
+   
+5. Running with LuaJit:
+
+   The testing directory in the build directory contains an example library.
+   Make sure to be in the build/test directory when executing.
+   
+   ```
+   cd build/test
+   luajit -i -l libtlw-examplelib lua/setup.lua
+   ```
 
 ### Prerequisites
 
-Only one library, LuaJIT, is required if you skip the tests.
+Only one library, LuaJit, is required if you skip the tests.
 
 * MinGW (MSys2):
     ```bash
@@ -49,10 +76,14 @@ cmake -DUSE_TESTS=OFF -DCMAKE_BUILD_TYPE=Release ..
 make DESTDIR=dist/ install
 ```
 
+<sub><sup>You might need root privileges</sub></sup>
+
 ### Uninstalling
 
 The CMake project will create an uninstall target. Simply go to your build directory and
 execute `make uninstall`.
+
+<sub><sup>You might need root privileges</sub></sup>
 
 ## Running the tests
 
@@ -61,11 +92,11 @@ It'll test all stack operations, including argument checks when built in Debug,
 like double, int, string, classes, e.t.c.
 
 The creation of class concepts is roughly covered in the tests also.
-To execute the tests, simply run `./tlw-tests` in the ouput directory.
+To execute the tests, simply run `./tlw-tests` in the output directory.
 
 ## Running the benchmarks
 
-To run the benchmarks go to the output directory and run `./tlw-benchmarks`.
+To run the benchmarks; go to the output directory and run `./tlw-benchmarks`.
 
 The benchmarks are showing the difference in time between TLW concrete implementations
 and Lua implementations.
@@ -83,7 +114,7 @@ If you can come up with a faster lua implementation, please feel free to create 
 ## Deployment
 
 When deploying to a target, make sure to set the option `CMAKE_BUILD_TYPE`.
-For the rest the proces stays the same.
+For the rest the process stays the same.
 ```bash
 mkdir build-release; cd build-release
 cmake -DCMAKE_BUILD_TYPE=Release ..
@@ -94,7 +125,7 @@ make install
 
 * [GCC](https://gcc.gnu.org/) - The compiler (MS Visual C++ not tested)
 * [CMake](https://cmake.org/) - Used for maintaining the sourcecode project
-* [LuaJIT](http://luajit.org/) - The library that is extended
+* [LuaJit](https://luajit.org/) - The library that it extends
 * [GTest](https://github.com/google/googletest) - The library for testing
 
 ## Examples
@@ -109,7 +140,7 @@ After the project is built and installed (*see § Installing*) you can use it in
 find_library(TLW REQUIRED)
 
 add_executable(my-executable main.cpp)
-target_link_libraries(my-executable TLW)
+target_link_libraries(my-executable tlw)
 ```
 And you're up and running!
 
@@ -130,36 +161,30 @@ return addUp
 The C++ code:
 ```cpp
 #include <tlw/tlw.hpp>
-#include <tlw/types.hpp>
 
 int main(int argc, char** argv) {
-    Lua lua;
-    auto script = lua.file<LuaFunction<LuaFunction<double>(double, double)>()>("addup.lua");
-    auto func = script();
-    return func(2.5, 2.5);
+    using my_func = tlw::function<double(double, double)>;
+    tlw::lua lua;
+    tlw::function<my_func()> script = lua.file<my_func>()>("addup.lua");
+    my_func f = script();
+    return f(2.5, 2.5);
 }
 ```
 
-As you can see the script is obtained in the same manner as the function.
-The function signature is very imported in this example, as the signature
-has to meet the actual script file or function.
+### Assigning globals
 
-Note that for a multi return function/script you can use a `std::tuple`.
-
-### Exposing globals
-
-For exposing globals I will only demonstrate the C++ code.
+This C++ code will demonstrate how globals can be assigned.
 
 ```cpp
 #include <tlw/tlw.hpp>
 
-const unsigned int myInteger = 200;
-const double myNumber = 2.5;
+unsigned int myInteger = 200;
+double myNumber = 2.5;
 const char * myString = "Lorem Ipsum";
 
 
 int main(int argc, char** argv) {
-    Lua lua;
+    tlw::lua lua;
     // These values will be available globally in a script
     // with the same lua_State of course
     lua.set("myInteger", myInteger);
@@ -169,176 +194,61 @@ int main(int argc, char** argv) {
 }
 ```
 
-There are various types that can be exposed/fetched. For example:
- * `_type*` Which will either result in a user datum, or if the class isn't known it will result in a light user datum.
- * Primitives: `bool`, `int`, `unsigned int`, `float`, `double`
- * Strings: `char *`, `const char *`, `std::string`
- * List: `std::vector`
- * Multi type list: `std::tuple`
+There are various types that can be handled. Defined types are:
+ * Primitives: `bool`, `int`, `unsigned int`, `float`, `double`, `long`, `unsigned long`
+ * Strings: `const char *`, `std::string`
+ * Structures: `std::vector`, `std::unordered_map`, `std::array`
+ * Functions: `tlw::function`, or any other function type
+ * Any other type will either result in user data, or if the class isn't known it will result in light user data.
 
-By fetching tables and lists you won't have enough flexibility with the last structure types.
-Therefore there's an `LuaTable` and `LuaList`.
-You can manipulate or fetch the contents of these classes easily.
+### Defining user types
 
-### Exposing classes
-
-This example will demonstrate how a class is exposed to lua.
-It will be compatible with the following Lua example.
-```lua
--- File: myclass.lua
-print(example:getNumber())
-example:setNumber(5.0)
-print(example:getNumber())
-```
-
-```cpp
-#include <tlw/tlw.hpp>
-#include <tlw/types.hpp>
-#include <tlw/wrapping.hpp>
-
-class MyClass {
-private:
-    double myNumber = 0;
-public:
-    void set(double num) { myNumber = num; }
-    double get() { return myNumber; }
-}
-
-int main(int argc, char **argv) {
-    Lua lua;
-    MyClass myClass;
-    lua.add<MyClass>(ClassPrototypeBuilder("MyClass")
-                    .method("setNumber", mk_function(&MyClass::set))
-                    .method("getNumber", mk_function(&MyClass::get))
-                    .build());
-    lua.setObject("example", &myClass)
-       .file("myclass.lua")();
-}
-```
-
-Note that for the 'normal' class prototype the `mk_function` macro is used i.o. the `mk_method` macro.
-If you're against the use of macro's this one is avoided by typing the following:
-```cpp
-...
-    .method("setNumber", [] (lua_State *L)->int { return luaWrapFunction(L, &MyClass::set); })
-...
-```
-
-### Exposing pretty classes
-
-This section will cover the pretty outcome of a `PrettyClassPrototype`.
-The exposing is almost the same as the previous section,
-yet it will behave pretty different in lua code.
+This section will demonstrate how a simple class can be made available in lua.
+The demonstration will be compatible with the following Lua example.
 
 ```lua
--- File: myclass.lua
-print(example.number)
-example.number = 5.5
-print(example.getNumber)
-example.print('The number is ')
+-- file: example.lua
+local e1 = example(5, 'example')
+e1.print() -- Name: example 5
+
+local e2 = e1 + 1
+e2.print() -- Name: example 6
+
+e2.n = 88
+print(e2.n) -- 88
 ```
 
 ```cpp
-#include <iostream>
-#include <tlw/tlw.hpp>
-#include <tlw/types.hpp>
-#include <tlw/wrapping.hpp>
-
-class MyClass {
-public:
-    double myNumber = 0;
-    void set(double num) { myNumber = num; }
-    double get() { return myNumber; }
-    void print(const char * prefix) {
-        std::cout << prefix << myNumber << std::endl;
+struct Example {
+    float n;
+    const char * name;
+    
+    Example(float n, const char * name) : n(n), name(name) {}
+    
+    Example operator+(float val) const {
+        return Example(n+val, name);
     }
-}
+
+    void printName() const {
+        printf("Name: %s %g", name, n);
+    }
+};
 
 int main(int argc, char **argv) {
-    Lua lua;
-    MyClass myClass;
-    lua.add<MyClass>(PrettyClassPrototypeBuilder("MyClass")
-                    .property("number", mk_property(&MyClass::number))
-                    .setter("setNumber", mk_function(&MyClass::set))
-                    .getter("getNumber", mk_function(&MyClass::get))
-                    .method("printNumber", mk_method(&MyClass::print))
-                    .build());
-    lua.setObject("example", &myClass)
-       .file("myclass.lua")();
+    tlw::lua lua;
+    
+    auto defineExample = tlw::define<Example>("example")
+            .ctor<float, const char*>()
+            .prop("n", &Example::n)
+            .add<int>()
+            .method("print", &Example::printName)
+            .build();
+
+    defineExample(lua.L);
+
+    lua.file("example.lua")();
 }
 ```
-
-Note that the getter/setter functions will behave the same as a property and
-are bound using the `mk_function` macro. Also note that the property
-uses the `mk_property` macro. Though, the property example will execute faster,
-yet you should think twice before setting properties in C++ public. At last
-we can see that the method also doesn't require a `:` to be executed.
-For this exposure we'll need to use the `mk_method` macro.
-
-The difference between the macro's have some technical background. In short,
-the `mk_method` will expect a user datum by upvalue rather than the first function argument.
-
-### Exposing const classes
-
-A constant class can be exposed by giving the const signature.
-The procedure is exactly the same as the previous mentioned class exposures.
-Yet with constant classes exposed methods need to be marked const as well.
-
-```cpp
-#include <iostream>
-#include <tlw/tlw.hpp>
-#include <tlw/types.hpp>
-#include <tlw/wrapping.hpp>
-
-class MyClass {
-private:
-    double myNumber = 0;
-public:
-    double get() const { return myNumber; }
-    void print(const char * prefix) const {
-        std::cout << prefix << myNumber << std::endl;
-    }
-}
-
-int main(int argc, char **argv) {
-    Lua lua;
-    const MyClass myClass;
-    lua.add<const MyClass>(PrettyClassPrototypeBuilder("ConstMyClass")
-                    .getter("number", mk_function(&MyClass::get))
-                    .method("printNumber", mk_method(&MyClass::print))
-                    .build());
-    lua.setObject("example", &myClass)
-       .file("myclass.lua")();
-}
-```
-
-Note that the `lua.add` call and the name of the prototype are different.
-This is required if you want both to exist.
-If you'd use the same prototype name it'll overwrite the previous added prototype.
-Also if using the same signature it'll replace the prototype name for that signature.
-
-My advice is to add consistently normal classes with its name and constant classes with a `Const` prefix.
-Though you can basically use whatever you'd like, as long as you aren't introducing ambiguity on the type and name.
-
-### Class Inheritance
-
-It's possible to inherit some classes, though,
-this will only work with the normal `ClassPrototype`
-and **not** for `PrettyClassPrototype`.
-So be careful when mixing those class types, or you'll end up refactoring the whole codebase.
-
-Let's assume that there's a `BaseClass` and `DerivativeClass` exposed to the lua instance.
-Setting the inheritance will look like the following:
-
-```cpp
-Lua lua;
-...
-lua.extend<DerivativeClass, BaseClass>();
-```
-
-Note that the order of types do matter.
-
-If you've a more complex inheritance to set, you can pass multiple types to extend like so `lua.extend<ConcretestClass, ConcreteClass, AbstractClass>()`.
 
 ## Contributing
 
@@ -367,7 +277,5 @@ This project is licensed under the GPLv2 License - see the [LICENSE.md](LICENSE.
 
 ## Acknowledgments
 
-* For CMake install targets I consulted [this article](https://cliutils.gitlab.io/modern-cmake/chapters/install/installing.html).
 * The FindLuaJIT.cmake file is copied from [minetest](https://gitlab.com/minetest/minetest)
 * For the template like interface I got inspired by [luaaa](https://github.com/gengyong/luaaa)
-* For this readme I was inspired by the template of [PurpleBooth](https://gist.github.com/PurpleBooth/109311bb0361f32d87a2)

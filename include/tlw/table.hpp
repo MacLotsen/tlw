@@ -105,6 +105,17 @@ namespace tlw {
         }
 
         template<typename _type, typename _key>
+        constexpr _type get_or_default(_key k, _type default_value) {
+            _type r = table_traits<_type, _key>::get(L, LUA_GLOBALSINDEX, k);
+            return r ? r : default_value;
+        }
+
+        template<typename ..._rs, typename ..._ks>
+        constexpr std::tuple<_rs...> get_all(_ks ...k) {
+            return {table_traits<_rs, _ks>::get(L, LUA_GLOBALSINDEX, k)...};
+        }
+
+        template<typename _type, typename _key>
         constexpr void set(_key k, _type val) {
             if constexpr (cpp_type<_type>::is_rvalue) {
                 table_traits<_type, _key>::set(L, LUA_GLOBALSINDEX, k, std::forward(val));
@@ -138,6 +149,22 @@ namespace tlw {
             auto value = table_traits<_type, _key>::get(L, lua_gettop(L), k);
             lua_pop(L, 1);
             return value;
+        }
+
+        template<typename _type, typename _key>
+        constexpr _type get_or_default(_key k, _type default_value) {
+            traits::push(L, *this);
+            _type r = table_traits<_type, _key>::get(L, lua_gettop(L), k);
+            lua_pop(L, 1);
+            return r ? r : default_value;
+        }
+
+        template<typename ..._rs, typename ..._ks>
+        constexpr std::tuple<_rs...> get_all(_ks ...k) {
+            traits::push(L, *this);
+            auto r = std::tuple{table_traits<_rs, _ks>::get(L, lua_gettop(L), k)...};
+            lua_pop(L, 1);
+            return r;
         }
 
         template<typename _type, typename _key>

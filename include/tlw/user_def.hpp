@@ -612,11 +612,11 @@ namespace tlw {
     template<class _user_type>
     constexpr meta_table_builder<_user_type> define(const char *name) {
         if (meta_table_registry<_user_type>::name) {
-            printf("Warning: meta table %s already defined\n", meta_table_registry<_user_type>::name);
+//            printf("Warning: meta table %s already defined\n", meta_table_registry<_user_type>::name);
             if (strcmp(meta_table_registry<_user_type>::name, name) != 0) {
                 meta_table_registry<_user_type>::reset();
-                printf("Warning: changing meta table name from %s to %s\n", meta_table_registry<_user_type>::name,
-                       name);
+//                printf("Warning: changing meta table name from %s to %s\n", meta_table_registry<_user_type>::name,
+//                       name);
             }
         }
         return meta_table_builder<_user_type>(name);

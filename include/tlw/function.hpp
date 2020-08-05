@@ -20,7 +20,9 @@
 #ifndef TLW_FUNCTION_HPP
 #define TLW_FUNCTION_HPP
 
+#include <tuple>
 #include <tlw/detail/stack_traits.hpp>
+#include "stack.hpp"
 
 namespace tlw {
 
@@ -38,8 +40,15 @@ namespace tlw {
     template<>
     struct function<void()> : public reference {
         using fn_type = function<void()>;
-
-        function(reference &&other) : reference(std::move(other)) {}
+        function(const reference &other) : reference(other) {}
+        function(const fn_type &other) : reference(other) {}
+        function(reference &&other)  noexcept : reference(std::move(other)) {}
+        function(fn_type &&other)  noexcept : reference(std::move(other)) {}
+        fn_type &operator=(const fn_type &other) = default;
+        fn_type &operator=(fn_type &&other) noexcept {
+            reference::operator=(std::move(other));
+            return *this;
+        }
 
         void operator()() {
             stack_traits<function_t>::push(L, *this);
@@ -53,7 +62,15 @@ namespace tlw {
     struct function<_r()> : public reference {
         using fn_type = function<_r()>;
 
-        function(reference &&other) : reference(std::move(other)) {}
+        function(const reference &other) : reference(other) {}
+        function(const fn_type &other) : reference(other) {}
+        function(reference &&other)  noexcept : reference(std::move(other)) {}
+        function(fn_type &&other)  noexcept : reference(std::move(other)) {}
+        fn_type &operator=(const fn_type &other) = default;
+        fn_type &operator=(fn_type &&other) noexcept {
+            reference::operator=(std::move(other));
+            return *this;
+        }
 
         constexpr _r operator()() {
             stack_traits<function_t>::push(L, *this);
@@ -66,11 +83,43 @@ namespace tlw {
         }
     };
 
+    template<typename ..._rs>
+    struct function<std::tuple<_rs...>()> : public reference {
+        using fn_type = function<std::tuple<_rs...>()>;
+
+        function(const reference &other) : reference(other) {}
+        function(const fn_type &other) : reference(other) {}
+        function(reference &&other)  noexcept : reference(std::move(other)) {}
+        function(fn_type &&other)  noexcept : reference(std::move(other)) {}
+        fn_type &operator=(const fn_type &other) = default;
+        fn_type &operator=(fn_type &&other) noexcept {
+            reference::operator=(std::move(other));
+            return *this;
+        }
+
+        constexpr std::tuple<_rs...> operator()() {
+            stack_traits<function_t>::push(L, *this);
+            if (lua_pcall(L, 0, sizeof...(_rs), 0)) {
+                _func_failed(L);
+            }
+            std::tuple<_rs...> r = {stack_traits<_rs>::get(L, -1)...};
+            lua_pop(L, sizeof...(_rs));
+            return r;
+        }
+    };
+
     template<typename ..._args>
     struct function<void(_args...)> : public reference {
         using fn_type = function<void(_args...)>;
-
-        function(reference &&other) : reference(std::move(other)) {}
+        function(const reference &other) : reference(other) {}
+        function(const fn_type &other) : reference(other) {}
+        function(reference &&other)  noexcept : reference(std::move(other)) {}
+        function(fn_type &&other)  noexcept : reference(std::move(other)) {}
+        fn_type &operator=(const fn_type &other) = default;
+        fn_type &operator=(fn_type &&other) noexcept {
+            reference::operator=(std::move(other));
+            return *this;
+        }
 
         constexpr void operator()(_args ...args) {
             stack_traits<function_t>::push(L, *this);
@@ -87,8 +136,15 @@ namespace tlw {
     template<typename _r, typename ..._args>
     struct function<_r(_args...)> : public reference {
         using fn_type = function<_r(_args...)>;
-
-        function(reference &&other) : reference(std::move(other)) {}
+        function(const reference &other) : reference(other) {}
+        function(const fn_type &other) : reference(other) {}
+        function(reference &&other)  noexcept : reference(std::move(other)) {}
+        function(fn_type &&other)  noexcept : reference(std::move(other)) {}
+        fn_type &operator=(const fn_type &other) = default;
+        fn_type &operator=(fn_type &&other) noexcept {
+            reference::operator=(std::move(other));
+            return *this;
+        }
 
         constexpr _r operator()(_args ...args) {
             stack_traits<function_t>::push(L, *this);
@@ -98,6 +154,31 @@ namespace tlw {
             }
             _r r = stack_traits<_r>::get(L, -1);
             lua_pop(L, 1);
+            return r;
+        }
+    };
+
+    template<typename ..._rs, typename ..._args>
+    struct function<std::tuple<_rs...>(_args...)> : public reference {
+        using fn_type = function<std::tuple<_rs...>(_args...)>;
+        function(const reference &other) : reference(other) {}
+        function(const fn_type &other) : reference(other) {}
+        function(reference &&other)  noexcept : reference(std::move(other)) {}
+        function(fn_type &&other)  noexcept : reference(std::move(other)) {}
+        fn_type &operator=(const fn_type &other) = default;
+        fn_type &operator=(fn_type &&other) noexcept {
+            reference::operator=(std::move(other));
+            return *this;
+        }
+
+        constexpr std::tuple<_rs...> operator()(_args ...args) {
+            stack_traits<function_t>::push(L, *this);
+            (..., stack_traits<_args>::push(L, args));
+            if (lua_pcall(L, sizeof...(_args), 1, 0)) {
+                _func_failed(L);
+            }
+            std::tuple<_rs...> r = {stack_traits<_rs>::get(L, -1)...};
+            lua_pop(L, sizeof...(_rs));
             return r;
         }
     };

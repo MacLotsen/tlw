@@ -25,37 +25,36 @@
 
 namespace tlw {
 
-    template<>
-    struct stack_traits<function<void()>> : public reference_stack_traits<function_t> {
-        using type = function<void()>;
-        using reference_stack_traits<function_t>::push;
-
-        static type get(lua_State *L, int idx) {
-            return type(reference_traits<function_t>::get(L, idx));
-        }
-
-    };
-
-    template<typename _r>
-    struct stack_traits<function<_r()>> : public reference_stack_traits<function_t> {
-        using type = function<_r()>;
-        using reference_stack_traits<function_t>::push;
-
-        static type get(lua_State *L, int idx) {
-            return type(reference_traits<function_t>::get(L, idx));
-        }
-
-    };
-
-    template<typename _r, typename ..._args>
-    struct stack_traits<function<_r(_args...)>> : public reference_stack_traits<function_t> {
-        using type = function<_r(_args...)>;
+    template<typename _fn_type>
+    struct stack_traits<function<_fn_type>> : public reference_stack_traits<function_t> {
+        using type = function<_fn_type>;
         using reference_stack_traits<function_t>::push;
 
         static type get(lua_State *L, int idx) {
             return type(reference_traits<function_t>::get(L, idx));
         }
     };
+//
+//    template<typename _r>
+//    struct stack_traits<function<_r()>> : public reference_stack_traits<function_t> {
+//        using type = function<_r()>;
+//        using reference_stack_traits<function_t>::push;
+//
+//        static type get(lua_State *L, int idx) {
+//            return type(reference_traits<function_t>::get(L, idx));
+//        }
+//
+//    };
+//
+//    template<typename _r, typename ..._args>
+//    struct stack_traits<function<_r(_args...)>> : public reference_stack_traits<function_t> {
+//        using type = function<_r(_args...)>;
+//        using reference_stack_traits<function_t>::push;
+//
+//        static type get(lua_State *L, int idx) {
+//            return type(reference_traits<function_t>::get(L, idx));
+//        }
+//    };
 
     template<typename _r, typename ..._args>
     struct stack_traits<_r(*)(_args...)> {

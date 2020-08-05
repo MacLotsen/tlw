@@ -30,7 +30,7 @@ namespace tlw {
     struct user_prop {
         using base_type = typename cpp_type<_user_type>::value_type;
         using prop_type = _prop_type base_type::*;
-        static inline std::unordered_map<std::string_view, prop_type> properties = {};
+        static inline std::unordered_map<std::string_view, prop_type> properties{};
 
         static int get(lua_State *L) {
             stack s = stack(state(L));

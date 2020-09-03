@@ -32,7 +32,7 @@ list(APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 option(BUILD_TEST "Build GTest tests for Simple Lua" ON)
 option(BUILD_BENCHMARKS "Build Benchmarks in GTest" OFF)
 
-find_package(LuaJIT REQUIRED)
+find_package(LuaJit REQUIRED)
 
 add_library(tlw INTERFACE)
 
@@ -89,7 +89,7 @@ add_custom_target(uninstall
         COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
 
 install(FILES
-        cmake/FindLuaJIT.cmake
+        cmake/FindLuaJit.cmake
         ${CMAKE_CURRENT_BINARY_DIR}/TLWConfig.cmake
         ${CMAKE_CURRENT_BINARY_DIR}/TLWConfigVersion.cmake
         DESTINATION ${CMAKE_CONFIG_DIR})

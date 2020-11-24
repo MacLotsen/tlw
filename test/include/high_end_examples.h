@@ -185,7 +185,7 @@ namespace tlw {
         }
     };
 
-    static void load_vec4(const tlw::state &L) {
+    static tlw::reference load_vec4(const tlw::state &L) {
         using add1 = tlw::vec4 &(float);
         using add2 = tlw::vec4 &(const tlw::vec4 &);
         auto lib_vec4 = tlw::define<tlw::vec4>("vec4")
@@ -212,10 +212,10 @@ namespace tlw {
                 .unm()
                 .build();
 
-        lib_vec4(L);
+        return lib_vec4(L);
     }
 
-    static void load_mat4(const tlw::state &L) {
+    static tlw::reference load_mat4(const tlw::state &L) {
         auto lib_mat4 = tlw::define<tlw::mat4>("mat4")
                 .ctor<>()
                 .ctor<float>()
@@ -225,10 +225,10 @@ namespace tlw {
                         float, float, float, float>()
                 .build();
 
-        lib_mat4(L);
+        return lib_mat4(L);
     }
 
-    static void load_entity(const tlw::state &L) {
+    static tlw::reference load_entity(const tlw::state &L) {
         auto lib_entity = tlw::define<tlw::entity>("entity")
                 .ctor<>()
                 .ctor<tlw::vec4>()
@@ -238,7 +238,7 @@ namespace tlw {
                 .prop("model", &tlw::entity::model)
                 .build();
 
-        lib_entity(L);
+        return lib_entity(L);
     }
 
 }

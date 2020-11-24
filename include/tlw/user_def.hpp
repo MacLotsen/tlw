@@ -505,10 +505,11 @@ namespace tlw {
             meta_table_registry<_user_type>::name = mt::name;
             meta_table_registry<_user_type *>::name = p_mt::name;
             meta_table_registry<const _user_type *>::name = rop_mt::name;
-            return meta_table_registry<_user_type>::expose = _expose;
+            return _expose;
         }
 
-        static void _expose(state L) {
+        static reference _expose(state L) {
+            reference ref;
             if (!mt::constructors.empty()) {
                 lua_createtable(L, 0, 0);
                 lua_createtable(L, 0, 3);
@@ -525,12 +526,14 @@ namespace tlw {
                 });
                 lua_setfield(L, -2, "__call");
                 lua_setmetatable(L, -2);
-                lua_setglobal(L, mt::name);
+                ref = pop_traits<reference>::pop(L);
             }
 
             _expose < mt > (L);
             _expose < p_mt > (L);
             _expose < rop_mt > (L);
+
+            return ref;
         }
 
         template<typename _mt>

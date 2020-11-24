@@ -21,13 +21,13 @@
 #define TLW_META_TABLE_HPP
 
 #include <unordered_map>
-#include <tlw/type.hpp>
 #include <functional>
+#include <tlw/type.hpp>
 #include <tlw/stack.hpp>
 
 namespace tlw {
 
-    using lib_load_t = void (*)(state);
+    using lib_load_t = reference (*)(state);
 
     using argument_matcher = bool (*)(lua_State *);
 
@@ -87,11 +87,8 @@ namespace tlw {
         using type = _user_type;
         inline static const char *name = nullptr;
 
-        inline static void (*expose)(state L);
-
         static constexpr void reset() {
             name = nullptr;
-            expose = nullptr;
             meta_table<_user_type>::reset();
             meta_table<_user_type *>::reset(true);
             meta_table<const _user_type *>::reset(true);

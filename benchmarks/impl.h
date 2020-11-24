@@ -202,18 +202,18 @@ public:
     void prepare(const char *script) override {
         ImplBenchmarkRunner::prepare(script);
         ImplBenchmarkRunner::run();
-        table = new tlw::table(lua.get<tlw::table>("t"));
+        table = new tlw::table(lua.get<const char *, tlw::table>("t"));
     }
 
     void run() override {
-        auto num = table->get<double>("r");
+        auto num = table->get<const char *, double>("r");
     }
 };
 
 class ImplTableFetchesBenchmark : public ImplTableFetchBenchmark {
 public:
     void run() override {
-        auto num = table->get_all<double, double, double>("r", "g", "b");
+        auto num = table->get_all<const char *, double, double, double>("r", "g", "b");
     }
 };
 

@@ -51,9 +51,14 @@ int luaopen_examplelib(lua_State *_L) {
 //    lua_pushlightuserdata(_L, (void *)wrap_exceptions);
 //    luaJIT_setmode(_L, -1, LUAJIT_MODE_WRAPCFUNC|LUAJIT_MODE_ON);
     tlw::state L = tlw::state(_L);
-    tlw::load_entity(L);
-    tlw::load_vec4(L);
-    tlw::load_mat4(L);
+    tlw::lua lua = tlw::lua(L);
+    lua["entity"] = tlw::load_entity(L);
+    lua["vec4"] = tlw::load_vec4(L);
+    lua["mat4"] = tlw::load_mat4(L);
+
+    lua["namespace"] = lua.table();
+    lua["namespace"]["vec4"] = tlw::load_vec4(L);
+
     return 0;
 }
 

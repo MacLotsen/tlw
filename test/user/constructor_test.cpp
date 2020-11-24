@@ -20,11 +20,10 @@
 #include "user_test.h"
 
 TEST_F(user_test, test_constructor) {
-    tlw::define<tlw::example>("example")
+    auto expose = tlw::define<tlw::example>("example")
             .ctor<>()
             .build();
-    tlw::meta_table_registry<tlw::example>::expose(L);
-    lua_getglobal(L, "example");
+    s.push(expose(L));
     lua_getfield(L, -1, "new");
     if (lua_pcall(L, 0, 1, 0)) {
         FAIL() << "Failed to call constructor";
@@ -39,11 +38,10 @@ TEST_F(user_test, test_constructor) {
 }
 
 TEST_F(user_test, test_constructor_with_parameters) {
-    tlw::define<tlw::example>("example")
+    auto expose = tlw::define<tlw::example>("example")
             .ctor<float>()
             .build();
-    tlw::meta_table_registry<tlw::example>::expose(L);
-    lua_getglobal(L, "example");
+    s.push(expose(L));
     lua_getfield(L, -1, "new");
     s.push(5.5);
 
@@ -59,12 +57,11 @@ TEST_F(user_test, test_constructor_with_parameters) {
 }
 
 TEST_F(user_test, test_multi_constructor) {
-    tlw::define<tlw::example>("example")
+    auto ref = tlw::define<tlw::example>("example")
             .ctor<>()
             .ctor<float>()
-            .build();
-    tlw::meta_table_registry<tlw::example>::expose(L);
-    lua_getglobal(L, "example");
+            .build()(L);
+    s.push(ref);
     lua_getfield(L, -1, "new");
     s.push(5.5);
     if (lua_pcall(L, 1, 1, 0)) {
@@ -77,7 +74,7 @@ TEST_F(user_test, test_multi_constructor) {
     // Pop the error message
     lua_pop(L, 2);
 
-    lua_getglobal(L, "example");
+    s.push(ref);
     lua_getfield(L, -1, "new");
     if (lua_pcall(L, 0, 1, 0)) {
         FAIL() << "Failed to call constructor with argument";
@@ -90,7 +87,7 @@ TEST_F(user_test, test_multi_constructor) {
     lua_pop(L, 2);
 
 
-    lua_getglobal(L, "example");
+    s.push(ref);
     lua_getfield(L, -1, "new");
     s.push(5.5);
     s.push("a string");

@@ -99,6 +99,11 @@ namespace tlw {
 
         _table(state L) : L(std::move(L)) {}
 
+        template<typename _type>
+        constexpr _type get(const char * k) {
+            return get<const char *, _type>(k);
+        }
+
         template<typename _key, typename _type>
         constexpr _type get(_key k) {
             return table_traits<_key, _type>::get(L, LUA_GLOBALSINDEX, k);
@@ -113,6 +118,11 @@ namespace tlw {
         template<typename ..._rs, typename ..._ks>
         constexpr std::tuple<_rs...> get_all(_ks ...k) {
             return {table_traits<_rs, _ks>::get(L, LUA_GLOBALSINDEX, k)...};
+        }
+
+        template<typename _type>
+        constexpr void set(const char * k, _type val) {
+            set<const char *, _type>(k, val);
         }
 
         template<typename _key, typename _type>
@@ -143,6 +153,16 @@ namespace tlw {
 
         }
 
+        template<typename _type>
+        constexpr _type get(const char * k) {
+            return get<const char *, _type>(k);
+        }
+
+        template<typename _type>
+        constexpr _type get(int k) {
+            return get<int, _type>(k);
+        }
+
         template<typename _key, typename _type>
         constexpr _type get(_key k) {
             traits::push(L, *this);
@@ -159,12 +179,22 @@ namespace tlw {
             return r ? r : default_value;
         }
 
-        template<typename ..._ks, typename ..._rs>
+        template<typename ..._rs, typename ..._ks>
         constexpr std::tuple<_rs...> get_all(_ks ...k) {
             traits::push(L, *this);
             auto r = std::tuple{table_traits<_ks, _rs>::get(L, lua_gettop(L), k)...};
             lua_pop(L, 1);
             return r;
+        }
+
+        template<typename _type>
+        constexpr void set(const char * k, _type val) {
+            set<const char *, _type>(k, val);
+        }
+
+        template<typename _type>
+        constexpr void set(int k, _type val) {
+            set<int, _type>(k, val);
         }
 
         template<typename _key, typename _type>

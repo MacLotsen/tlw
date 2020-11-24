@@ -40,8 +40,7 @@ TEST_F(user_test, test_inner_value_move) {
     lua_settop(L, 0);
 
     tlw::define<tlw::example>("example")
-            .build();
-    tlw::meta_table_registry<tlw::example>::expose(L);
+            .build()(L);
 
     ASSERT_EQ(0, lua_gettop(L));
     auto example = tlw::example(5.5);

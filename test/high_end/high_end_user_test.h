@@ -31,9 +31,9 @@ protected:
     void SetUp() override {
         base_test::SetUp();
         lua = tlw::lua(L);
-        load_vec4(L);
-        load_mat4(L);
-        load_entity(L);
+        lua["vec4"] = load_vec4(L);
+        lua["mat4"] = load_mat4(L);
+        lua["entity"] = load_entity(L);
     }
 
     void TearDown() override {

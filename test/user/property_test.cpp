@@ -22,8 +22,7 @@
 TEST_F(user_test, test_property) {
     tlw::define<tlw::example>("example")
             .prop("val", &tlw::example::val)
-            .build();
-    tlw::meta_table_registry<tlw::example>::expose(L);
+            .build()(L);
     tlw::example e(5.5);
     s.push(&e);
     lua_setglobal(L, "example1");
@@ -58,8 +57,7 @@ TEST_F(user_test, test_property) {
 TEST_F(user_test, test_property_with_const_ud) {
     tlw::define<tlw::example>("example")
             .prop("val", &tlw::example::val)
-            .build();
-    tlw::meta_table_registry<tlw::example>::expose(L);
+            .build()(L);
     const tlw::example e(5.5);
     s.push(&e);
     lua_setglobal(L, "example1");
@@ -81,8 +79,7 @@ TEST_F(user_test, test_property_with_const_ud) {
 TEST_F(user_test, test_const_property) {
     tlw::define<tlw::example>("example")
             .prop("val", &tlw::example::initial)
-            .build();
-    tlw::meta_table_registry<tlw::example>::expose(L);
+            .build()(L);
     tlw::example e(5.5);
     s.push(&e);
     lua_setglobal(L, "example1");

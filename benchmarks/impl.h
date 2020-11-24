@@ -213,7 +213,7 @@ public:
 class ImplTableFetchesBenchmark : public ImplTableFetchBenchmark {
 public:
     void run() override {
-        auto num = table->get_all<const char *, double, double, double>("r", "g", "b");
+        auto num = table->get_all<double, double, double>("r", "g", "b");
     }
 };
 

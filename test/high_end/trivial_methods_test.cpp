@@ -75,8 +75,7 @@ TEST_F(high_end_user_test, test_method) {
             .method("read_add", &tlw::method_example::read_add)
             .method("write_get_add", &tlw::method_example::write_get_add)
             .method("read_get_add", &tlw::method_example::read_get_add)
-            .build();
-    tlw::meta_table_registry<tlw::method_example>::expose(L);
+            .build()(L);
 
     tlw::method_example e1(5.5, "writable");
     const tlw::method_example e2(5.5, "readonly");

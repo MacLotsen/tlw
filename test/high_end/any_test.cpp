@@ -33,9 +33,8 @@ TEST_F(high_end_user_test, test_any_value) {
     ASSERT_EQ(n1, n2);
 
     tlw::define<tlw::example>("example_value")
-            .build();
+            .build()(L);
 
-    tlw::meta_table_registry<tlw::example>::expose(L);
     tlw::example val1(5.5);
     lua.set("ud", val1);
 
@@ -43,10 +42,10 @@ TEST_F(high_end_user_test, test_any_value) {
     if (val2)
         val2.print();
 
-    luaL_dostring(L, "t1 = { { 'Hallo' } }");
+    luaL_dostring(L, "t1 = { { 'test' } }");
 
     tlw::table t = lua["t1"][1];
     const char *str2 = t[1];
 
-    ASSERT_STREQ("Hallo", str2);
+    ASSERT_STREQ("test", str2);
 }

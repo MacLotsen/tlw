@@ -22,7 +22,7 @@
 
 namespace tlw {
 
-    template<typename _type, typename _key>
+    template<typename _key, typename _type>
     struct table_traits {
         using key_traits = stack_traits<_key>;
         using value_traits = stack_traits<_type>;

@@ -99,14 +99,14 @@ namespace tlw {
 
         _table(state L) : L(std::move(L)) {}
 
-        template<typename _type, typename _key>
+        template<typename _key, typename _type>
         constexpr _type get(_key k) {
-            return table_traits<_type, _key>::get(L, LUA_GLOBALSINDEX, k);
+            return table_traits<_key, _type>::get(L, LUA_GLOBALSINDEX, k);
         }
 
-        template<typename _type, typename _key>
+        template<typename _key, typename _type>
         constexpr _type get_or_default(_key k, _type default_value) {
-            _type r = table_traits<_type, _key>::get(L, LUA_GLOBALSINDEX, k);
+            _type r = table_traits<_key, _type>::get(L, LUA_GLOBALSINDEX, k);
             return r ? r : default_value;
         }
 
@@ -115,18 +115,18 @@ namespace tlw {
             return {table_traits<_rs, _ks>::get(L, LUA_GLOBALSINDEX, k)...};
         }
 
-        template<typename _type, typename _key>
+        template<typename _key, typename _type>
         constexpr void set(_key k, _type val) {
             if constexpr (cpp_type<_type>::is_rvalue) {
-                table_traits<_type, _key>::set(L, LUA_GLOBALSINDEX, k, std::forward(val));
+                table_traits<_key, _type>::set(L, LUA_GLOBALSINDEX, k, std::forward(val));
             } else {
-                table_traits<_type, _key>::set(L, LUA_GLOBALSINDEX, k, val);
+                table_traits<_key, _type>::set(L, LUA_GLOBALSINDEX, k, val);
             }
         }
 
         template<typename _key>
         constexpr table_reference <_table<true>, _key> operator[](_key k) {
-            return table_reference<_table<true>, _key>(get<reference>(k), *this, k);
+            return table_reference<_table<true>, _key>(get<_key, reference>(k), *this, k);
         }
     };
 
@@ -143,44 +143,44 @@ namespace tlw {
 
         }
 
-        template<typename _type, typename _key>
+        template<typename _key, typename _type>
         constexpr _type get(_key k) {
             traits::push(L, *this);
-            auto value = table_traits<_type, _key>::get(L, lua_gettop(L), k);
+            auto value = table_traits<_key, _type>::get(L, lua_gettop(L), k);
             lua_pop(L, 1);
             return value;
         }
 
-        template<typename _type, typename _key>
+        template<typename _key, typename _type>
         constexpr _type get_or_default(_key k, _type default_value) {
             traits::push(L, *this);
-            _type r = table_traits<_type, _key>::get(L, lua_gettop(L), k);
+            _type r = table_traits<_key, _type>::get(L, lua_gettop(L), k);
             lua_pop(L, 1);
             return r ? r : default_value;
         }
 
-        template<typename ..._rs, typename ..._ks>
+        template<typename ..._ks, typename ..._rs>
         constexpr std::tuple<_rs...> get_all(_ks ...k) {
             traits::push(L, *this);
-            auto r = std::tuple{table_traits<_rs, _ks>::get(L, lua_gettop(L), k)...};
+            auto r = std::tuple{table_traits<_ks, _rs>::get(L, lua_gettop(L), k)...};
             lua_pop(L, 1);
             return r;
         }
 
-        template<typename _type, typename _key>
+        template<typename _key, typename _type>
         constexpr void set(_key k, _type val) {
             traits::push(L, *this);
             if constexpr (cpp_type<_type>::is_rvalue) {
-                table_traits<_type, _key>::set(L, lua_gettop(L), k, std::forward(val));
+                table_traits<_key, _type>::set(L, lua_gettop(L), k, std::forward(val));
             } else {
-                table_traits<_type, _key>::set(L, lua_gettop(L), k, val);
+                table_traits<_key, _type>::set(L, lua_gettop(L), k, val);
             }
             lua_pop(L, 1);
         }
 
         template<typename _key>
         constexpr table_reference <_table<false>, _key> operator[](_key k) {
-            return table_reference<_table<false>, _key>(get<reference>(k), *this, k);
+            return table_reference<_table<false>, _key>(get<_key, reference>(k), *this, k);
         }
 
         iterator begin() const {

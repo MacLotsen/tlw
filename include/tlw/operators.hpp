@@ -64,23 +64,61 @@ namespace tlw {
         }
     };
 
-    template<typename _user_type>
+    template<typename ...>
+    struct tostring_f_type {
+        static constexpr inline const bool valid = false;
+    };
+
+    template<typename ud>
+    struct tostring_f_type<const char *(*)(ud)> {
+        using return_type = const char *;
+        static constexpr inline const bool valid = true;
+        static constexpr inline const bool as_pointer = cpp_type<ud>::is_pointer;
+    };
+
+    template<typename ud>
+    struct tostring_f_type<std::string(*)(ud)> {
+        using return_type = std::string;
+        static constexpr inline const bool valid = true;
+        static constexpr inline const bool as_pointer = cpp_type<ud>::is_pointer;
+    };
+
+    template<typename ...>
     struct __tostring {
+
+    };
+
+    template<typename _user_type, typename _tostring_type>
+    struct __tostring<_user_type, _tostring_type> {
+        static inline _tostring_type fn = nullptr;
         using base_type = typename cpp_type<_user_type>::value_type;
-        using tostring_method_t = const char *(base_type::*)() const;
-        static inline tostring_method_t tostring_method = nullptr;
 
         static constexpr int tostring(lua_State *L) {
-            const char *str = nullptr;
+            constexpr bool is_method = method_type<_tostring_type>::valid;
+            constexpr bool is_function = tostring_f_type<_tostring_type>::valid;
+
+            auto _ud = stack_traits<_user_type>::get(L, 1);
+            const base_type *ud;
             if constexpr (cpp_type<_user_type>::is_pointer) {
-                auto ud = stack_traits<_user_type>::get(L, 1);
-                str = (ud->*tostring_method)();
+                ud = _ud;
             } else {
-                auto &ud = stack_traits<_user_type>::get(L, 1);
-                str = (ud.*tostring_method)();
+                ud = &_ud;
             }
+
             lua_settop(L, 0);
-            lua_pushstring(L, str);
+
+            if constexpr (is_method) {
+                stack_traits<typename method_type<_tostring_type>::return_type>::push(L, (ud->*fn)());
+            } else if constexpr (is_function) {
+                constexpr bool ud_as_p = tostring_f_type<_tostring_type>::as_pointer;
+                if constexpr (ud_as_p) {
+                    stack_traits<typename tostring_f_type<_tostring_type>::return_type>::push(L, fn(ud));
+                } else {
+                    stack_traits<typename tostring_f_type<_tostring_type>::return_type>::push(L, fn(*ud));
+                }
+            } else {
+                lua_pushnil(L);
+            }
 
             return 1;
         }

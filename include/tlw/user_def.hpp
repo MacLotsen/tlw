@@ -381,16 +381,6 @@ namespace tlw {
             return *this;
         }
 
-        constexpr _builder_type &tostring(typename __tostring<_user_type>::tostring_method_t method) {
-            __tostring<_user_type>::tostring_method = method;
-            __tostring<_user_type*>::tostring_method = method;
-            __tostring<const _user_type*>::tostring_method = method;
-            mt::operators["__tostring"] = __tostring<_user_type>::tostring;
-            p_mt::operators["__tostring"] = __tostring<_user_type*>::tostring;
-            rop_mt::operators["__tostring"] = __tostring<const _user_type*>::tostring;
-            return *this;
-        }
-
         template<typename _other>
         constexpr _builder_type &add() {
             mt::add_operator.push_back(type_safe_function{__add<_user_type, _other>::test, __add<_user_type, _other>::add});
@@ -492,12 +482,15 @@ namespace tlw {
 
         template<typename _method_type>
         constexpr _builder_type &tostring(_method_type method) {
-            __tostring<_user_type>::tostring_method = method;
-            __tostring<_user_type*>::tostring_method = method;
-            __tostring<const _user_type*>::tostring_method = method;
-            mt::operators["__tostring"] = __tostring<_user_type>::tostring;
-            p_mt::operators["__tostring"] = __tostring<_user_type*>::tostring;
-            rop_mt::operators["__tostring"] = __tostring<const _user_type*>::tostring;
+            static_assert(method_type<_method_type>::valid || tostring_f_type<_method_type>::valid,
+                    "tostring accepts either a method with no arguments or a function with the userdatum as argument");
+
+            __tostring<_user_type, _method_type>::fn = method;
+            __tostring<_user_type *, _method_type>::fn = method;
+            __tostring<const _user_type *, _method_type>::fn = method;
+            mt::operators["__tostring"] = __tostring<_user_type, _method_type>::tostring;
+            p_mt::operators["__tostring"] = __tostring<_user_type*, _method_type>::tostring;
+            rop_mt::operators["__tostring"] = __tostring<const _user_type*, _method_type>::tostring;
             return *this;
         }
 

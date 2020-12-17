@@ -19,6 +19,17 @@
 
 #include "high_end_user_test.h"
 
+namespace asd {
+    template<typename arg>
+    std::string test_to_string(arg) {
+        return "test";
+    }
+}
+
+struct to_string_test_class {
+
+};
+
 TEST_F(high_end_user_test, test_unm) {
     tlw::vec4 v2 = lua.src<tlw::vec4()>("v1 = vec4(5) return -v1")();
     ASSERT_EQ(-5, v2.x);
@@ -38,4 +49,13 @@ TEST_F(high_end_user_test, test_len) {
     ASSERT_EQ(tlw::vec4(5).length(), l);
     l = lua.src<float()>("v1 = vec4.new(5) return #v1")();
     ASSERT_EQ(tlw::vec4(5).length(), l);
+}
+
+TEST_F(high_end_user_test, test_tostring) {
+    luaL_openlibs(L);
+    lua["test"] = tlw::define<to_string_test_class>("test")
+            .ctor()
+            .tostring(&asd::test_to_string<to_string_test_class const&>)
+            .build()(L);
+    lua.src("print(test())")();
 }

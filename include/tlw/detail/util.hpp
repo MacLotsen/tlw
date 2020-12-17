@@ -119,12 +119,13 @@ namespace tlw {
 
     template<typename ...>
     struct method_type {
-
+        static constexpr inline const bool valid = false;
     };
 
     template<typename _class, typename _r, typename ..._args>
     struct method_type<_r (_class::*)(_args...)> {
         using return_type = _r;
+        static constexpr inline const bool valid = true;
         static constexpr inline const bool read_only = false;
         static constexpr inline const int arg_count = sizeof...(_args);
     };
@@ -132,6 +133,7 @@ namespace tlw {
     template<typename _class, typename ..._args>
     struct method_type<void (_class::*)(_args...)> {
         using return_type = void;
+        static constexpr inline const bool valid = true;
         static constexpr inline const bool read_only = false;
         static constexpr inline const int arg_count = sizeof...(_args);
     };
@@ -139,6 +141,7 @@ namespace tlw {
     template<typename _class, typename _r>
     struct method_type<_r (_class::*)()> {
         using return_type = _r;
+        static constexpr inline const bool valid = true;
         static constexpr inline const bool read_only = false;
         static constexpr inline const int arg_count = 0;
     };
@@ -146,6 +149,7 @@ namespace tlw {
     template<typename _class>
     struct method_type<void (_class::*)()> {
         using return_type = void;
+        static constexpr inline const bool valid = true;
         static constexpr inline const bool read_only = false;
         static constexpr inline const int arg_count = 0;
     };
@@ -153,6 +157,7 @@ namespace tlw {
     template<typename _class, typename _r, typename ..._args>
     struct method_type<_r (_class::*)(_args...) const> {
         using return_type = _r;
+        static constexpr inline const bool valid = true;
         static constexpr inline const bool read_only = true;
         static constexpr inline const int arg_count = sizeof...(_args);
     };
@@ -160,6 +165,7 @@ namespace tlw {
     template<typename _class, typename ..._args>
     struct method_type<void (_class::*)(_args...) const> {
         using return_type = void;
+        static constexpr inline const bool valid = true;
         static constexpr inline const bool read_only = true;
         static constexpr inline const int arg_count = sizeof...(_args);
     };
@@ -167,6 +173,7 @@ namespace tlw {
     template<typename _class, typename _r>
     struct method_type<_r (_class::*)() const> {
         using return_type = _r;
+        static constexpr inline const bool valid = true;
         static constexpr inline const bool read_only = true;
         static constexpr inline const int arg_count = 0;
     };
@@ -174,6 +181,7 @@ namespace tlw {
     template<typename _class>
     struct method_type<void (_class::*)() const> {
         using return_type = void;
+        static constexpr inline const bool valid = true;
         static constexpr inline const bool read_only = true;
         static constexpr inline const int arg_count = 0;
     };

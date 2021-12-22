@@ -26,6 +26,11 @@
 
 namespace tlw {
 
+    template<typename user_type, typename type, typename call_type>
+    struct property_type {
+
+    };
+
     template<typename _user_type, typename _prop_type, typename ...>
     struct user_prop {
         using base_type = typename cpp_type<_user_type>::value_type;

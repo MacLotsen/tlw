@@ -378,7 +378,7 @@ namespace tlw {
         static constexpr int to_string(lua_State *L) {
             // Clear the ud from the stack
             lua_settop(L, 0);
-            lua_pushstring(L, meta_table<_user_type>::name);
+            lua_pushstring(L, metatable<_user_type>::name);
             return 1;
         }
 

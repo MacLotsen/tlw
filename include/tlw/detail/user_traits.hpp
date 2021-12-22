@@ -20,7 +20,7 @@
 #ifndef TLW_USER_TRAITS_HPP
 #define TLW_USER_TRAITS_HPP
 
-#include <tlw/meta_table.hpp>
+#include <tlw/metatable.hpp>
 #include <cstring>
 
 namespace tlw {
@@ -32,9 +32,9 @@ namespace tlw {
         static bool inspect(lua_State *L, int idx) {
             switch (lua_type(L, idx)) {
                 case LUA_TUSERDATA:
-                    return meta_table<typename remove_ref<_type>::type>::name && inspect_meta_table(L, idx);
+                    return metatable<typename remove_ref<_type>::type>::name && inspect_meta_table(L, idx);
                 case LUA_TLIGHTUSERDATA:
-                    return meta_table<typename remove_ref<_type>::type>::name == nullptr;
+                    return metatable<typename remove_ref<_type>::type>::name == nullptr;
                 default:
                     return false;
             }
@@ -44,7 +44,7 @@ namespace tlw {
             int top = lua_gettop(L);
             lua_getmetatable(L, idx);
             lua_getfield(L, -1, "__name");
-            bool matches = strcmp(lua_tostring(L, -1), meta_table<typename remove_ref<_type>::type>::name) == 0;
+            bool matches = strcmp(lua_tostring(L, -1), metatable<typename remove_ref<_type>::type>::name) == 0;
             lua_settop(L, top);
             return matches;
         }
@@ -87,7 +87,7 @@ namespace tlw {
         static constexpr void push(lua_State *L, _type value) {
             const char * mt_name = cpp_type<_type>::is_pointer
                     ? meta_table_registry<_type>::name
-                    : meta_table<typename cpp_type<_type>::value_type>::name;
+                    : metatable<typename cpp_type<_type>::value_type>::name;
             if (mt_name) {
                 if constexpr (cpp_type<_type>::is_rvalue) {
                     type_traits<_user_data_t>::push(L, std::forward(value));

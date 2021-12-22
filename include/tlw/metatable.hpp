@@ -17,13 +17,16 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef TLW_META_TABLE_HPP
-#define TLW_META_TABLE_HPP
+#ifndef TLW_METATABLE_HPP
+#define TLW_METATABLE_HPP
 
 #include <unordered_map>
 #include <functional>
 #include <tlw/type.hpp>
 #include <tlw/stack.hpp>
+#include "table.hpp"
+
+
 
 namespace tlw {
 
@@ -50,7 +53,7 @@ namespace tlw {
     using type_safe_properties = std::unordered_map<std::string_view, arg_counted_overloads<type_safe_method_overloads<_user_type>>>;
 
     template<class _user_type>
-    struct meta_table {
+    struct metatable : public table {
         using user_type = typename remove_ref<_user_type>::type;
         static inline const char *name = nullptr;
         static inline arg_counted_overloads<type_safe_function_overloads> constructors{};
@@ -80,6 +83,25 @@ namespace tlw {
             getters.clear();
             operators.clear();
         }
+
+        metatable(state L) : table(std::move(L)) {}
+
+        metatable(const reference &other) : _table(other) {}
+
+        metatable(reference &&other) : _table(other) {}
+
+//        template<typename property_type>
+//        void prop(const char * name, property_type _user_type::* property) {
+//            auto indexer = get<table>("__properties");
+//            tlw::table ref = indexer[name];
+//            if (!ref) {
+//                lua_createtable(L, 0, 2);
+//                ref = tlw::table(L);
+//
+//            }
+//
+//        }
+
     };
 
     template<class _user_type>
@@ -89,12 +111,12 @@ namespace tlw {
 
         static constexpr void reset() {
             name = nullptr;
-            meta_table<_user_type>::reset();
-            meta_table<_user_type *>::reset(true);
-            meta_table<const _user_type *>::reset(true);
+            metatable<_user_type>::reset();
+            metatable<_user_type *>::reset(true);
+            metatable<const _user_type *>::reset(true);
         }
     };
 
 }
 
-#endif //TLW_META_TABLE_HPP
+#endif //TLW_METATABLE_HPP

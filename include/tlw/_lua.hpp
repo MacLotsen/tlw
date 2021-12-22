@@ -21,6 +21,7 @@
 #define TLW__LUA_HPP
 
 namespace tlw {
+
     struct lua : public global_table {
 
         lua() : global_table(state()) {}
@@ -81,6 +82,16 @@ namespace tlw {
         tlw::table array(int size) {
             lua_createtable(L, size, 0);
             return pop_traits<tlw::table>::pop(L);
+        }
+
+        template<typename userdatum>
+        tlw::metatable<userdatum> metatable(const char * name) {
+            if (!luaL_newmetatable(L, name)) {
+                return tlw::metatable<userdatum>(L);
+            }
+
+            tlw::metatable<userdatum> metatable(L);
+            metatable["__name"] = name;
         }
     };
 }

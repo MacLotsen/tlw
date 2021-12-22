@@ -1,9 +1,14 @@
 
+Cleanup 'lua' types
+
+Bundle traits by subjects
+
 Meta Table Builder (low prio):
  - concatenate traits and delegate towards the build method
 
 Type Traits:
  - cleanup (only support value and pointer-to-pointer and const correctness)
+ - add exclusive, shared and weak_ptr
 
 Operators:
  - concat, call
@@ -15,4 +20,3 @@ Old API pending:
  - regain table speed
  - regain property speed
  - expose on table
- - lua.new_table

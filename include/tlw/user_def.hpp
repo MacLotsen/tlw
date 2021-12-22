@@ -21,7 +21,7 @@
 #define TLW_USER_DEF_HPP
 
 #include <lua.hpp>
-#include <tlw/meta_table.hpp>
+#include <tlw/metatable.hpp>
 #include <tlw/detail/user_ctor.hpp>
 #include <tlw/detail/user_prop.hpp>
 #include <tlw/detail/user_method.hpp>
@@ -236,7 +236,7 @@ namespace tlw {
 
     template<typename _user_type>
     struct __index {
-        using mt = meta_table<_user_type>;
+        using mt = metatable<_user_type>;
 
         static int get(lua_State *L) {
             stack s = stack(state(L));
@@ -265,9 +265,9 @@ namespace tlw {
     template<class _user_type>
     struct meta_table_builder {
         using _builder_type = meta_table_builder<_user_type>;
-        using mt = meta_table<_user_type>;
-        using p_mt = meta_table<_user_type *>;
-        using rop_mt = meta_table<const _user_type *>;
+        using mt = metatable<_user_type>;
+        using p_mt = metatable<_user_type *>;
+        using rop_mt = metatable<const _user_type *>;
 
         template<typename _property_type>
         using property_type = _property_type _user_type::*;
@@ -483,7 +483,7 @@ namespace tlw {
         template<typename _method_type>
         constexpr _builder_type &tostring(_method_type method) {
             static_assert(method_type<_method_type>::valid || tostring_f_type<_method_type>::valid,
-                    "tostring accepts either a method with no arguments or a function with the userdatum as argument");
+                    "tostring accepts either a method with no arguments or a function with the user datum as argument");
 
             __tostring<_user_type, _method_type>::fn = method;
             __tostring<_user_type *, _method_type>::fn = method;

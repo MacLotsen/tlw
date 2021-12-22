@@ -32,7 +32,7 @@
 #include <tlw/detail/user_traits.hpp>
 #include <tlw/stack.hpp>
 #include <tlw/user_def.hpp>
-#include <tlw/meta_table.hpp>
+#include <tlw/metatable.hpp>
 #include <tlw/function.hpp>
 #include <tlw/table_reference.hpp>
 #include <tlw/table.hpp>

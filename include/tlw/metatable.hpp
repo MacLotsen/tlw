@@ -78,6 +78,7 @@ namespace tlw {
             if (cleanup && name)
                 delete[] name;
             name = nullptr;
+            constructors.clear();
             methods.clear();
             setters.clear();
             getters.clear();

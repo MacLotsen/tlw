@@ -97,3 +97,26 @@ TEST_F(user_test, test_multi_constructor) {
     // Pop the error message
     lua_pop(L, 2);
 }
+
+tlw::example mkexample() {
+    return tlw::example(5);
+}
+
+tlw::example *mkpexample() {
+    return new tlw::example(4);
+}
+
+TEST_F(user_test, test_custom_ctor) {
+    tlw::lua l(L);
+    l["example"] = tlw::define<tlw::example>("example")
+            .ctor(&mkexample, &mkpexample)
+            .prop("val", &tlw::example::val)
+            .build()(L);
+
+    luaL_openlibs(L);
+    auto e1 = l.src<tlw::example()>("e = example() print(e.val) return e")();
+    auto e2 = l.src<tlw::example*()>("e = example.new() print(e.val) return e")();
+
+    ASSERT_EQ(5, e1.val);
+    ASSERT_EQ(4, e2->val);
+}

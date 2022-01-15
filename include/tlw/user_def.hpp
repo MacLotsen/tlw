@@ -306,6 +306,22 @@ namespace tlw {
             return *this;
         }
 
+        template<typename ..._args>
+        constexpr _builder_type &ctor(_user_type (*value_ctor)(_args...), _user_type* (*pointer_ctor)(_args...)) {
+            using _ct = user_ctor<_user_type, _args...>;
+            using _pct = user_ctor<_user_type *, _args...>;
+            if (mt::constructors.find(sizeof...(_args)) == mt::constructors.end()) {
+                mt::constructors[sizeof...(_args)] = type_safe_function_overloads();
+            }
+            _ct::custom_ctor = value_ctor;
+            mt::constructors[sizeof...(_args)].push_back(type_safe_function(_ct::check_args, _ct::ctor_custom));
+            if (p_mt::constructors.find(sizeof...(_args)) == p_mt::constructors.end()) {
+                p_mt::constructors[sizeof...(_args)] = type_safe_function_overloads();
+            }
+            _pct::custom_ctor = pointer_ctor;
+            p_mt::constructors[sizeof...(_args)].push_back(type_safe_function(_pct::check_args, _pct::ctor_custom));
+        }
+
         template<typename _prop_type>
         constexpr _builder_type &prop(const char *name, property_type<_prop_type> property) {
             user_prop<_user_type, _prop_type>::properties[name] = property;

@@ -28,6 +28,9 @@ namespace tlw {
 
     template<class _user_type, typename ..._args>
     struct user_ctor {
+
+        static inline _user_type (*custom_ctor) (_args...) = nullptr;
+
         static constexpr bool check_args(lua_State *L) {
             return check_args(L, gen_seq<sizeof...(_args)>());
         }
@@ -52,6 +55,16 @@ namespace tlw {
                 } else {
                     stack_traits<_user_type>::push(L, _user_type());
                 }
+            }
+            return 1;
+        }
+
+        static constexpr int ctor_custom(lua_State *L) {
+            if constexpr(sizeof...(_args) != 0) {
+                auto params = stack(state(L)).grab<_args...>();
+                stack_traits<_user_type>::push(L, custom_ctor(std::forward(params)));
+            } else {
+                stack_traits<_user_type>::push(L, custom_ctor());
             }
             return 1;
         }

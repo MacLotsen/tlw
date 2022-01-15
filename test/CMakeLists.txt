@@ -38,16 +38,25 @@ set(SOURCE_FILES main.cpp
 # GTests
 add_executable(tlw-tests ${SOURCE_FILES})
 target_compile_options(tlw-tests PRIVATE -Wall -Wextra -pedantic)
-target_link_libraries(tlw-tests ${GTEST_LIBRARY} pthread tlw)
+target_link_libraries(tlw-tests GTest::GTest GTest::Main pthread tlw)
 target_include_directories(tlw-tests PRIVATE include ${GTEST_INCLUDE_DIR})
-add_test(NAME TestAll COMMAND ./tlw-tests
+
+set(TEST_EXECUTABLE ./tlw-tests)
+if ("${CMAKE_C_COMPILER}" STREQUAL "/usr/bin/x86_64-w64-mingw32-gcc-posix")
+    set(TEST_EXECUTABLE ./tlw-tests.exe)
+endif()
+add_test(NAME TestAll COMMAND ${TEST_EXECUTABLE}
         WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
+set(TEST_STD_EXECUTABLE ./tlw-std-tests)
+if ("${CMAKE_C_COMPILER}" STREQUAL "/usr/bin/x86_64-w64-mingw32-gcc-posix")
+    set(TEST_STD_EXECUTABLE ./tlw-std-tests.exe)
+endif()
 add_executable(tlw-std-tests high_end/std_types_test.cpp main.cpp)
 target_compile_options(tlw-std-tests PRIVATE -Wall -Wextra -pedantic)
-target_link_libraries(tlw-std-tests ${GTEST_LIBRARY} pthread tlw)
+target_link_libraries(tlw-std-tests GTest::GTest GTest::Main pthread tlw)
 target_include_directories(tlw-std-tests PRIVATE include ${GTEST_INCLUDE_DIR})
-add_test(NAME TestSTD COMMAND ./tlw-std-tests WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+add_test(NAME TestSTD COMMAND ${TEST_STD_EXECUTABLE} WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
 
 # Example Module
 add_library(tlw-examplelib SHARED high_end/module.cpp)

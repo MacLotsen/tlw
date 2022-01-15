@@ -48,8 +48,7 @@ namespace tlw {
                 }
             } else {
                 if constexpr (cpp_type<_user_type>::is_pointer) {
-                    stack_traits<_user_type>::push(L,
-                                                   new typename cpp_type<_user_type>::value_type());
+                    stack_traits<_user_type>::push(L, new typename cpp_type<_user_type>::value_type());
                 } else {
                     stack_traits<_user_type>::push(L, _user_type());
                 }

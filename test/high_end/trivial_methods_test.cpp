@@ -25,6 +25,7 @@ namespace tlw {
         float number;
         const char * string;
     public:
+        method_example() : number(0), string(nullptr) {}
         method_example(float n, const char *s) : number(n), string(s) {}
 
         void read_noop() const {
